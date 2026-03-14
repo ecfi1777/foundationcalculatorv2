@@ -1,9 +1,5 @@
 /**
  * Rebar calculators — Horizontal, Vertical, Slab Grid
- *
- * Horizontal: (linearFt + splice overlap) × numRows
- * Vertical:   numBars × barHeight   (numBars = ceil(linearFt × 12 / spacingIn) + 1)
- * Slab Grid:  lengthwise bars × width + widthwise bars × length + splice overlaps
  */
 import type {
   RebarHorizontalInput,
@@ -16,18 +12,20 @@ import type {
 import { inchesToFeet, applyWaste, calcSpliceOverlap } from "./utils";
 
 export function calcRebarHorizontal(input: RebarHorizontalInput): RebarHorizontalResult {
-  const spliceExtra = calcSpliceOverlap(input.linearFt, input.barLengthFt, input.overlapIn);
-  const perRow = input.linearFt + spliceExtra;
-  const totalLf = perRow * input.numRows;
+  // num_splices = floor(linearFt / 20)
+  const numSplices = Math.floor(input.linearFt / input.barLengthFt);
+  const overlapLf = numSplices * inchesToFeet(input.overlapIn) * input.numRows;
+  const totalLf = (input.linearFt * input.numRows) + overlapLf;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
   return { totalLf, totalWithWasteLf };
 }
 
 export function calcRebarVertical(input: RebarVerticalInput): RebarVerticalResult {
-  const totalLinearInches = input.linearFt * 12;
-  const numBars = Math.ceil(totalLinearInches / input.spacingIn) + 1;
+  // num_bars = floor(linearFt × 12 / spacingIn) + 1
+  const numBars = Math.floor(input.linearFt * 12 / input.spacingIn) + 1;
+  // bar_h_ft = barHeightFt + (barHeightIn/12)  — NO overlap added
   const barHeightFt = input.barHeightFt + inchesToFeet(input.barHeightIn);
-  const totalLf = numBars * (barHeightFt + inchesToFeet(input.overlapIn));
+  const totalLf = numBars * barHeightFt;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
   return { numBars, totalLf, totalWithWasteLf };
 }
@@ -36,12 +34,9 @@ export function calcRebarSlabGrid(input: RebarSlabGridInput): RebarSlabGridResul
   const lengthIn = input.lengthFt * 12;
   const widthIn = input.widthFt * 12;
 
-  // Bars running lengthwise: spaced across the width
   const barsLengthwise = Math.ceil(widthIn / input.spacingIn) + 1;
-  // Bars running widthwise: spaced across the length
   const barsWidthwise = Math.ceil(lengthIn / input.spacingIn) + 1;
 
-  // Each lengthwise bar runs the full length + splice overlap
   const spliceLength = calcSpliceOverlap(input.lengthFt, input.barLengthFt, input.overlapIn);
   const lfLengthwise = barsLengthwise * (input.lengthFt + spliceLength);
 

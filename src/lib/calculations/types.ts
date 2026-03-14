@@ -161,10 +161,12 @@ export interface StepsInput {
   riseIn: number;
   /** Run/tread per step in inches */
   runIn: number;
-  /** Thickness of the slab/landing in inches */
-  thicknessIn: number;
-  /** Optional platform/landing at top: depth in inches */
+  /** Throat depth (slab thickness under nosing) in inches */
+  throatDepthIn: number;
+  /** Optional platform depth in inches */
   platformDepthIn?: number;
+  /** Optional platform width in inches (defaults to widthIn) */
+  platformWidthIn?: number;
   wastePct: number;
 }
 
