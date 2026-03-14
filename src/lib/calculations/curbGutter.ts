@@ -1,20 +1,16 @@
 /**
  * Curb & Gutter calculator
- * Cross-section = flag + curb + gutter areas, then × linearFt / 27
+ * curb_ft3 = linearFt × (curbDepthIn/12) × (curbHeightIn/12)
+ * gutter_ft3 = linearFt × (gutterWidthIn/12) × (flagThicknessIn/12)
+ * volume_cy = (curb_ft3 + gutter_ft3) / 27
  */
 import type { CurbGutterInput, CurbGutterResult } from "./types";
-import { cubicFtToCy, inchesToFeet, applyWaste } from "./utils";
+import { applyWaste } from "./utils";
 
 export function calcCurbGutter(input: CurbGutterInput): CurbGutterResult {
-  // Cross-section areas in sq inches
-  const flagArea = input.flagHeightIn * input.flagDepthIn;
-  const curbArea = input.curbHeightIn * input.curbDepthIn;
-  const gutterArea = input.gutterWidthIn * input.gutterThicknessIn;
-  const totalCrossSectionSqIn = flagArea + curbArea + gutterArea;
-
-  // Convert to sq ft (÷ 144), then × linearFt for cubic ft
-  const crossSectionSqFt = totalCrossSectionSqIn / 144;
-  const volumeCy = cubicFtToCy(crossSectionSqFt * input.linearFt);
+  const curbFt3 = input.linearFt * (input.curbDepthIn / 12) * (input.curbHeightIn / 12);
+  const gutterFt3 = input.linearFt * (input.gutterWidthIn / 12) * (input.flagThicknessIn / 12);
+  const volumeCy = (curbFt3 + gutterFt3) / 27;
   const volumeWithWasteCy = applyWaste(volumeCy, input.wastePct);
 
   return { volumeCy, volumeWithWasteCy };

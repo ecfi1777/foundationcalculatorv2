@@ -74,18 +74,14 @@ export interface GradeBeamResult {
 
 export interface CurbGutterInput {
   linearFt: number;
-  /** Flag height in inches */
-  flagHeightIn: number;
-  /** Flag depth/thickness in inches */
-  flagDepthIn: number;
-  /** Curb height in inches (above gutter) */
-  curbHeightIn: number;
-  /** Curb depth/thickness in inches */
+  /** Curb depth in inches */
   curbDepthIn: number;
+  /** Curb height in inches */
+  curbHeightIn: number;
   /** Gutter width in inches */
   gutterWidthIn: number;
-  /** Gutter thickness in inches */
-  gutterThicknessIn: number;
+  /** Flag/gutter thickness in inches */
+  flagThicknessIn: number;
   wastePct: number;
 }
 
@@ -143,6 +139,7 @@ export interface PierPadResult {
 export interface CylinderInput {
   quantity: number;
   diameterIn: number;
+  heightFt: number;
   heightIn: number;
   wastePct: number;
 }
@@ -164,10 +161,12 @@ export interface StepsInput {
   riseIn: number;
   /** Run/tread per step in inches */
   runIn: number;
-  /** Thickness of the slab/landing in inches */
-  thicknessIn: number;
-  /** Optional platform/landing at top: depth in inches */
+  /** Throat depth (slab thickness under nosing) in inches */
+  throatDepthIn: number;
+  /** Optional platform depth in inches */
   platformDepthIn?: number;
+  /** Optional platform width in inches (defaults to widthIn) */
+  platformWidthIn?: number;
   wastePct: number;
 }
 
