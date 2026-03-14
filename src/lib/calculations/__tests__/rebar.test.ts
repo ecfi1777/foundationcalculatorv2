@@ -75,4 +75,21 @@ describe("calcRebarSlabGrid", () => {
     expect(result.barsWidthwise).toBe(31);
     expect(result.totalLf).toBeCloseTo(651);
   });
+
+  it("uses floor for non-even dimensions (25×16 @ 18in)", () => {
+    // barsLengthwise = floor(16*12/18)+1 = floor(10.667)+1 = 11
+    // barsWidthwise  = floor(25*12/18)+1 = floor(16.667)+1 = 17
+    // spliceLength(25ft) = (ceil(25/20)-1) × 1ft = 1ft → each = 26ft
+    // spliceWidth(16ft)  = (ceil(16/20)-1) × 1ft = 0ft → each = 16ft
+    // lfLengthwise = 11 × 26 = 286
+    // lfWidthwise  = 17 × 16 = 272
+    // total = 558
+    const result = calcRebarSlabGrid({
+      lengthFt: 25, widthFt: 16, spacingIn: 18,
+      overlapIn: 12, barLengthFt: 20, wastePct: 0,
+    });
+    expect(result.barsLengthwise).toBe(11);
+    expect(result.barsWidthwise).toBe(17);
+    expect(result.totalLf).toBeCloseTo(558);
+  });
 });
