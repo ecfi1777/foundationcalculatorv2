@@ -34,8 +34,8 @@ export function calcRebarSlabGrid(input: RebarSlabGridInput): RebarSlabGridResul
   const lengthIn = input.lengthFt * 12;
   const widthIn = input.widthFt * 12;
 
-  const barsLengthwise = Math.ceil(widthIn / input.spacingIn) + 1;
-  const barsWidthwise = Math.ceil(lengthIn / input.spacingIn) + 1;
+  const barsLengthwise = Math.floor(widthIn / input.spacingIn) + 1;
+  const barsWidthwise = Math.floor(lengthIn / input.spacingIn) + 1;
 
   const spliceLength = calcSpliceOverlap(input.lengthFt, input.barLengthFt, input.overlapIn);
   const lfLengthwise = barsLengthwise * (input.lengthFt + spliceLength);
