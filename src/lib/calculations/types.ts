@@ -139,6 +139,7 @@ export interface PierPadResult {
 export interface CylinderInput {
   quantity: number;
   diameterIn: number;
+  heightFt: number;
   heightIn: number;
   wastePct: number;
 }
