@@ -21,8 +21,11 @@ export default function Auth() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    captureRefCode();
+  }, []);
+
+  useEffect(() => {
     if (!loading && user) {
-      // Migrate anon data then redirect
       if (hasAnonData()) {
         migrateAnonData(user.id).then(() => navigate("/"));
       } else {
