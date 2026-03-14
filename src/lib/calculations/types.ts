@@ -74,18 +74,14 @@ export interface GradeBeamResult {
 
 export interface CurbGutterInput {
   linearFt: number;
-  /** Flag height in inches */
-  flagHeightIn: number;
-  /** Flag depth/thickness in inches */
-  flagDepthIn: number;
-  /** Curb height in inches (above gutter) */
-  curbHeightIn: number;
-  /** Curb depth/thickness in inches */
+  /** Curb depth in inches */
   curbDepthIn: number;
+  /** Curb height in inches */
+  curbHeightIn: number;
   /** Gutter width in inches */
   gutterWidthIn: number;
-  /** Gutter thickness in inches */
-  gutterThicknessIn: number;
+  /** Flag/gutter thickness in inches */
+  flagThicknessIn: number;
   wastePct: number;
 }
 
