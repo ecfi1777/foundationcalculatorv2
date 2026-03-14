@@ -1,10 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { migrateAnonData } from "@/lib/migrateAnonData";
-import { hasAnonData } from "@/lib/localStorage";
+import { hasAnonData, captureRefCode } from "@/lib/localStorage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -21,8 +21,11 @@ export default function Auth() {
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
+    captureRefCode();
+  }, []);
+
+  useEffect(() => {
     if (!loading && user) {
-      // Migrate anon data then redirect
       if (hasAnonData()) {
         migrateAnonData(user.id).then(() => navigate("/"));
       } else {
