@@ -321,6 +321,20 @@ function getRebarLabel(
 
 export function QuantitiesPanel() {
   const { state, dispatch } = useCalculatorState();
+  const [renamingAreaId, setRenamingAreaId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+
+  const confirmRename = () => {
+    const trimmed = renameValue.trim();
+    if (trimmed && renamingAreaId) {
+      dispatch({ type: "RENAME_AREA", id: renamingAreaId, name: trimmed });
+    }
+    setRenamingAreaId(null);
+  };
+
+  const cancelRename = () => {
+    setRenamingAreaId(null);
+  };
 
   const results = useMemo(
     () => state.areas.map(computeArea),
