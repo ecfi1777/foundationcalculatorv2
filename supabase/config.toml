@@ -8,3 +8,9 @@ verify_jwt = false
 
 [functions.create-portal-session]
 verify_jwt = false
+
+[functions.add-seat]
+verify_jwt = false
+
+[functions.remove-seat]
+verify_jwt = false

@@ -291,23 +291,11 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       .eq("id", referral.id);
   }
 
-  // Increment affiliate totals
-
-  // Use RPC or direct increment — for safety, fetch and update
-  const { data: currentAffiliate } = await supabase
-    .from("affiliates")
-    .select("total_earned_cents")
-    .eq("id", affiliate.id)
-    .single();
-
-  if (currentAffiliate) {
-    await supabase
-      .from("affiliates")
-      .update({
-        total_earned_cents: currentAffiliate.total_earned_cents + commissionCents,
-      })
-      .eq("id", affiliate.id);
-  }
+  // Increment affiliate totals atomically
+  await supabase.rpc("increment_affiliate_earnings", {
+    affiliate_row_id: affiliate.id,
+    amount: commissionCents,
+  });
 
   log("Affiliate commission created", {
     affiliateId: affiliate.id,
