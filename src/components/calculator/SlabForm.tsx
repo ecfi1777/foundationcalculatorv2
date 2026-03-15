@@ -11,7 +11,10 @@ export function SlabForm() {
   const areas = getAreasForType("slab");
   const area = activeArea?.type === "slab" ? activeArea : null;
 
-  const handleAdd = () => addArea("slab");
+  const handleAdd = (customName?: string) => {
+    const area = addArea("slab");
+    if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
+  };
 
   const addSection = () => {
     if (!area) return;

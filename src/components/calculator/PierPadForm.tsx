@@ -9,7 +9,10 @@ export function PierPadForm() {
   const areas = getAreasForType("pierPad");
   const area = activeArea?.type === "pierPad" ? activeArea : null;
 
-  const handleAdd = () => addArea("pierPad");
+  const handleAdd = (customName?: string) => {
+    const area = addArea("pierPad");
+    if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
+  };
 
   const updateDim = (key: string, value: number) => {
     if (!area) return;
