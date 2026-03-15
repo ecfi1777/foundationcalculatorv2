@@ -17,7 +17,10 @@ export function FootingForm() {
   const { state, dispatch, addArea, getAreasForType, activeArea } = useCalculatorState();
   const areas = getAreasForType("footing");
 
-  const handleAdd = () => addArea("footing", "footingsOnly");
+  const handleAdd = (customName?: string) => {
+    const area = addArea("footing", "footingsOnly");
+    if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
+  };
 
   const area = activeArea?.type === "footing" ? activeArea : null;
   const mode = area?.footingMode ?? "footingsOnly";

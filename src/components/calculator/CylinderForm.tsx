@@ -7,7 +7,10 @@ export function CylinderForm() {
   const areas = getAreasForType("cylinder");
   const area = activeArea?.type === "cylinder" ? activeArea : null;
 
-  const handleAdd = () => addArea("cylinder");
+  const handleAdd = (customName?: string) => {
+    const area = addArea("cylinder");
+    if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
+  };
 
   const updateDim = (key: string, value: number) => {
     if (!area) return;

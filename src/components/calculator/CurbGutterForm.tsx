@@ -10,7 +10,10 @@ export function CurbGutterForm() {
   const areas = getAreasForType("curbGutter");
   const area = activeArea?.type === "curbGutter" ? activeArea : null;
 
-  const handleAdd = () => addArea("curbGutter");
+  const handleAdd = (customName?: string) => {
+    const area = addArea("curbGutter");
+    if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
+  };
 
   const updateDim = (key: string, value: number) => {
     if (!area) return;

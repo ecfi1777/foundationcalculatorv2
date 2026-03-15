@@ -7,7 +7,10 @@ export function StepsForm() {
   const areas = getAreasForType("steps");
   const area = activeArea?.type === "steps" ? activeArea : null;
 
-  const handleAdd = () => addArea("steps");
+  const handleAdd = (customName?: string) => {
+    const area = addArea("steps");
+    if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
+  };
 
   const updateDim = (key: string, value: number) => {
     if (!area) return;
