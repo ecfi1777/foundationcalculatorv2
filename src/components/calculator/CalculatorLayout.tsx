@@ -48,7 +48,7 @@ export function CalculatorLayout() {
     currentProject, isSaving, isDirty, isProjectLocked,
     saveProject, createNewProject, resetToBlank, updateProjectMeta,
     pendingAction, setPendingAction, clearPendingAction,
-    subscriptionTier, loadProjects, projectCount,
+    subscriptionTier, loadProjects, projectCount, editableProjectCount,
   } = useProject();
 
   const [mobileTab, setMobileTab] = useState<"calculator" | "quantities">("calculator");
