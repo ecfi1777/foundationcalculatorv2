@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from "react";
+import React, { createContext, useContext, useReducer, useEffect, useCallback, useRef } from "react";
 import type {
   CalcArea,
   CalcSection,
@@ -11,7 +11,7 @@ import { AREA_NAME_PREFIXES, DEFAULT_REBAR } from "@/types/calculator";
 
 const STORAGE_KEY = "tfc_calculator_state";
 
-interface CalcState {
+export interface CalcState {
   areas: CalcArea[];
   activeTab: CalculatorType;
   activeAreaId: string | null;
@@ -31,7 +31,16 @@ type Action =
   | { type: "UPDATE_SECTION"; areaId: string; sectionId: string; patch: Partial<CalcSection> }
   | { type: "DELETE_SECTION"; areaId: string; sectionId: string }
   | { type: "UPDATE_REBAR"; areaId: string; rebar: Partial<RebarConfig> }
-  | { type: "LOAD"; state: CalcState };
+  | { type: "LOAD"; state: CalcState }
+  | { type: "RESET" };
+
+/** Actions that indicate data has been modified */
+const DATA_ACTIONS = new Set([
+  "ADD_AREA", "DELETE_AREA", "UPDATE_AREA", "RENAME_AREA",
+  "ADD_SEGMENT", "UPDATE_SEGMENT", "DELETE_SEGMENT",
+  "ADD_SECTION", "UPDATE_SECTION", "DELETE_SECTION",
+  "UPDATE_REBAR",
+]);
 
 function reducer(state: CalcState, action: Action): CalcState {
   switch (action.type) {
@@ -126,6 +135,8 @@ function reducer(state: CalcState, action: Action): CalcState {
       };
     case "LOAD":
       return action.state;
+    case "RESET":
+      return { areas: [], activeTab: "footing", activeAreaId: null };
     default:
       return state;
   }
@@ -143,6 +154,8 @@ interface CalcCtx {
   addArea: (type: CalculatorType, footingMode?: FootingMode) => CalcArea;
   getAreasForType: (type: CalculatorType) => CalcArea[];
   activeArea: CalcArea | null;
+  isDirty: boolean;
+  markClean: () => void;
 }
 
 const CalculatorContext = createContext<CalcCtx | null>(null);
@@ -156,12 +169,31 @@ function loadState(): CalcState {
 }
 
 export function CalculatorProvider({ children }: { children: React.ReactNode }) {
-  const [state, dispatch] = useReducer(reducer, initialState, loadState);
+  const [state, baseDispatch] = useReducer(reducer, initialState, loadState);
+  const isDirtyRef = useRef(false);
+  const [isDirty, setIsDirty] = React.useState(false);
+
+  // Wrap dispatch to track dirty state
+  const dispatch: React.Dispatch<Action> = useCallback((action: Action) => {
+    baseDispatch(action);
+    if (DATA_ACTIONS.has(action.type)) {
+      isDirtyRef.current = true;
+      setIsDirty(true);
+    }
+    if (action.type === "LOAD" || action.type === "RESET") {
+      isDirtyRef.current = false;
+      setIsDirty(false);
+    }
+  }, []);
+
+  const markClean = useCallback(() => {
+    isDirtyRef.current = false;
+    setIsDirty(false);
+  }, []);
 
   // Persist to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    // Also set the has_data flag for the save banner
     if (state.areas.length > 0) {
       localStorage.setItem("tfc_anon_has_data", "true");
     }
@@ -192,7 +224,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
       dispatch({ type: "ADD_AREA", area });
       return area;
     },
-    [state.areas]
+    [state.areas, dispatch]
   );
 
   const activeArea = state.activeAreaId
@@ -200,7 +232,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     : null;
 
   return (
-    <CalculatorContext.Provider value={{ state, dispatch, addArea, getAreasForType, activeArea }}>
+    <CalculatorContext.Provider value={{ state, dispatch, addArea, getAreasForType, activeArea, isDirty, markClean }}>
       {children}
     </CalculatorContext.Provider>
   );

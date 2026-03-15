@@ -9,18 +9,28 @@ import {
 import {
   Save, FolderOpen, Plus, Download, Settings,
   HelpCircle, User, LogOut, ChevronDown, Sun, Moon,
+  Pencil, Loader2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
 
 interface AppHeaderProps {
   projectName: string;
-  onProjectNameChange: (name: string) => void;
+  onProjectNameChange: () => void;
   onSave: () => void;
+  onOpenProjects: () => void;
+  onNewProject: () => void;
+  onEditProject: () => void;
+  isSaving: boolean;
+  isProjectLocked: boolean;
+  hasProject: boolean;
 }
 
-export function AppHeader({ projectName, onProjectNameChange, onSave }: AppHeaderProps) {
-  const [isEditingName, setIsEditingName] = useState(false);
+export function AppHeader({
+  projectName, onProjectNameChange, onSave,
+  onOpenProjects, onNewProject, onEditProject,
+  isSaving, isProjectLocked, hasProject,
+}: AppHeaderProps) {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
@@ -40,30 +50,28 @@ export function AppHeader({ projectName, onProjectNameChange, onSave }: AppHeade
       {/* Project name breadcrumb */}
       <div className="flex items-center gap-1 flex-1 min-w-0">
         <span className="text-muted-foreground">/</span>
-        {isEditingName ? (
-          <Input
-            value={projectName}
-            onChange={(e) => onProjectNameChange(e.target.value)}
-            onBlur={() => setIsEditingName(false)}
-            onKeyDown={(e) => e.key === "Enter" && setIsEditingName(false)}
-            className="h-7 w-48 bg-input text-sm"
-            autoFocus
-          />
-        ) : (
-          <button
-            onClick={() => setIsEditingName(true)}
-            className="rounded px-2 py-1 text-sm text-foreground hover:bg-secondary truncate"
-          >
-            {projectName || "Untitled Project"}
-          </button>
-        )}
+        <button
+          onClick={onEditProject}
+          className="rounded px-2 py-1 text-sm text-foreground hover:bg-secondary truncate flex items-center gap-1"
+          disabled={!hasProject}
+        >
+          {projectName || "Untitled Project"}
+          {hasProject && <Pencil className="h-3 w-3 text-muted-foreground" />}
+        </button>
       </div>
 
       <div className="flex items-center gap-1">
-        <Button variant="ghost" size="sm" onClick={onSave} className="gap-1.5">
-          <Save className="h-4 w-4" />
-          <span className="hidden sm:inline">Save</span>
-        </Button>
+        {/* Save button — hidden when locked */}
+        {!isProjectLocked && (
+          <Button variant="ghost" size="sm" onClick={onSave} className="gap-1.5" disabled={isSaving}>
+            {isSaving ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              <Save className="h-4 w-4" />
+            )}
+            <span className="hidden sm:inline">{isSaving ? "Saving…" : "Save"}</span>
+          </Button>
+        )}
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -74,11 +82,10 @@ export function AppHeader({ projectName, onProjectNameChange, onSave }: AppHeade
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            {/* Stubs — wired in Phase 8 */}
-            <DropdownMenuItem disabled>
+            <DropdownMenuItem onClick={onNewProject}>
               <Plus className="h-4 w-4 mr-2" /> New Project
             </DropdownMenuItem>
-            <DropdownMenuItem disabled>
+            <DropdownMenuItem onClick={onOpenProjects}>
               <FolderOpen className="h-4 w-4 mr-2" /> Open Project
             </DropdownMenuItem>
             <DropdownMenuSeparator />

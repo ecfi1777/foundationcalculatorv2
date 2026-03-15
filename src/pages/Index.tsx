@@ -2,6 +2,7 @@ import { useEffect } from "react";
 import { useAuth } from "@/hooks/useAuth";
 import { captureRefCode } from "@/lib/localStorage";
 import { CalculatorProvider } from "@/hooks/useCalculatorState";
+import { ProjectProvider } from "@/hooks/useProject";
 import { CalculatorLayout } from "@/components/calculator/CalculatorLayout";
 
 const Index = () => {
@@ -21,7 +22,9 @@ const Index = () => {
 
   return (
     <CalculatorProvider>
-      <CalculatorLayout />
+      <ProjectProvider>
+        <CalculatorLayout />
+      </ProjectProvider>
     </CalculatorProvider>
   );
 };
