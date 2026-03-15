@@ -128,7 +128,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     .from("organizations")
     .update({
       subscription_tier: "free",
-      subscription_status: "canceled",
+      subscription_status: "cancelled",
       stripe_sub_id: null,
       seat_count: 1,
     })
