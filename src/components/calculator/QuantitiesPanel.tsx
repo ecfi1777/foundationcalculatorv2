@@ -398,13 +398,13 @@ export function QuantitiesPanel() {
                         className="h-6 text-sm px-1.5 py-0"
                       />
                       <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6 shrink-0"
+                        size="sm"
+                        variant="secondary"
+                        className="h-6 px-2 text-xs shrink-0"
                         onMouseDown={(e) => e.preventDefault()}
                         onClick={confirmRename}
                       >
-                        <Check className="h-3 w-3" />
+                        Save
                       </Button>
                       <Button
                         size="icon"
@@ -418,16 +418,22 @@ export function QuantitiesPanel() {
                     </div>
                   ) : (
                     <>
-                      <span className="text-sm font-semibold text-foreground">{r.areaName}</span>
+                      <span
+                        className="text-sm font-semibold text-foreground cursor-pointer hover:underline"
+                        onClick={() => {
+                          setRenamingAreaId(r.areaId);
+                          setRenameValue(r.areaName);
+                        }}
+                        title="Click to rename"
+                      >
+                        {r.areaName}
+                      </span>
                       <div className="flex gap-1">
                         <Button
                           size="icon"
                           variant="ghost"
                           className="h-6 w-6"
-                          onClick={() => {
-                            setRenamingAreaId(r.areaId);
-                            setRenameValue(r.areaName);
-                          }}
+                          onClick={() => dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId })}
                         >
                           <Pencil className="h-3 w-3" />
                         </Button>
