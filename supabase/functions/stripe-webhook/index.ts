@@ -101,7 +101,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   // Map Stripe status to our status
   let status = "active";
   if (subscription.status === "past_due") status = "past_due";
-  else if (subscription.status === "canceled" || subscription.status === "unpaid") status = "canceled";
+  else if (subscription.status === "canceled" || subscription.status === "unpaid") status = "cancelled";
   else if (subscription.status === "trialing") status = "active";
 
   const { error } = await supabase
