@@ -203,7 +203,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
         body: JSON.stringify({
           from: "Total Foundation Calculator <billing@totalfoundationcalculator.com>",
           to: [owner.email],
-          subject: "Payment Failed - Action Required",
+          subject: "Payment failed for your Total Foundation Calculator subscription",
           html: `
             <h2>Payment Failed</h2>
             <p>Hi,</p>
