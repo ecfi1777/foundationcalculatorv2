@@ -41,6 +41,7 @@ interface ProjectContextType {
   resetToBlank: () => void;
   updateProjectMeta: (name: string, notes: string | null) => Promise<void>;
   projectCount: number;
+  editableProjectCount: number;
 }
 
 const ProjectContext = createContext<ProjectContextType | null>(null);
