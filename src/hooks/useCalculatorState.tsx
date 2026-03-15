@@ -240,8 +240,18 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
 
   const addArea = useCallback(
     (type: CalculatorType, footingMode?: FootingMode): CalcArea => {
-      const existing = state.areas.filter((a) => a.type === type);
-      const num = existing.length + 1;
+      const prefix = AREA_NAME_PREFIXES[type];
+      const pattern = new RegExp(`^${prefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')} \\((\\d+)\\)$`);
+      let maxNum = 0;
+      for (const a of state.areas) {
+        if (a.type !== type) continue;
+        const m = a.name.match(pattern);
+        if (m) {
+          const n = parseInt(m[1], 10);
+          if (n > maxNum) maxNum = n;
+        }
+      }
+      const num = maxNum + 1;
       const area: CalcArea = {
         id: crypto.randomUUID(),
         name: `${AREA_NAME_PREFIXES[type]} (${num})`,
