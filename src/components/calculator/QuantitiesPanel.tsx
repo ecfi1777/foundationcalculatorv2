@@ -20,7 +20,8 @@ import {
   calcStoneBase,
 } from "@/lib/calculations";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
 function computeRebarForElement(
