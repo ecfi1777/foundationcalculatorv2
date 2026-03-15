@@ -1,6 +1,10 @@
 import { useMemo } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
-import type { CalcArea, AreaResult, ProjectTotals, BarSize } from "@/types/calculator";
+import type {
+  CalcArea, AreaResult, ProjectTotals, BarSize,
+  RebarResult, RebarElementType,
+} from "@/types/calculator";
+import { getElementTypes, makeDefaultRebar } from "@/types/calculator";
 import {
   calcFooting,
   calcWall,
@@ -19,6 +23,93 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 
+function computeRebarForElement(
+  area: CalcArea,
+  elementType: RebarElementType,
+  totalLinearFt: number
+): RebarResult {
+  const config = area.rebarConfigs[elementType] ?? makeDefaultRebar(elementType);
+  const isFootingElement = elementType === "footing";
+  const result: RebarResult = {
+    elementType,
+    horizLf: null,
+    horizBarSize: null,
+    vertLf: null,
+    vertBarSize: null,
+    vertLabel: isFootingElement ? "Dowels" : "Vertical",
+    gridLf: null,
+    gridBarSize: null,
+    gridSpacingIn: null,
+  };
+
+  if (elementType === "slab") {
+    // Grid rebar for slabs
+    if (config.gridEnabled && area.sections.length > 0) {
+      // Use cached canonical value if available
+      if (config.gridTotalLf && config.gridTotalLf > 0) {
+        result.gridLf = config.gridTotalLf;
+      } else {
+        let totalGridLf = 0;
+        for (const sec of area.sections) {
+          const lenFt = sec.lengthFt + sec.lengthIn / 12;
+          const widFt = sec.widthFt + sec.widthIn / 12;
+          if (lenFt > 0 && widFt > 0) {
+            const gr = calcRebarSlabGrid({
+              lengthFt: lenFt,
+              widthFt: widFt,
+              spacingIn: config.gridSpacingIn || 12,
+              overlapIn: config.gridOverlapIn || 12,
+              barLengthFt: 20,
+              wastePct: config.gridWastePct || 0,
+            });
+            totalGridLf += gr.totalWithWasteLf;
+          }
+        }
+        result.gridLf = totalGridLf;
+      }
+      result.gridBarSize = config.gridBarSize;
+      result.gridSpacingIn = config.gridSpacingIn;
+    }
+  } else {
+    // Linear rebar (horiz + vert)
+    if (totalLinearFt > 0) {
+      if (config.hEnabled) {
+        if (config.hTotalLf && config.hTotalLf > 0) {
+          result.horizLf = config.hTotalLf;
+        } else {
+          const hr = calcRebarHorizontal({
+            linearFt: totalLinearFt,
+            numRows: config.hNumRows || 1,
+            overlapIn: config.hOverlapIn || 12,
+            barLengthFt: 20,
+            wastePct: config.hWastePct || 0,
+          });
+          result.horizLf = hr.totalWithWasteLf;
+        }
+        result.horizBarSize = config.hBarSize;
+      }
+      if (config.vEnabled) {
+        if (config.vTotalLf && config.vTotalLf > 0) {
+          result.vertLf = config.vTotalLf;
+        } else {
+          const vr = calcRebarVertical({
+            linearFt: totalLinearFt,
+            barHeightFt: config.vBarHeightFt || 0,
+            barHeightIn: config.vBarHeightIn || 0,
+            spacingIn: config.vSpacingIn || 12,
+            overlapIn: config.vOverlapIn || 12,
+            wastePct: config.vWastePct || 0,
+          });
+          result.vertLf = vr.totalWithWasteLf;
+        }
+        result.vertBarSize = config.vBarSize;
+      }
+    }
+  }
+
+  return result;
+}
+
 function computeArea(area: CalcArea): AreaResult {
   const totalLinearFt = area.segments.reduce((s, seg) => s + seg.lengthInchesDecimal, 0) / 12;
 
@@ -27,13 +118,6 @@ function computeArea(area: CalcArea): AreaResult {
   let totalVolumeCy = 0;
   let totalWithWasteCy = 0;
   let totalSqft = 0;
-  let rebarHorizLf: number | null = null;
-  let rebarHorizBarSize: BarSize | null = null;
-  let rebarVertLf: number | null = null;
-  let rebarVertBarSize: BarSize | null = null;
-  let rebarGridLf: number | null = null;
-  let rebarGridBarSize: BarSize | null = null;
-  let rebarGridSpacingIn: number | null = null;
   let stoneTons: number | null = null;
   let stoneDepthIn: number | null = null;
 
@@ -141,29 +225,6 @@ function computeArea(area: CalcArea): AreaResult {
         }
         if (stoneActive) stoneTons = totalStone;
       }
-
-      // Slab rebar grid
-      if (area.rebarEnabled && area.sections.length > 0) {
-        let totalGridLf = 0;
-        for (const sec of area.sections) {
-          const lenFt = sec.lengthFt + sec.lengthIn / 12;
-          const widFt = sec.widthFt + sec.widthIn / 12;
-          if (lenFt > 0 && widFt > 0) {
-            const gr = calcRebarSlabGrid({
-              lengthFt: lenFt,
-              widthFt: widFt,
-              spacingIn: area.rebar.gridSpacingIn || 12,
-              overlapIn: area.rebar.gridOverlapIn || 12,
-              barLengthFt: 20,
-              wastePct: area.rebar.gridWastePct || 0,
-            });
-            totalGridLf += gr.totalWithWasteLf;
-          }
-        }
-        rebarGridLf = totalGridLf;
-        rebarGridBarSize = area.rebar.gridBarSize;
-        rebarGridSpacingIn = area.rebar.gridSpacingIn;
-      }
       break;
     }
     case "pierPad": {
@@ -215,34 +276,13 @@ function computeArea(area: CalcArea): AreaResult {
     }
   }
 
-  // Linear rebar (footing, wall, gradeBeam)
-  if (
-    area.rebarEnabled &&
-    totalLinearFt > 0 &&
-    ["footing", "wall", "gradeBeam"].includes(area.type)
-  ) {
-    if (area.rebar.hEnabled) {
-      const hr = calcRebarHorizontal({
-        linearFt: totalLinearFt,
-        numRows: area.rebar.hNumRows || 1,
-        overlapIn: area.rebar.hOverlapIn || 12,
-        barLengthFt: 20,
-        wastePct: area.rebar.hWastePct || 0,
-      });
-      rebarHorizLf = hr.totalWithWasteLf;
-      rebarHorizBarSize = area.rebar.hBarSize;
-    }
-    if (area.rebar.vEnabled) {
-      const vr = calcRebarVertical({
-        linearFt: totalLinearFt,
-        barHeightFt: area.rebar.vBarHeightFt || 0,
-        barHeightIn: area.rebar.vBarHeightIn || 0,
-        spacingIn: area.rebar.vSpacingIn || 12,
-        overlapIn: area.rebar.vOverlapIn || 12,
-        wastePct: area.rebar.vWastePct || 0,
-      });
-      rebarVertLf = vr.totalWithWasteLf;
-      rebarVertBarSize = area.rebar.vBarSize;
+  // Compute rebar per visible element type
+  const visibleElementTypes = getElementTypes(area.type, area.footingMode);
+  const rebarResults: RebarResult[] = [];
+  for (const et of visibleElementTypes) {
+    const config = area.rebarConfigs[et];
+    if (config && (config.hEnabled || config.vEnabled || config.gridEnabled)) {
+      rebarResults.push(computeRebarForElement(area, et, totalLinearFt));
     }
   }
 
@@ -250,22 +290,32 @@ function computeArea(area: CalcArea): AreaResult {
     areaId: area.id,
     areaName: area.name,
     type: area.type,
+    footingMode: area.footingMode,
     totalLinearFt,
     totalSqft,
     footingVolumeCy,
     wallVolumeCy,
     totalVolumeCy,
     totalWithWasteCy,
-    rebarHorizLf,
-    rebarHorizBarSize,
-    rebarVertLf,
-    rebarVertBarSize,
-    rebarGridLf,
-    rebarGridBarSize,
-    rebarGridSpacingIn,
+    rebarResults,
     stoneTons,
     stoneDepthIn,
   };
+}
+
+function getRebarLabel(
+  elementType: RebarElementType,
+  isMultiElement: boolean
+): string {
+  if (!isMultiElement) return "";
+  switch (elementType) {
+    case "footing": return "Footing ";
+    case "wall": return "Wall ";
+    case "grade_beam": return "Grade Beam ";
+    case "curb": return "Curb ";
+    case "slab": return "";
+    default: return "";
+  }
 }
 
 export function QuantitiesPanel() {
@@ -283,7 +333,9 @@ export function QuantitiesPanel() {
     for (const r of results) {
       concreteCy += r.totalWithWasteCy;
       stoneTons += r.stoneTons ?? 0;
-      rebarLf += (r.rebarHorizLf ?? 0) + (r.rebarVertLf ?? 0) + (r.rebarGridLf ?? 0);
+      for (const rr of r.rebarResults) {
+        rebarLf += (rr.horizLf ?? 0) + (rr.vertLf ?? 0) + (rr.gridLf ?? 0);
+      }
     }
     return { concreteCy, stoneTons, rebarLf };
   }, [results]);
@@ -311,88 +363,112 @@ export function QuantitiesPanel() {
             <p className="text-sm text-muted-foreground">Add segments to see calculations</p>
           </div>
         ) : (
-          results.map((r) => (
-            <div key={r.areaId} className="rounded-lg border border-border bg-card p-3 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold text-foreground">{r.areaName}</span>
-                <div className="flex gap-1">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-6 w-6"
-                    onClick={() => dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId })}
-                  >
-                    <Pencil className="h-3 w-3" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="h-6 w-6 text-destructive"
-                    onClick={() => dispatch({ type: "DELETE_AREA", id: r.areaId })}
-                  >
-                    <Trash2 className="h-3 w-3" />
-                  </Button>
+          results.map((r) => {
+            const isMultiElement = r.rebarResults.length > 1;
+
+            return (
+              <div key={r.areaId} className="rounded-lg border border-border bg-card p-3 space-y-2">
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-semibold text-foreground">{r.areaName}</span>
+                  <div className="flex gap-1">
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6"
+                      onClick={() => dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId })}
+                    >
+                      <Pencil className="h-3 w-3" />
+                    </Button>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      className="h-6 w-6 text-destructive"
+                      onClick={() => dispatch({ type: "DELETE_AREA", id: r.areaId })}
+                    >
+                      <Trash2 className="h-3 w-3" />
+                    </Button>
+                  </div>
                 </div>
+
+                {isLinearType(r.type) && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total Linear Feet:</span>
+                    <span className="font-mono text-foreground">{r.totalLinearFt.toFixed(2)} ft</span>
+                  </div>
+                )}
+                {r.type === "slab" && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Total Square Feet:</span>
+                    <span className="font-mono text-foreground">{Math.round(r.totalSqft)} SF</span>
+                  </div>
+                )}
+                {r.type === "footing" && r.footingVolumeCy > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Footing Volume:</span>
+                    <span className="font-mono text-foreground">{r.footingVolumeCy.toFixed(2)} yd³</span>
+                  </div>
+                )}
+                {r.wallVolumeCy !== null && r.wallVolumeCy > 0 && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Wall Volume:</span>
+                    <span className="font-mono text-foreground">{r.wallVolumeCy.toFixed(2)} yd³</span>
+                  </div>
+                )}
+
+                <Separator />
+
+                <div className="flex justify-between text-sm">
+                  <span className="font-medium text-foreground">Area Total:</span>
+                  <span className="font-semibold text-primary font-mono">{r.totalWithWasteCy.toFixed(2)} yd³</span>
+                </div>
+
+                {r.rebarResults.map((rr) => {
+                  const prefix = getRebarLabel(rr.elementType, isMultiElement);
+                  return (
+                    <div key={rr.elementType}>
+                      {rr.horizLf !== null && rr.horizLf > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {prefix}Rebar ({rr.horizBarSize} Horiz):
+                          </span>
+                          <span className="font-mono text-foreground">
+                            {Math.round(rr.horizLf).toLocaleString()} LF
+                          </span>
+                        </div>
+                      )}
+                      {rr.vertLf !== null && rr.vertLf > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {prefix}{rr.vertLabel} ({rr.vertBarSize}):
+                          </span>
+                          <span className="font-mono text-foreground">
+                            {Math.round(rr.vertLf).toLocaleString()} LF
+                          </span>
+                        </div>
+                      )}
+                      {rr.gridLf !== null && rr.gridLf > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            Rebar Grid ({rr.gridBarSize} @ {rr.gridSpacingIn}"):
+                          </span>
+                          <span className="font-mono text-foreground">
+                            {Math.round(rr.gridLf).toLocaleString()} LF
+                          </span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+
+                {r.stoneTons !== null && (
+                  <div className="flex justify-between text-sm">
+                    <span className="text-muted-foreground">Stone Base ({r.stoneDepthIn}" #57):</span>
+                    <span className="font-mono text-foreground">{r.stoneTons.toFixed(2)} tons</span>
+                  </div>
+                )}
               </div>
-
-              {isLinearType(r.type) && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Total Linear Feet:</span>
-                  <span className="font-mono text-foreground">{r.totalLinearFt.toFixed(2)} ft</span>
-                </div>
-              )}
-              {r.type === "slab" && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Total Square Feet:</span>
-                  <span className="font-mono text-foreground">{Math.round(r.totalSqft)} SF</span>
-                </div>
-              )}
-              {r.type === "footing" && r.footingVolumeCy > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Footing Volume:</span>
-                  <span className="font-mono text-foreground">{r.footingVolumeCy.toFixed(2)} yd³</span>
-                </div>
-              )}
-              {r.wallVolumeCy !== null && r.wallVolumeCy > 0 && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Wall Volume:</span>
-                  <span className="font-mono text-foreground">{r.wallVolumeCy.toFixed(2)} yd³</span>
-                </div>
-              )}
-
-              <Separator />
-
-              <div className="flex justify-between text-sm">
-                <span className="font-medium text-foreground">Area Total:</span>
-                <span className="font-semibold text-primary font-mono">{r.totalWithWasteCy.toFixed(2)} yd³</span>
-              </div>
-
-              {r.rebarHorizLf !== null && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Rebar (Horiz {r.rebarHorizBarSize}):</span>
-                  <span className="font-mono text-foreground">{Math.round(r.rebarHorizLf).toLocaleString()} LF</span>
-                </div>
-              )}
-              {r.rebarVertLf !== null && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Rebar (Vert {r.rebarVertBarSize}):</span>
-                  <span className="font-mono text-foreground">{Math.round(r.rebarVertLf).toLocaleString()} LF</span>
-                </div>
-              )}
-              {r.rebarGridLf !== null && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Rebar Grid ({r.rebarGridBarSize} @ {r.rebarGridSpacingIn}"):</span>
-                  <span className="font-mono text-foreground">{Math.round(r.rebarGridLf).toLocaleString()} LF</span>
-                </div>
-              )}
-              {r.stoneTons !== null && (
-                <div className="flex justify-between text-sm">
-                  <span className="text-muted-foreground">Stone Base ({r.stoneDepthIn}" #57):</span>
-                  <span className="font-mono text-foreground">{r.stoneTons.toFixed(2)} tons</span>
-                </div>
-              )}
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 

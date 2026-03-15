@@ -2,8 +2,11 @@ import { createContext, useContext, useState, useCallback, useRef, type ReactNod
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCalculatorState, type CalcState } from "@/hooks/useCalculatorState";
-import type { CalcArea, CalcSection, Segment, RebarConfig, CalculatorType, FootingMode } from "@/types/calculator";
-import { DEFAULT_REBAR } from "@/types/calculator";
+import type {
+  CalcArea, CalcSection, Segment, RebarConfig, RebarConfigsMap,
+  RebarElementType, CalculatorType, FootingMode,
+} from "@/types/calculator";
+import { makeDefaultRebar, deriveRebarEnabled } from "@/types/calculator";
 import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────
@@ -50,9 +53,43 @@ export function useProject() {
 
 // ── Helpers ───────────────────────────────────────────
 
-function dbAreaToCalcArea(dbArea: any, segments: any[], sections: any[], rebarConfig: any): CalcArea {
+function mapDbRebarToConfig(rc: any): RebarConfig {
+  return {
+    id: rc.id,
+    element_type: rc.element_type,
+    hEnabled: rc.h_enabled,
+    hBarSize: rc.h_bar_size,
+    hNumRows: rc.h_num_rows,
+    hOverlapIn: Number(rc.h_overlap_in),
+    hWastePct: Number(rc.h_waste_pct),
+    hTotalLf: Number(rc.h_total_lf) || 0,
+    vEnabled: rc.v_enabled,
+    vBarSize: rc.v_bar_size,
+    vSpacingIn: Number(rc.v_spacing_in),
+    vBarHeightFt: Number(rc.v_bar_height_ft),
+    vBarHeightIn: Number(rc.v_bar_height_in),
+    vOverlapIn: Number(rc.v_overlap_in),
+    vWastePct: Number(rc.v_waste_pct),
+    vTotalLf: Number(rc.v_total_lf) || 0,
+    gridEnabled: rc.grid_enabled,
+    gridBarSize: rc.grid_bar_size,
+    gridSpacingIn: Number(rc.grid_spacing_in),
+    gridOverlapIn: Number(rc.grid_overlap_in),
+    gridWastePct: Number(rc.grid_waste_pct),
+    gridTotalLf: Number(rc.grid_total_lf) || 0,
+  };
+}
+
+function dbAreaToCalcArea(dbArea: any, segments: any[], sections: any[], rebarConfigs: any[]): CalcArea {
   const type = dbArea.calculator_type as CalculatorType;
   const inputs = (dbArea.inputs ?? {}) as Record<string, any>;
+
+  // Group rebar configs by element_type
+  const areaRebarRows = rebarConfigs.filter((r: any) => r.area_id === dbArea.id);
+  const rebarConfigsMap: RebarConfigsMap = {};
+  for (const rc of areaRebarRows) {
+    rebarConfigsMap[rc.element_type as RebarElementType] = mapDbRebarToConfig(rc);
+  }
 
   return {
     id: dbArea.id,
@@ -89,28 +126,8 @@ function dbAreaToCalcArea(dbArea: any, segments: any[], sections: any[], rebarCo
         stoneTypeId: s.stone_type_id ?? "",
         sortOrder: s.sort_order,
       })),
-    rebarEnabled: dbArea.rebar_enabled,
-    rebar: rebarConfig
-      ? {
-          hEnabled: rebarConfig.h_enabled,
-          hBarSize: rebarConfig.h_bar_size,
-          hNumRows: rebarConfig.h_num_rows,
-          hOverlapIn: Number(rebarConfig.h_overlap_in),
-          hWastePct: Number(rebarConfig.h_waste_pct),
-          vEnabled: rebarConfig.v_enabled,
-          vBarSize: rebarConfig.v_bar_size,
-          vSpacingIn: Number(rebarConfig.v_spacing_in),
-          vBarHeightFt: Number(rebarConfig.v_bar_height_ft),
-          vBarHeightIn: Number(rebarConfig.v_bar_height_in),
-          vOverlapIn: Number(rebarConfig.v_overlap_in),
-          vWastePct: Number(rebarConfig.v_waste_pct),
-          gridEnabled: rebarConfig.grid_enabled,
-          gridBarSize: rebarConfig.grid_bar_size,
-          gridSpacingIn: Number(rebarConfig.grid_spacing_in),
-          gridOverlapIn: Number(rebarConfig.grid_overlap_in),
-          gridWastePct: Number(rebarConfig.grid_waste_pct),
-        }
-      : { ...DEFAULT_REBAR },
+    rebarEnabled: deriveRebarEnabled(rebarConfigsMap),
+    rebarConfigs: rebarConfigsMap,
   };
 }
 
@@ -215,10 +232,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       const rebarConfigs = rebarRes.data ?? [];
 
       // Build CalcState
-      const calcAreas: CalcArea[] = (areas ?? []).map((dbArea: any) => {
-        const rebarConfig = rebarConfigs.find((r: any) => r.area_id === dbArea.id);
-        return dbAreaToCalcArea(dbArea, segments, sections, rebarConfig);
-      });
+      const calcAreas: CalcArea[] = (areas ?? []).map((dbArea: any) =>
+        dbAreaToCalcArea(dbArea, segments, sections, rebarConfigs)
+      );
 
       const newState: CalcState = {
         areas: calcAreas,
@@ -279,6 +295,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
       // Upsert areas
       for (const area of state.areas) {
+        const anyEnabled = deriveRebarEnabled(area.rebarConfigs);
+
         const areaRow = {
           id: area.id,
           project_id: projectId,
@@ -286,14 +304,14 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           calculator_type: area.type,
           sort_order: area.sortOrder,
           waste_pct: area.wastePct,
-          rebar_enabled: area.rebarEnabled,
+          rebar_enabled: anyEnabled,
           inputs: { footingMode: area.footingMode, dimensions: area.dimensions },
           inputs_version: 1,
         };
 
         await supabase.from("areas").upsert(areaRow);
 
-        // Upsert segments — delete removed, upsert existing
+        // Upsert segments
         if (area.segments.length > 0) {
           const segmentRows = area.segments.map((s) => ({
             id: s.id,
@@ -346,32 +364,36 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           await supabase.from("sections").delete().in("id", toDeleteSecs.map((s: any) => s.id));
         }
 
-        // Upsert rebar config
-        if (area.rebarEnabled) {
-          const rebarRow = {
-            area_id: area.id,
-            h_enabled: area.rebar.hEnabled,
-            h_bar_size: area.rebar.hBarSize,
-            h_num_rows: area.rebar.hNumRows,
-            h_overlap_in: area.rebar.hOverlapIn,
-            h_waste_pct: area.rebar.hWastePct,
-            h_total_lf: 0,
-            v_enabled: area.rebar.vEnabled,
-            v_bar_size: area.rebar.vBarSize,
-            v_spacing_in: area.rebar.vSpacingIn,
-            v_bar_height_ft: area.rebar.vBarHeightFt,
-            v_bar_height_in: area.rebar.vBarHeightIn,
-            v_overlap_in: area.rebar.vOverlapIn,
-            v_waste_pct: area.rebar.vWastePct,
-            v_total_lf: 0,
-            grid_enabled: area.rebar.gridEnabled,
-            grid_bar_size: area.rebar.gridBarSize,
-            grid_spacing_in: area.rebar.gridSpacingIn,
-            grid_overlap_in: area.rebar.gridOverlapIn,
-            grid_waste_pct: area.rebar.gridWastePct,
-            grid_total_lf: 0,
-          };
-          await supabase.from("rebar_configs").upsert(rebarRow, { onConflict: "area_id" });
+        // Upsert rebar configs — ALL configs, not just active ones
+        for (const [elementType, config] of Object.entries(area.rebarConfigs)) {
+          if (!config) continue;
+          await supabase.from("rebar_configs").upsert(
+            {
+              area_id: area.id,
+              element_type: elementType,
+              h_enabled: config.hEnabled,
+              h_bar_size: config.hBarSize,
+              h_num_rows: config.hNumRows,
+              h_overlap_in: config.hOverlapIn,
+              h_waste_pct: config.hWastePct,
+              h_total_lf: 0,
+              v_enabled: config.vEnabled,
+              v_bar_size: config.vBarSize,
+              v_spacing_in: config.vSpacingIn,
+              v_bar_height_ft: config.vBarHeightFt,
+              v_bar_height_in: config.vBarHeightIn,
+              v_overlap_in: config.vOverlapIn,
+              v_waste_pct: config.vWastePct,
+              v_total_lf: 0,
+              grid_enabled: config.gridEnabled,
+              grid_bar_size: config.gridBarSize,
+              grid_spacing_in: config.gridSpacingIn,
+              grid_overlap_in: config.gridOverlapIn,
+              grid_waste_pct: config.gridWastePct,
+              grid_total_lf: 0,
+            },
+            { onConflict: "area_id,element_type" }
+          );
         }
       }
 
@@ -395,20 +417,37 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         // Merge canonical values if returned
         if (recalcData?.areas) {
           for (const updatedArea of recalcData.areas) {
+            const localArea = state.areas.find((a) => a.id === updatedArea.id);
+            if (!localArea) continue;
+
+            const rebarPatch: RebarConfigsMap = {};
+            for (const [elementType, totals] of Object.entries(updatedArea.rebar ?? {})) {
+              const existing = localArea.rebarConfigs?.[elementType as RebarElementType];
+              if (existing) {
+                const t = totals as any;
+                rebarPatch[elementType as RebarElementType] = {
+                  ...existing,
+                  hTotalLf: t.h_total_lf ?? 0,
+                  vTotalLf: t.v_total_lf ?? 0,
+                  gridTotalLf: t.grid_total_lf ?? 0,
+                };
+              }
+            }
+
             dispatch({
               type: "UPDATE_AREA",
               id: updatedArea.id,
-              patch: {}, // canonical values stored in DB, local display unaffected
+              patch: {
+                rebarConfigs: { ...localArea.rebarConfigs, ...rebarPatch },
+              },
             });
           }
         }
       } catch {
-        // Recalculation is best-effort — save succeeded
         console.warn("Recalculation failed, save still successful");
       }
 
       markClean();
-      // Refresh project list
       await loadProjects();
       toast.success("Project saved");
     } catch (err) {

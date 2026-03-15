@@ -84,6 +84,42 @@ function calcSteps(numSteps: number, riseIn: number, runIn: number, throatDepthI
   return { volumeCy, volumeWithWasteCy: applyWaste(volumeCy, wastePct) };
 }
 
+// ── Rebar calculation helpers ──
+
+function calcRebarHorizontal(linearFt: number, numRows: number, overlapIn: number, barLengthFt: number, wastePct: number) {
+  const numSplices = Math.floor(linearFt / barLengthFt);
+  const overlapLf = numSplices * inchesToFeet(overlapIn) * numRows;
+  const totalLf = (linearFt * numRows) + overlapLf;
+  return { totalLf, totalWithWasteLf: applyWaste(totalLf, wastePct) };
+}
+
+function calcRebarVertical(linearFt: number, barHeightFt: number, barHeightIn: number, spacingIn: number, wastePct: number) {
+  const numBars = Math.floor(linearFt * 12 / spacingIn) + 1;
+  const barHFt = barHeightFt + inchesToFeet(barHeightIn);
+  const totalLf = numBars * barHFt;
+  return { totalLf, totalWithWasteLf: applyWaste(totalLf, wastePct) };
+}
+
+function calcSpliceOverlap(totalLengthFt: number, barLengthFt: number, overlapIn: number): number {
+  if (totalLengthFt <= 0) return 0;
+  const numBars = Math.ceil(totalLengthFt / barLengthFt);
+  const splices = Math.max(numBars - 1, 0);
+  return splices * inchesToFeet(overlapIn);
+}
+
+function calcRebarSlabGrid(lengthFt: number, widthFt: number, spacingIn: number, overlapIn: number, barLengthFt: number, wastePct: number) {
+  const lengthIn = lengthFt * 12;
+  const widthIn = widthFt * 12;
+  const barsLengthwise = Math.floor(widthIn / spacingIn) + 1;
+  const barsWidthwise = Math.floor(lengthIn / spacingIn) + 1;
+  const spliceLength = calcSpliceOverlap(lengthFt, barLengthFt, overlapIn);
+  const lfLengthwise = barsLengthwise * (lengthFt + spliceLength);
+  const spliceWidth = calcSpliceOverlap(widthFt, barLengthFt, overlapIn);
+  const lfWidthwise = barsWidthwise * (widthFt + spliceWidth);
+  const totalLf = lfLengthwise + lfWidthwise;
+  return { totalLf, totalWithWasteLf: applyWaste(totalLf, wastePct) };
+}
+
 // ── Main handler ──
 
 Deno.serve(async (req) => {
@@ -120,20 +156,23 @@ Deno.serve(async (req) => {
 
     const areaIds = areas.map((a: any) => a.id);
 
-    // Fetch segments + sections in parallel
-    const [segRes, secRes] = await Promise.all([
+    // Fetch segments, sections, rebar_configs in parallel
+    const [segRes, secRes, rebarRes] = await Promise.all([
       supabase.from("segments").select("*").in("area_id", areaIds),
       supabase.from("sections").select("*").in("area_id", areaIds),
+      supabase.from("rebar_configs").select("*").in("area_id", areaIds),
     ]);
 
     const segments = segRes.data ?? [];
     const sections = secRes.data ?? [];
+    const rebarConfigs = rebarRes.data ?? [];
 
     const updatedAreas: any[] = [];
 
     for (const area of areas) {
       const areaSegments = segments.filter((s: any) => s.area_id === area.id);
       const areaSections = sections.filter((s: any) => s.area_id === area.id);
+      const areaRebarConfigs = rebarConfigs.filter((r: any) => r.area_id === area.id);
       const inputs = (area.inputs ?? {}) as Record<string, any>;
       const dims = inputs.dimensions ?? {};
       const wastePct = Number(area.waste_pct) || 0;
@@ -233,6 +272,73 @@ Deno.serve(async (req) => {
         console.error(`Failed to update area ${area.id}:`, updateErr);
       }
 
+      // Compute rebar totals per element_type
+      const rebarOutput: Record<string, any> = {};
+
+      for (const rc of areaRebarConfigs) {
+        const et = rc.element_type;
+        let h_total_lf = 0;
+        let v_total_lf = 0;
+        let grid_total_lf = 0;
+
+        if (et === "slab") {
+          // Grid rebar for slab
+          if (rc.grid_enabled && areaSections.length > 0) {
+            let totalGridLf = 0;
+            for (const sec of areaSections) {
+              const lenFt = Number(sec.length_ft) + Number(sec.length_in) / 12;
+              const widFt = Number(sec.width_ft) + Number(sec.width_in) / 12;
+              if (lenFt > 0 && widFt > 0) {
+                const gr = calcRebarSlabGrid(
+                  lenFt, widFt,
+                  Number(rc.grid_spacing_in) || 12,
+                  Number(rc.grid_overlap_in) || 12,
+                  20,
+                  Number(rc.grid_waste_pct) || 0
+                );
+                totalGridLf += gr.totalWithWasteLf;
+              }
+            }
+            grid_total_lf = totalGridLf;
+          }
+        } else {
+          // Linear rebar (horiz + vert)
+          if (rc.h_enabled && totalLinearFt > 0) {
+            const hr = calcRebarHorizontal(
+              totalLinearFt,
+              Number(rc.h_num_rows) || 1,
+              Number(rc.h_overlap_in) || 12,
+              20,
+              Number(rc.h_waste_pct) || 0
+            );
+            h_total_lf = hr.totalWithWasteLf;
+          }
+          if (rc.v_enabled && totalLinearFt > 0) {
+            const vr = calcRebarVertical(
+              totalLinearFt,
+              Number(rc.v_bar_height_ft) || 0,
+              Number(rc.v_bar_height_in) || 0,
+              Number(rc.v_spacing_in) || 12,
+              Number(rc.v_waste_pct) || 0
+            );
+            v_total_lf = vr.totalWithWasteLf;
+          }
+        }
+
+        // Update rebar_configs row
+        await supabase
+          .from("rebar_configs")
+          .update({
+            h_total_lf: h_total_lf,
+            v_total_lf: v_total_lf,
+            grid_total_lf: grid_total_lf,
+          })
+          .eq("area_id", area.id)
+          .eq("element_type", et);
+
+        rebarOutput[et] = { h_total_lf, v_total_lf, grid_total_lf };
+      }
+
       updatedAreas.push({
         id: area.id,
         total_linear_ft: totalLinearFt,
@@ -240,6 +346,7 @@ Deno.serve(async (req) => {
         footing_volume_cy: footingVolumeCy,
         wall_volume_cy: wallVolumeCy,
         total_volume_cy: totalVolumeCy,
+        rebar: rebarOutput,
       });
     }
 
