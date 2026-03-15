@@ -1,6 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Select, SelectContent, SelectItem,
+  SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import type { CalcArea, CalculatorType } from "@/types/calculator";
+import { CALCULATOR_LABELS } from "@/types/calculator";
 import { Plus } from "lucide-react";
 
 interface AreaSelectorProps {
@@ -11,12 +15,14 @@ interface AreaSelectorProps {
   type: CalculatorType;
 }
 
-export function AreaSelector({ areas, activeAreaId, onSelect, onAdd }: AreaSelectorProps) {
+export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, type }: AreaSelectorProps) {
+  const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
+
   return (
-    <div className="flex items-center gap-2">
+    <div className="flex items-center gap-2 border-b border-border bg-card/50 px-3 py-2">
       {areas.length > 0 ? (
         <Select value={activeAreaId ?? ""} onValueChange={onSelect}>
-          <SelectTrigger className="h-9 flex-1">
+          <SelectTrigger className="h-9 flex-1 bg-secondary/50">
             <SelectValue placeholder="Select area…" />
           </SelectTrigger>
           <SelectContent>
@@ -28,9 +34,9 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd }: AreaSelec
           </SelectContent>
         </Select>
       ) : (
-        <span className="flex-1 text-sm text-muted-foreground">No areas yet</span>
+        <span className="flex-1 text-sm text-muted-foreground">No {typeLabel} areas</span>
       )}
-      <Button size="sm" variant="outline" onClick={onAdd} className="h-9 gap-1">
+      <Button size="sm" onClick={onAdd} className="h-9 gap-1">
         <Plus className="h-3.5 w-3.5" />
         Add Area
       </Button>
