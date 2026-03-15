@@ -101,7 +101,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   // Map Stripe status to our status
   let status = "active";
   if (subscription.status === "past_due") status = "past_due";
-  else if (subscription.status === "canceled" || subscription.status === "unpaid") status = "canceled";
+  else if (subscription.status === "canceled" || subscription.status === "unpaid") status = "cancelled";
   else if (subscription.status === "trialing") status = "active";
 
   const { error } = await supabase
@@ -128,7 +128,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
     .from("organizations")
     .update({
       subscription_tier: "free",
-      subscription_status: "canceled",
+      subscription_status: "cancelled",
       stripe_sub_id: null,
       seat_count: 1,
     })
@@ -190,7 +190,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
       // Generate dynamic Stripe customer portal URL
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: org.stripe_customer_id,
-        return_url: "https://foundationcalculatorv2.lovable.app",
+        return_url: Deno.env.get("VITE_APP_URL") || "https://foundationcalculatorv2.lovable.app",
       });
       const portalUrl = portalSession.url;
 
@@ -203,7 +203,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
         body: JSON.stringify({
           from: "Total Foundation Calculator <billing@totalfoundationcalculator.com>",
           to: [owner.email],
-          subject: "Payment Failed - Action Required",
+          subject: "Payment failed for your Total Foundation Calculator subscription",
           html: `
             <h2>Payment Failed</h2>
             <p>Hi,</p>
@@ -291,23 +291,11 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
       .eq("id", referral.id);
   }
 
-  // Increment affiliate totals
-
-  // Use RPC or direct increment — for safety, fetch and update
-  const { data: currentAffiliate } = await supabase
-    .from("affiliates")
-    .select("total_earned_cents")
-    .eq("id", affiliate.id)
-    .single();
-
-  if (currentAffiliate) {
-    await supabase
-      .from("affiliates")
-      .update({
-        total_earned_cents: currentAffiliate.total_earned_cents + commissionCents,
-      })
-      .eq("id", affiliate.id);
-  }
+  // Increment affiliate totals atomically
+  await supabase.rpc("increment_affiliate_earnings", {
+    affiliate_row_id: affiliate.id,
+    amount: commissionCents,
+  });
 
   log("Affiliate commission created", {
     affiliateId: affiliate.id,

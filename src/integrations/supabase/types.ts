@@ -929,6 +929,10 @@ export type Database = {
     }
     Functions: {
       get_active_org_id: { Args: { _user_id: string }; Returns: string }
+      increment_affiliate_earnings: {
+        Args: { affiliate_row_id: string; amount: number }
+        Returns: undefined
+      }
       is_admin: { Args: { _user_id: string }; Returns: boolean }
       is_area_member: {
         Args: { _area_id: string; _user_id: string }
