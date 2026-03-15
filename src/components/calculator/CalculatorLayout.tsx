@@ -156,6 +156,10 @@ export function CalculatorLayout() {
         description="You have unsaved changes. Discard and start a new project?"
         confirmLabel="Discard and New Project"
       />
+      <PaywallModal
+        open={showPaywall}
+        onClose={() => setShowPaywall(false)}
+      />
     </>
   );
 

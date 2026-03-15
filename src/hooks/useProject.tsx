@@ -531,6 +531,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       resetToBlank,
       updateProjectMeta,
       projectCount: projects.length,
+      editableProjectCount: projects.filter(p => !p.is_locked).length,
     }}>
       {children}
     </ProjectContext.Provider>
