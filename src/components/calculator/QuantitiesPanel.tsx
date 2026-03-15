@@ -433,7 +433,10 @@ export function QuantitiesPanel() {
                           size="icon"
                           variant="ghost"
                           className="h-6 w-6"
-                          onClick={() => dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId })}
+                          onClick={() => {
+                            dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId });
+                            dispatch({ type: "SET_TAB", tab: r.type });
+                          }}
                         >
                           <Pencil className="h-3 w-3" />
                         </Button>
