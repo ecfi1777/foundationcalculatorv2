@@ -1,7 +1,6 @@
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import type { CalculatorType } from "@/types/calculator";
 import { CALCULATOR_LABELS } from "@/types/calculator";
-import { InfoIcon } from "./InfoIcon";
 import { cn } from "@/lib/utils";
 import { useRef, useEffect } from "react";
 
