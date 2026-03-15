@@ -21,6 +21,7 @@ import { ProjectEditModal } from "@/components/project/ProjectEditModal";
 import { ProjectListPanel } from "@/components/project/ProjectListPanel";
 import { AccountCreationModal } from "@/components/project/AccountCreationModal";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
+import PaywallModal from "@/components/PaywallModal";
 import { cn } from "@/lib/utils";
 
 function ActiveForm({ disabled }: { disabled: boolean }) {
