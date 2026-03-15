@@ -291,113 +291,139 @@ export function QuantitiesPanel() {
   const isLinearType = (type: string) => ["footing", "wall", "gradeBeam", "curbGutter"].includes(type);
 
   return (
-    <div className="space-y-4">
-      {results.length === 0 && (
-        <p className="text-sm text-muted-foreground py-8 text-center">
-          Add an area to see quantities
-        </p>
-      )}
+    <div className="flex flex-col h-full">
+      {/* Header */}
+      <div className="px-4 pt-4 pb-3 border-b border-border">
+        <h2 className="text-lg font-bold text-foreground">Quantities</h2>
+        <p className="text-xs text-muted-foreground">Real-time project totals</p>
+      </div>
 
-      {results.map((r) => (
-        <div key={r.areaId} className="space-y-1.5">
-          <div className="flex items-center justify-between">
-            <span className="text-sm font-semibold text-foreground">{r.areaName}</span>
-            <div className="flex gap-1">
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6"
-                onClick={() => dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId })}
-              >
-                <Pencil className="h-3 w-3" />
-              </Button>
-              <Button
-                size="icon"
-                variant="ghost"
-                className="h-6 w-6 text-destructive"
-                onClick={() => dispatch({ type: "DELETE_AREA", id: r.areaId })}
-              >
-                <Trash2 className="h-3 w-3" />
-              </Button>
+      {/* Areas list — scrollable */}
+      <div className="flex-1 overflow-y-auto px-4 py-3 space-y-4">
+        {results.length === 0 ? (
+          <div className="flex flex-col items-center justify-center py-12 text-center">
+            <div className="rounded-full bg-secondary p-4 mb-3">
+              <svg className="h-6 w-6 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+              </svg>
             </div>
+            <p className="text-sm text-foreground font-medium mb-1">No areas yet</p>
+            <p className="text-sm text-muted-foreground">Add segments to see calculations</p>
           </div>
+        ) : (
+          results.map((r) => (
+            <div key={r.areaId} className="rounded-lg border border-border bg-card p-3 space-y-2">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-semibold text-foreground">{r.areaName}</span>
+                <div className="flex gap-1">
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6"
+                    onClick={() => dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId })}
+                  >
+                    <Pencil className="h-3 w-3" />
+                  </Button>
+                  <Button
+                    size="icon"
+                    variant="ghost"
+                    className="h-6 w-6 text-destructive"
+                    onClick={() => dispatch({ type: "DELETE_AREA", id: r.areaId })}
+                  >
+                    <Trash2 className="h-3 w-3" />
+                  </Button>
+                </div>
+              </div>
 
-          {isLinearType(r.type) && (
-            <p className="text-sm text-muted-foreground">
-              Total Linear Feet: {r.totalLinearFt.toFixed(2)} ft
-            </p>
-          )}
+              {isLinearType(r.type) && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Total Linear Feet:</span>
+                  <span className="font-mono text-foreground">{r.totalLinearFt.toFixed(2)} ft</span>
+                </div>
+              )}
+              {r.type === "slab" && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Total Square Feet:</span>
+                  <span className="font-mono text-foreground">{Math.round(r.totalSqft)} SF</span>
+                </div>
+              )}
+              {r.type === "footing" && r.footingVolumeCy > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Footing Volume:</span>
+                  <span className="font-mono text-foreground">{r.footingVolumeCy.toFixed(2)} yd³</span>
+                </div>
+              )}
+              {r.wallVolumeCy !== null && r.wallVolumeCy > 0 && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Wall Volume:</span>
+                  <span className="font-mono text-foreground">{r.wallVolumeCy.toFixed(2)} yd³</span>
+                </div>
+              )}
 
-          {r.type === "slab" && (
-            <p className="text-sm text-muted-foreground">
-              Total Square Feet: {Math.round(r.totalSqft)} SF
-            </p>
-          )}
+              <Separator />
 
-          {r.type === "footing" && r.footingVolumeCy > 0 && (
-            <p className="text-sm text-muted-foreground">
-              Footing Volume: {r.footingVolumeCy.toFixed(2)} yd³
-            </p>
-          )}
+              <div className="flex justify-between text-sm">
+                <span className="font-medium text-foreground">Area Total:</span>
+                <span className="font-semibold text-primary font-mono">{r.totalWithWasteCy.toFixed(2)} yd³</span>
+              </div>
 
-          {r.wallVolumeCy !== null && r.wallVolumeCy > 0 && (
-            <p className="text-sm text-muted-foreground">
-              Wall Volume: {r.wallVolumeCy.toFixed(2)} yd³
-            </p>
-          )}
+              {r.rebarHorizLf !== null && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Rebar (Horiz {r.rebarHorizBarSize}):</span>
+                  <span className="font-mono text-foreground">{Math.round(r.rebarHorizLf).toLocaleString()} LF</span>
+                </div>
+              )}
+              {r.rebarVertLf !== null && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Rebar (Vert {r.rebarVertBarSize}):</span>
+                  <span className="font-mono text-foreground">{Math.round(r.rebarVertLf).toLocaleString()} LF</span>
+                </div>
+              )}
+              {r.rebarGridLf !== null && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Rebar Grid ({r.rebarGridBarSize} @ {r.rebarGridSpacingIn}"):</span>
+                  <span className="font-mono text-foreground">{Math.round(r.rebarGridLf).toLocaleString()} LF</span>
+                </div>
+              )}
+              {r.stoneTons !== null && (
+                <div className="flex justify-between text-sm">
+                  <span className="text-muted-foreground">Stone Base ({r.stoneDepthIn}" #57):</span>
+                  <span className="font-mono text-foreground">{r.stoneTons.toFixed(2)} tons</span>
+                </div>
+              )}
+            </div>
+          ))
+        )}
+      </div>
 
-          <Separator />
-
-          <p className="text-sm font-medium text-foreground">
-            Area Total: {r.totalWithWasteCy.toFixed(2)} yd³
-          </p>
-
-          {r.rebarHorizLf !== null && (
-            <p className="text-sm text-muted-foreground">
-              Rebar (Horiz {r.rebarHorizBarSize}): {Math.round(r.rebarHorizLf).toLocaleString()} LF
-            </p>
-          )}
-          {r.rebarVertLf !== null && (
-            <p className="text-sm text-muted-foreground">
-              Rebar (Vert {r.rebarVertBarSize}): {Math.round(r.rebarVertLf).toLocaleString()} LF
-            </p>
-          )}
-          {r.rebarGridLf !== null && (
-            <p className="text-sm text-muted-foreground">
-              Rebar Grid ({r.rebarGridBarSize} @ {r.rebarGridSpacingIn}"): {Math.round(r.rebarGridLf).toLocaleString()} LF
-            </p>
-          )}
-          {r.stoneTons !== null && (
-            <p className="text-sm text-muted-foreground">
-              Stone Base ({r.stoneDepthIn}" #57): {r.stoneTons.toFixed(2)} tons
-            </p>
-          )}
+      {/* PROJECT TOTALS — always pinned */}
+      <div className="border-t border-border bg-card px-4 py-3 space-y-2">
+        <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
+          Project Totals
+        </p>
+        <div className="flex justify-between text-sm">
+          <span className="text-foreground">Concrete</span>
+          <span className="font-semibold text-primary font-mono">
+            {totals.concreteCy.toFixed(2)} yd³
+          </span>
         </div>
-      ))}
-
-      {results.length > 0 && (
-        <>
-          <Separator className="my-3" />
-          <div className="space-y-1">
-            <p className="text-sm font-bold text-foreground uppercase tracking-wide">
-              Project Totals
-            </p>
-            <p className="text-sm text-foreground">
-              Concrete: {totals.concreteCy.toFixed(2)} yd³
-            </p>
-            {totals.stoneTons > 0 && (
-              <p className="text-sm text-foreground">
-                Stone: {totals.stoneTons.toFixed(2)} tons
-              </p>
-            )}
-            {totals.rebarLf > 0 && (
-              <p className="text-sm text-foreground">
-                Rebar: {Math.round(totals.rebarLf).toLocaleString()} LF
-              </p>
-            )}
+        {totals.stoneTons > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-foreground">Stone</span>
+            <span className="font-semibold text-primary font-mono">
+              {totals.stoneTons.toFixed(2)} tons
+            </span>
           </div>
-        </>
-      )}
+        )}
+        {totals.rebarLf > 0 && (
+          <div className="flex justify-between text-sm">
+            <span className="text-foreground">Rebar</span>
+            <span className="font-semibold text-primary font-mono">
+              {Math.round(totals.rebarLf).toLocaleString()} LF
+            </span>
+          </div>
+        )}
+      </div>
     </div>
   );
 }
