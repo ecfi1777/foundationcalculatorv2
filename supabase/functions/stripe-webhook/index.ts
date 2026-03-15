@@ -185,10 +185,15 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     .eq("id", org.owner_id)
     .single();
 
-  if (owner?.email) {
-    // Send payment failure email via Resend
-    const portalUrl = `https://billing.stripe.com/p/login/test`;
+  if (owner?.email && org.stripe_customer_id) {
     try {
+      // Generate dynamic Stripe customer portal URL
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: org.stripe_customer_id,
+        return_url: "https://foundationcalculatorv2.lovable.app",
+      });
+      const portalUrl = portalSession.url;
+
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
