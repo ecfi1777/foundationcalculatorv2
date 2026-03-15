@@ -477,6 +477,7 @@ export type Database = {
         Row: {
           area_id: string
           created_at: string
+          element_type: string
           grid_bar_size: string
           grid_enabled: boolean
           grid_overlap_in: number
@@ -503,6 +504,7 @@ export type Database = {
         Insert: {
           area_id: string
           created_at?: string
+          element_type?: string
           grid_bar_size?: string
           grid_enabled?: boolean
           grid_overlap_in?: number
@@ -529,6 +531,7 @@ export type Database = {
         Update: {
           area_id?: string
           created_at?: string
+          element_type?: string
           grid_bar_size?: string
           grid_enabled?: boolean
           grid_overlap_in?: number
@@ -556,7 +559,7 @@ export type Database = {
           {
             foreignKeyName: "rebar_configs_area_id_fkey"
             columns: ["area_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "areas"
             referencedColumns: ["id"]
           },

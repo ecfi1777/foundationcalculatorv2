@@ -11,6 +11,10 @@ interface RebarAddonProps {
   onToggle: (v: boolean) => void;
   onChange: (patch: Partial<RebarConfig>) => void;
   mode: "linear" | "slab";
+  /** Label for the section, e.g. "Footing Rebar" or "Wall Rebar" */
+  sectionLabel?: string;
+  /** Label for vertical rebar, "Dowels" for footings, "Vertical" for walls */
+  verticalLabel?: string;
 }
 
 function BarSizeSelect({ value, onChange }: { value: BarSize; onChange: (v: BarSize) => void }) {
@@ -31,17 +35,25 @@ function BarSizeSelect({ value, onChange }: { value: BarSize; onChange: (v: BarS
   );
 }
 
-export function RebarAddon({ enabled, config, onToggle, onChange, mode }: RebarAddonProps) {
+export function RebarAddon({
+  enabled,
+  config,
+  onToggle,
+  onChange,
+  mode,
+  sectionLabel = "Add Rebar",
+  verticalLabel = "Vertical Rebar",
+}: RebarAddonProps) {
   return (
     <div className="space-y-3 rounded-lg border border-border bg-muted/30 p-3">
       <div className="flex items-center gap-2">
         <Checkbox
-          id="rebar-toggle"
+          id={`rebar-toggle-${config.element_type}`}
           checked={enabled}
           onCheckedChange={(c) => onToggle(!!c)}
         />
-        <Label htmlFor="rebar-toggle" className="text-sm font-medium">
-          Add Rebar
+        <Label htmlFor={`rebar-toggle-${config.element_type}`} className="text-sm font-medium">
+          {sectionLabel}
         </Label>
       </div>
 
@@ -51,11 +63,11 @@ export function RebarAddon({ enabled, config, onToggle, onChange, mode }: RebarA
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Checkbox
-                id="h-rebar"
+                id={`h-rebar-${config.element_type}`}
                 checked={config.hEnabled}
                 onCheckedChange={(c) => onChange({ hEnabled: !!c })}
               />
-              <Label htmlFor="h-rebar" className="text-sm">Horizontal Rebar</Label>
+              <Label htmlFor={`h-rebar-${config.element_type}`} className="text-sm">Horizontal Rebar</Label>
             </div>
             {config.hEnabled && (
               <div className="grid grid-cols-2 gap-3 pl-6">
@@ -71,11 +83,11 @@ export function RebarAddon({ enabled, config, onToggle, onChange, mode }: RebarA
           <div className="space-y-2">
             <div className="flex items-center gap-2">
               <Checkbox
-                id="v-rebar"
+                id={`v-rebar-${config.element_type}`}
                 checked={config.vEnabled}
                 onCheckedChange={(c) => onChange({ vEnabled: !!c })}
               />
-              <Label htmlFor="v-rebar" className="text-sm">Vertical Rebar</Label>
+              <Label htmlFor={`v-rebar-${config.element_type}`} className="text-sm">{verticalLabel}</Label>
             </div>
             {config.vEnabled && (
               <div className="grid grid-cols-2 gap-3 pl-6">

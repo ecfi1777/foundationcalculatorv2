@@ -14,6 +14,8 @@ export type CalculatorType =
 
 export type FootingMode = "footingsOnly" | "footingsWalls" | "wallsOnly";
 
+export type RebarElementType = "footing" | "wall" | "grade_beam" | "curb" | "slab";
+
 export const CALCULATOR_LABELS: Record<CalculatorType, string> = {
   footing: "Footings",
   wall: "Walls",
@@ -66,12 +68,15 @@ export interface CalcSection {
 
 // ── Rebar Config ───────────────────────────────────────
 export interface RebarConfig {
+  id?: string;
+  element_type: RebarElementType;
   // Horizontal
   hEnabled: boolean;
   hBarSize: BarSize;
   hNumRows: number;
   hOverlapIn: number;
   hWastePct: number;
+  hTotalLf?: number;
   // Vertical
   vEnabled: boolean;
   vBarSize: BarSize;
@@ -80,33 +85,89 @@ export interface RebarConfig {
   vBarHeightIn: number;
   vOverlapIn: number;
   vWastePct: number;
+  vTotalLf?: number;
   // Slab grid
   gridEnabled: boolean;
   gridBarSize: BarSize;
   gridSpacingIn: number;
   gridOverlapIn: number;
   gridWastePct: number;
+  gridTotalLf?: number;
 }
 
-export const DEFAULT_REBAR: RebarConfig = {
-  hEnabled: false,
-  hBarSize: "#4",
-  hNumRows: 1,
-  hOverlapIn: 12,
-  hWastePct: 0,
-  vEnabled: false,
-  vBarSize: "#4",
-  vSpacingIn: 12,
-  vBarHeightFt: 0,
-  vBarHeightIn: 0,
-  vOverlapIn: 12,
-  vWastePct: 0,
-  gridEnabled: false,
-  gridBarSize: "#4",
-  gridSpacingIn: 12,
-  gridOverlapIn: 12,
-  gridWastePct: 0,
-};
+export function makeDefaultRebar(elementType: RebarElementType): RebarConfig {
+  return {
+    element_type: elementType,
+    hEnabled: false,
+    hBarSize: "#4",
+    hNumRows: 1,
+    hOverlapIn: 12,
+    hWastePct: 0,
+    vEnabled: false,
+    vBarSize: "#4",
+    vSpacingIn: 12,
+    vBarHeightFt: 0,
+    vBarHeightIn: 0,
+    vOverlapIn: 12,
+    vWastePct: 0,
+    gridEnabled: false,
+    gridBarSize: "#4",
+    gridSpacingIn: 12,
+    gridOverlapIn: 12,
+    gridWastePct: 0,
+  };
+}
+
+/** @deprecated Use makeDefaultRebar instead */
+export const DEFAULT_REBAR: RebarConfig = makeDefaultRebar("footing");
+
+/** Map of element_type → RebarConfig */
+export type RebarConfigsMap = Partial<Record<RebarElementType, RebarConfig>>;
+
+/** Derive rebarEnabled from configs map */
+export function deriveRebarEnabled(configs: RebarConfigsMap): boolean {
+  return Object.values(configs).some(
+    (rc) => rc && (rc.hEnabled || rc.vEnabled || rc.gridEnabled)
+  );
+}
+
+/** Map calculator_type to element_type(s) */
+export function getElementTypes(
+  calcType: CalculatorType,
+  footingMode?: FootingMode
+): RebarElementType[] {
+  switch (calcType) {
+    case "footing": {
+      const mode = footingMode ?? "footingsOnly";
+      if (mode === "footingsOnly") return ["footing"];
+      if (mode === "wallsOnly") return ["wall"];
+      return ["footing", "wall"];
+    }
+    case "wall":
+      return ["wall"];
+    case "gradeBeam":
+      return ["grade_beam"];
+    case "curbGutter":
+      return ["curb"];
+    case "slab":
+      return ["slab"];
+    case "pierPad":
+      return ["footing"];
+    default:
+      return [];
+  }
+}
+
+/** Get single element_type for non-footing calculator types */
+export function calcTypeToElementType(calcType: CalculatorType): RebarElementType {
+  switch (calcType) {
+    case "wall": return "wall";
+    case "gradeBeam": return "grade_beam";
+    case "curbGutter": return "curb";
+    case "slab": return "slab";
+    default: return "footing";
+  }
+}
 
 // ── Area ───────────────────────────────────────────────
 export interface CalcArea {
@@ -120,13 +181,6 @@ export interface CalcArea {
   footingMode?: FootingMode;
 
   // Dimension inputs (type-specific)
-  // Footing: widthIn, depthIn, wallHeightIn, wallThicknessIn
-  // Wall: heightIn, thicknessIn
-  // GradeBeam: widthIn, depthIn
-  // CurbGutter: curbDepthIn, curbHeightIn, gutterWidthIn, flagThicknessIn
-  // Cylinder: diameterIn, heightFt, heightIn, quantity
-  // Steps: numSteps, riseIn, runIn, throatDepthIn, widthIn, platformDepthIn, platformWidthIn
-  // PierPad: depthIn
   dimensions: Record<string, number>;
 
   // For linear calculators
@@ -135,30 +189,37 @@ export interface CalcArea {
   // For slab / pier pad
   sections: CalcSection[];
 
-  // Rebar
+  // Rebar - keyed by element_type
   rebarEnabled: boolean;
-  rebar: RebarConfig;
+  rebarConfigs: RebarConfigsMap;
 }
 
 // ── Computed Results ───────────────────────────────────
+export interface RebarResult {
+  elementType: RebarElementType;
+  horizLf: number | null;
+  horizBarSize: BarSize | null;
+  vertLf: number | null;
+  vertBarSize: BarSize | null;
+  vertLabel: string; // "Dowels" for footing, "Vertical" for wall
+  gridLf: number | null;
+  gridBarSize: BarSize | null;
+  gridSpacingIn: number | null;
+}
+
 export interface AreaResult {
   areaId: string;
   areaName: string;
   type: CalculatorType;
+  footingMode?: FootingMode;
   totalLinearFt: number;
   totalSqft: number;
   footingVolumeCy: number;
   wallVolumeCy: number | null;
   totalVolumeCy: number;
   totalWithWasteCy: number;
-  // Rebar
-  rebarHorizLf: number | null;
-  rebarHorizBarSize: BarSize | null;
-  rebarVertLf: number | null;
-  rebarVertBarSize: BarSize | null;
-  rebarGridLf: number | null;
-  rebarGridBarSize: BarSize | null;
-  rebarGridSpacingIn: number | null;
+  // Rebar per element type
+  rebarResults: RebarResult[];
   // Stone (slab sections)
   stoneTons: number | null;
   stoneDepthIn: number | null;

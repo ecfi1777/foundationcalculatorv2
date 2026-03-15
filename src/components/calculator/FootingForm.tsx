@@ -5,6 +5,7 @@ import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
 import { Button } from "@/components/ui/button";
 import type { FootingMode } from "@/types/calculator";
+import { makeDefaultRebar } from "@/types/calculator";
 
 const MODES: { value: FootingMode; label: string }[] = [
   { value: "footingsOnly", label: "Footings Only" },
@@ -33,6 +34,12 @@ export function FootingForm() {
 
   const showFooting = mode === "footingsOnly" || mode === "footingsWalls";
   const showWall = mode === "footingsWalls" || mode === "wallsOnly";
+
+  const footingRebar = area?.rebarConfigs?.footing ?? makeDefaultRebar("footing");
+  const wallRebar = area?.rebarConfigs?.wall ?? makeDefaultRebar("wall");
+
+  const footingRebarEnabled = footingRebar.hEnabled || footingRebar.vEnabled || footingRebar.gridEnabled;
+  const wallRebarEnabled = wallRebar.hEnabled || wallRebar.vEnabled || wallRebar.gridEnabled;
 
   return (
     <div className="space-y-4">
@@ -101,14 +108,45 @@ export function FootingForm() {
             />
           </div>
 
-          {/* Rebar */}
-          <RebarAddon
-            enabled={area.rebarEnabled}
-            config={area.rebar}
-            onToggle={(v) => dispatch({ type: "UPDATE_AREA", id: area.id, patch: { rebarEnabled: v } })}
-            onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, rebar: patch })}
-            mode="linear"
-          />
+          {/* Footing Rebar */}
+          {showFooting && (
+            <RebarAddon
+              enabled={footingRebarEnabled}
+              config={footingRebar}
+              onToggle={(v) => {
+                dispatch({
+                  type: "UPDATE_REBAR",
+                  areaId: area.id,
+                  elementType: "footing",
+                  rebar: { hEnabled: v },
+                });
+              }}
+              onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, elementType: "footing", rebar: patch })}
+              mode="linear"
+              sectionLabel={mode === "footingsWalls" ? "Footing Rebar" : "Add Rebar"}
+              verticalLabel="Dowels"
+            />
+          )}
+
+          {/* Wall Rebar */}
+          {showWall && (
+            <RebarAddon
+              enabled={wallRebarEnabled}
+              config={wallRebar}
+              onToggle={(v) => {
+                dispatch({
+                  type: "UPDATE_REBAR",
+                  areaId: area.id,
+                  elementType: "wall",
+                  rebar: { hEnabled: v },
+                });
+              }}
+              onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, elementType: "wall", rebar: patch })}
+              mode="linear"
+              sectionLabel={mode === "footingsWalls" ? "Wall Rebar" : "Add Rebar"}
+              verticalLabel="Vertical Rebar"
+            />
+          )}
         </>
       )}
     </div>
