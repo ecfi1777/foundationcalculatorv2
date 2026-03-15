@@ -104,17 +104,20 @@ export function CalculatorLayout() {
       setShowAccountModal(true);
       return;
     }
-    if (isDirty) {
-      setShowNewProjectConfirm(true);
-      return;
-    }
-    // Check free tier limit (1 project for free)
+
+    // Check free tier limit (1 editable project for free)
     if (subscriptionTier === "free" && editableProjectCount >= 1) {
       setShowPaywall(true);
       return;
     }
+
+    if (isDirty) {
+      setShowNewProjectConfirm(true);
+      return;
+    }
+
     createNewProject();
-  }, [user, isDirty, subscriptionTier, editableProjectCount, createNewProject, setPendingAction]);
+  }, [user, subscriptionTier, editableProjectCount, isDirty, createNewProject, setPendingAction]);
 
   // ── First save confirm ──
   const handleNameConfirm = useCallback((name: string) => {
