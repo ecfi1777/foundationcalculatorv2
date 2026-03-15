@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import type {
   CalcArea, AreaResult, ProjectTotals, BarSize,
@@ -20,7 +20,8 @@ import {
   calcStoneBase,
 } from "@/lib/calculations";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2 } from "lucide-react";
+import { Pencil, Trash2, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
 function computeRebarForElement(
@@ -320,6 +321,20 @@ function getRebarLabel(
 
 export function QuantitiesPanel() {
   const { state, dispatch } = useCalculatorState();
+  const [renamingAreaId, setRenamingAreaId] = useState<string | null>(null);
+  const [renameValue, setRenameValue] = useState("");
+
+  const confirmRename = () => {
+    const trimmed = renameValue.trim();
+    if (trimmed && renamingAreaId) {
+      dispatch({ type: "RENAME_AREA", id: renamingAreaId, name: trimmed });
+    }
+    setRenamingAreaId(null);
+  };
+
+  const cancelRename = () => {
+    setRenamingAreaId(null);
+  };
 
   const results = useMemo(
     () => state.areas.map(computeArea),
@@ -368,26 +383,65 @@ export function QuantitiesPanel() {
 
             return (
               <div key={r.areaId} className="rounded-lg border border-border bg-card p-3 space-y-2">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-semibold text-foreground">{r.areaName}</span>
-                  <div className="flex gap-1">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-6 w-6"
-                      onClick={() => dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId })}
-                    >
-                      <Pencil className="h-3 w-3" />
-                    </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-6 w-6 text-destructive"
-                      onClick={() => dispatch({ type: "DELETE_AREA", id: r.areaId })}
-                    >
-                      <Trash2 className="h-3 w-3" />
-                    </Button>
-                  </div>
+                <div className="flex items-center justify-between gap-2">
+                  {renamingAreaId === r.areaId ? (
+                    <div className="flex items-center gap-1 flex-1 min-w-0">
+                      <Input
+                        value={renameValue}
+                        onChange={(e) => setRenameValue(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") confirmRename();
+                          if (e.key === "Escape") cancelRename();
+                        }}
+                        onBlur={cancelRename}
+                        autoFocus
+                        className="h-6 text-sm px-1.5 py-0"
+                      />
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 shrink-0"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={confirmRename}
+                      >
+                        <Check className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 shrink-0"
+                        onMouseDown={(e) => e.preventDefault()}
+                        onClick={cancelRename}
+                      >
+                        <X className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  ) : (
+                    <>
+                      <span className="text-sm font-semibold text-foreground">{r.areaName}</span>
+                      <div className="flex gap-1">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6"
+                          onClick={() => {
+                            setRenamingAreaId(r.areaId);
+                            setRenameValue(r.areaName);
+                          }}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 text-destructive"
+                          onClick={() => dispatch({ type: "DELETE_AREA", id: r.areaId })}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </>
+                  )}
                 </div>
 
                 {isLinearType(r.type) && (
