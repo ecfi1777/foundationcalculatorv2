@@ -156,7 +156,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   // Revoke all pending invites
   const { error: inviteErr } = await supabase
     .from("org_invites")
-    .delete()
+    .update({ status: "revoked" })
     .eq("org_id", org.id)
     .eq("status", "pending");
   if (inviteErr) throw inviteErr;
