@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import type {
   CalcArea, AreaResult, ProjectTotals, BarSize,
