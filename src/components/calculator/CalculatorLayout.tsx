@@ -57,6 +57,7 @@ export function CalculatorLayout() {
   const [showProjectList, setShowProjectList] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showNewProjectConfirm, setShowNewProjectConfirm] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const hasAreas = state.areas.length > 0;
 
