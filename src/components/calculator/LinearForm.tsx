@@ -3,6 +3,8 @@ import { NumberField } from "./NumberField";
 import { SegmentEntry } from "./SegmentEntry";
 import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
+import { calcTypeToElementType, makeDefaultRebar } from "@/types/calculator";
+import type { RebarElementType } from "@/types/calculator";
 
 /** Shared form for both Wall (standalone) and Grade Beam calculators */
 export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
@@ -22,6 +24,10 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
   const dim1Key = isWall ? "heightIn" : "widthIn";
   const dim2Label = isWall ? "Wall Thickness" : "Beam Depth";
   const dim2Key = isWall ? "thicknessIn" : "depthIn";
+
+  const elementType: RebarElementType = calcTypeToElementType(calcType);
+  const rebarConfig = area?.rebarConfigs?.[elementType] ?? makeDefaultRebar(elementType);
+  const rebarEnabled = rebarConfig.hEnabled || rebarConfig.vEnabled || rebarConfig.gridEnabled;
 
   return (
     <div className="space-y-4">
@@ -64,11 +70,19 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
           </div>
 
           <RebarAddon
-            enabled={area.rebarEnabled}
-            config={area.rebar}
-            onToggle={(v) => dispatch({ type: "UPDATE_AREA", id: area.id, patch: { rebarEnabled: v } })}
-            onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, rebar: patch })}
+            enabled={rebarEnabled}
+            config={rebarConfig}
+            onToggle={(v) => {
+              dispatch({
+                type: "UPDATE_REBAR",
+                areaId: area.id,
+                elementType,
+                rebar: { hEnabled: v },
+              });
+            }}
+            onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, elementType, rebar: patch })}
             mode="linear"
+            verticalLabel="Vertical Rebar"
           />
         </>
       )}

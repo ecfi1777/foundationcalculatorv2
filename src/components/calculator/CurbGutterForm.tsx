@@ -1,7 +1,9 @@
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
 import { SegmentEntry } from "./SegmentEntry";
+import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
+import { makeDefaultRebar } from "@/types/calculator";
 
 export function CurbGutterForm() {
   const { dispatch, addArea, getAreasForType, activeArea } = useCalculatorState();
@@ -14,6 +16,9 @@ export function CurbGutterForm() {
     if (!area) return;
     dispatch({ type: "UPDATE_AREA", id: area.id, patch: { dimensions: { ...area.dimensions, [key]: value } } });
   };
+
+  const rebarConfig = area?.rebarConfigs?.curb ?? makeDefaultRebar("curb");
+  const rebarEnabled = rebarConfig.hEnabled || rebarConfig.vEnabled || rebarConfig.gridEnabled;
 
   return (
     <div className="space-y-4">
@@ -56,6 +61,22 @@ export function CurbGutterForm() {
               onDelete={(id) => dispatch({ type: "DELETE_SEGMENT", areaId: area.id, segmentId: id })}
             />
           </div>
+
+          <RebarAddon
+            enabled={rebarEnabled}
+            config={rebarConfig}
+            onToggle={(v) => {
+              dispatch({
+                type: "UPDATE_REBAR",
+                areaId: area.id,
+                elementType: "curb",
+                rebar: { hEnabled: v },
+              });
+            }}
+            onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, elementType: "curb", rebar: patch })}
+            mode="linear"
+            verticalLabel="Vertical Rebar"
+          />
         </>
       )}
     </div>

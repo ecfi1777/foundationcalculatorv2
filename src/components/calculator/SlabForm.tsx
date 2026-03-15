@@ -4,6 +4,7 @@ import { SectionEntry } from "./SectionEntry";
 import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
 import type { CalcSection } from "@/types/calculator";
+import { makeDefaultRebar } from "@/types/calculator";
 
 export function SlabForm() {
   const { dispatch, addArea, getAreasForType, activeArea } = useCalculatorState();
@@ -30,6 +31,9 @@ export function SlabForm() {
     };
     dispatch({ type: "ADD_SECTION", areaId: area.id, section });
   };
+
+  const rebarConfig = area?.rebarConfigs?.slab ?? makeDefaultRebar("slab");
+  const rebarEnabled = rebarConfig.gridEnabled;
 
   return (
     <div className="space-y-4">
@@ -61,11 +65,19 @@ export function SlabForm() {
           />
 
           <RebarAddon
-            enabled={area.rebarEnabled}
-            config={area.rebar}
-            onToggle={(v) => dispatch({ type: "UPDATE_AREA", id: area.id, patch: { rebarEnabled: v } })}
-            onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, rebar: patch })}
+            enabled={rebarEnabled}
+            config={rebarConfig}
+            onToggle={(v) => {
+              dispatch({
+                type: "UPDATE_REBAR",
+                areaId: area.id,
+                elementType: "slab",
+                rebar: { gridEnabled: v },
+              });
+            }}
+            onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, elementType: "slab", rebar: patch })}
             mode="slab"
+            sectionLabel="Add Rebar Grid"
           />
         </>
       )}

@@ -4,10 +4,12 @@ import type {
   CalcSection,
   CalculatorType,
   RebarConfig,
+  RebarConfigsMap,
+  RebarElementType,
   Segment,
   FootingMode,
 } from "@/types/calculator";
-import { AREA_NAME_PREFIXES, DEFAULT_REBAR } from "@/types/calculator";
+import { AREA_NAME_PREFIXES, makeDefaultRebar, deriveRebarEnabled } from "@/types/calculator";
 
 const STORAGE_KEY = "tfc_calculator_state";
 
@@ -30,7 +32,7 @@ type Action =
   | { type: "ADD_SECTION"; areaId: string; section: CalcSection }
   | { type: "UPDATE_SECTION"; areaId: string; sectionId: string; patch: Partial<CalcSection> }
   | { type: "DELETE_SECTION"; areaId: string; sectionId: string }
-  | { type: "UPDATE_REBAR"; areaId: string; rebar: Partial<RebarConfig> }
+  | { type: "UPDATE_REBAR"; areaId: string; elementType: RebarElementType; rebar: Partial<RebarConfig> }
   | { type: "LOAD"; state: CalcState }
   | { type: "RESET" };
 
@@ -126,13 +128,22 @@ function reducer(state: CalcState, action: Action): CalcState {
             : a
         ),
       };
-    case "UPDATE_REBAR":
+    case "UPDATE_REBAR": {
       return {
         ...state,
-        areas: state.areas.map((a) =>
-          a.id === action.areaId ? { ...a, rebar: { ...a.rebar, ...action.rebar } } : a
-        ),
+        areas: state.areas.map((a) => {
+          if (a.id !== action.areaId) return a;
+          const existing = a.rebarConfigs[action.elementType] ?? makeDefaultRebar(action.elementType);
+          const updated: RebarConfig = { ...existing, ...action.rebar };
+          const newConfigs: RebarConfigsMap = { ...a.rebarConfigs, [action.elementType]: updated };
+          return {
+            ...a,
+            rebarConfigs: newConfigs,
+            rebarEnabled: deriveRebarEnabled(newConfigs),
+          };
+        }),
       };
+    }
     case "LOAD":
       return action.state;
     case "RESET":
@@ -160,10 +171,33 @@ interface CalcCtx {
 
 const CalculatorContext = createContext<CalcCtx | null>(null);
 
+function migrateLoadedState(raw: any): CalcState {
+  // Migrate old single-rebar areas to rebarConfigs map
+  if (raw?.areas) {
+    raw.areas = raw.areas.map((a: any) => {
+      if (a.rebarConfigs) return a; // already migrated
+      // Old format had `rebar: RebarConfig` field
+      const oldRebar = a.rebar;
+      const elementType = a.type === "slab" ? "slab"
+        : a.type === "wall" ? "wall"
+        : a.type === "gradeBeam" ? "grade_beam"
+        : a.type === "curbGutter" ? "curb"
+        : "footing";
+      const rebarConfigs: RebarConfigsMap = {};
+      if (oldRebar) {
+        rebarConfigs[elementType as RebarElementType] = { ...oldRebar, element_type: elementType as RebarElementType };
+      }
+      const { rebar: _removed, ...rest } = a;
+      return { ...rest, rebarConfigs };
+    });
+  }
+  return raw;
+}
+
 function loadState(): CalcState {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) return migrateLoadedState(JSON.parse(raw));
   } catch {}
   return initialState;
 }
@@ -219,7 +253,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
         segments: [],
         sections: [],
         rebarEnabled: false,
-        rebar: { ...DEFAULT_REBAR },
+        rebarConfigs: {},
       };
       dispatch({ type: "ADD_AREA", area });
       return area;
