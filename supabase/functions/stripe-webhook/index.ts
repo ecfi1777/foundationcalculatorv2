@@ -287,12 +287,6 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   }
 
   // Increment affiliate totals
-  await supabase
-    .from("affiliates")
-    .update({
-      total_earned_cents: affiliate.commission_pct, // Will be overwritten below
-    })
-    .eq("id", affiliate.id);
 
   // Use RPC or direct increment — for safety, fetch and update
   const { data: currentAffiliate } = await supabase
