@@ -21,6 +21,7 @@ import { ProjectEditModal } from "@/components/project/ProjectEditModal";
 import { ProjectListPanel } from "@/components/project/ProjectListPanel";
 import { AccountCreationModal } from "@/components/project/AccountCreationModal";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
+import PaywallModal from "@/components/PaywallModal";
 import { cn } from "@/lib/utils";
 
 function ActiveForm({ disabled }: { disabled: boolean }) {
@@ -47,7 +48,7 @@ export function CalculatorLayout() {
     currentProject, isSaving, isDirty, isProjectLocked,
     saveProject, createNewProject, resetToBlank, updateProjectMeta,
     pendingAction, setPendingAction, clearPendingAction,
-    subscriptionTier, loadProjects, projectCount,
+    subscriptionTier, loadProjects, projectCount, editableProjectCount,
   } = useProject();
 
   const [mobileTab, setMobileTab] = useState<"calculator" | "quantities">("calculator");
@@ -56,6 +57,7 @@ export function CalculatorLayout() {
   const [showProjectList, setShowProjectList] = useState(false);
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showNewProjectConfirm, setShowNewProjectConfirm] = useState(false);
+  const [showPaywall, setShowPaywall] = useState(false);
 
   const hasAreas = state.areas.length > 0;
 
@@ -107,11 +109,12 @@ export function CalculatorLayout() {
       return;
     }
     // Check free tier limit (1 project for free)
-    if (subscriptionTier === "free" && projectCount >= 1) {
-      // Open paywall handled elsewhere — for now just allow
+    if (subscriptionTier === "free" && editableProjectCount >= 1) {
+      setShowPaywall(true);
+      return;
     }
     createNewProject();
-  }, [user, isDirty, subscriptionTier, projectCount, createNewProject, setPendingAction]);
+  }, [user, isDirty, subscriptionTier, editableProjectCount, createNewProject, setPendingAction]);
 
   // ── First save confirm ──
   const handleNameConfirm = useCallback((name: string) => {
@@ -152,6 +155,10 @@ export function CalculatorLayout() {
         title="Unsaved Changes"
         description="You have unsaved changes. Discard and start a new project?"
         confirmLabel="Discard and New Project"
+      />
+      <PaywallModal
+        open={showPaywall}
+        onClose={() => setShowPaywall(false)}
       />
     </>
   );

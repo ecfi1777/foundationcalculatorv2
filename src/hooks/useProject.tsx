@@ -41,6 +41,7 @@ interface ProjectContextType {
   resetToBlank: () => void;
   updateProjectMeta: (name: string, notes: string | null) => Promise<void>;
   projectCount: number;
+  editableProjectCount: number;
 }
 
 const ProjectContext = createContext<ProjectContextType | null>(null);
@@ -530,6 +531,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       resetToBlank,
       updateProjectMeta,
       projectCount: projects.length,
+      editableProjectCount: projects.filter(p => !p.is_locked).length,
     }}>
       {children}
     </ProjectContext.Provider>
