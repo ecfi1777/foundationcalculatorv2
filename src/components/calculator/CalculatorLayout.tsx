@@ -109,11 +109,12 @@ export function CalculatorLayout() {
       return;
     }
     // Check free tier limit (1 project for free)
-    if (subscriptionTier === "free" && projectCount >= 1) {
-      // Open paywall handled elsewhere — for now just allow
+    if (subscriptionTier === "free" && editableProjectCount >= 1) {
+      setShowPaywall(true);
+      return;
     }
     createNewProject();
-  }, [user, isDirty, subscriptionTier, projectCount, createNewProject, setPendingAction]);
+  }, [user, isDirty, subscriptionTier, editableProjectCount, createNewProject, setPendingAction]);
 
   // ── First save confirm ──
   const handleNameConfirm = useCallback((name: string) => {
