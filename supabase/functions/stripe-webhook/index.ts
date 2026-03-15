@@ -156,7 +156,7 @@ async function handleSubscriptionDeleted(subscription: Stripe.Subscription) {
   // Revoke all pending invites
   const { error: inviteErr } = await supabase
     .from("org_invites")
-    .delete()
+    .update({ status: "revoked" })
     .eq("org_id", org.id)
     .eq("status", "pending");
   if (inviteErr) throw inviteErr;
@@ -185,10 +185,15 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
     .eq("id", org.owner_id)
     .single();
 
-  if (owner?.email) {
-    // Send payment failure email via Resend
-    const portalUrl = `https://billing.stripe.com/p/login/test`;
+  if (owner?.email && org.stripe_customer_id) {
     try {
+      // Generate dynamic Stripe customer portal URL
+      const portalSession = await stripe.billingPortal.sessions.create({
+        customer: org.stripe_customer_id,
+        return_url: "https://foundationcalculatorv2.lovable.app",
+      });
+      const portalUrl = portalSession.url;
+
       const res = await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: {
@@ -287,12 +292,6 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
   }
 
   // Increment affiliate totals
-  await supabase
-    .from("affiliates")
-    .update({
-      total_earned_cents: affiliate.commission_pct, // Will be overwritten below
-    })
-    .eq("id", affiliate.id);
 
   // Use RPC or direct increment — for safety, fetch and update
   const { data: currentAffiliate } = await supabase
