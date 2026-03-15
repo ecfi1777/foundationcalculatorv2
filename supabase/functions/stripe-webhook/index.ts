@@ -190,7 +190,7 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
       // Generate dynamic Stripe customer portal URL
       const portalSession = await stripe.billingPortal.sessions.create({
         customer: org.stripe_customer_id,
-        return_url: "https://foundationcalculatorv2.lovable.app",
+        return_url: Deno.env.get("VITE_APP_URL") || "https://foundationcalculatorv2.lovable.app",
       });
       const portalUrl = portalSession.url;
 
