@@ -4,7 +4,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { useProject } from "@/hooks/useProject";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { AppHeader } from "./AppHeader";
 import { CalculatorTabBar } from "./CalculatorTabBar";
 import { QuantitiesPanel } from "./QuantitiesPanel";
