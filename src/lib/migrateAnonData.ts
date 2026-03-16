@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
-import { CALC_TYPE_TO_DB } from "@/types/calculator";
+import { CALC_TYPE_TO_DB, hasRequiredData } from "@/types/calculator";
 import type { CalcState } from "@/hooks/useCalculatorState";
 import { getRefCode, clearRefCode, clearAnonData } from "./localStorage";
 
