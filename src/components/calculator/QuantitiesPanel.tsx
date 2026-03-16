@@ -445,6 +445,7 @@ export function QuantitiesPanel() {
                         <Button
                           size="icon"
                           variant="ghost"
+                          className="h-6 w-6 text-destructive"
                           onClick={() => setDeleteAreaId(r.areaId)}
                         >
                           <Trash2 className="h-3 w-3" />
