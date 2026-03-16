@@ -42,7 +42,7 @@ export const calculatorSections: CalculatorSection[] = [
     title: "Footings",
     seoTitle: "How Footing Concrete Calculations Work | Foundation Calculator",
     seoDescription:
-      "Learn how footing concrete volume is calculated using length, width, and depth. See the exact formula and a worked example.",
+      "Learn how footing concrete volume is calculated using length, width, and depth — with an optional wall add-on for stem walls.",
     description:
       "The footing calculator determines the concrete volume required for a continuous footing based on its linear length, width, and depth. An optional wall add-on calculates additional volume for a stem wall on top of the footing.",
     inputs: [
@@ -50,14 +50,17 @@ export const calculatorSections: CalculatorSection[] = [
       { name: "Width (in)", description: "Width of the footing in inches" },
       { name: "Depth (in)", description: "Depth of the footing in inches" },
       { name: "Waste %", description: "Optional waste allowance" },
+      { name: "Wall Height (in)", description: "Height of the stem wall (optional)" },
+      { name: "Wall Thickness (in)", description: "Thickness of the stem wall (optional)" },
     ],
     formula:
-      "Volume (yd³) = Linear Feet × (Width ÷ 12) × (Depth ÷ 12) ÷ 27",
+      "Footing Volume (yd³) = Linear Feet × (Width ÷ 12) × (Depth ÷ 12) ÷ 27\n\nIf wall values are entered:\n  Wall Volume (yd³) = Linear Feet × (Wall Height ÷ 12) × (Wall Thickness ÷ 12) ÷ 27\n  Total Volume = Footing Volume + Wall Volume\n\nThe wall calculation is optional and only applied when wall inputs are provided.",
     diagramAlt: "Diagram — Footing Calculation",
     workedExample: {
-      inputs: "Linear Feet = 100, Width = 24 in, Depth = 12 in",
-      steps: "100 × (24 ÷ 12) × (12 ÷ 12) ÷ 27\n= 100 × 2 × 1 ÷ 27\n≈ 7.41 yd³",
-      result: "Concrete Required ≈ 7.41 yd³",
+      inputs: "Linear Feet = 100, Width = 24 in, Depth = 12 in, Wall Height = 48 in, Wall Thickness = 8 in",
+      steps:
+        "Footing = 100 × (24 ÷ 12) × (12 ÷ 12) ÷ 27\n= 100 × 2 × 1 ÷ 27 ≈ 7.41 yd³\n\nWall = 100 × (48 ÷ 12) × (8 ÷ 12) ÷ 27\n= 100 × 4 × 0.667 ÷ 27 ≈ 9.88 yd³\n\nTotal = 7.41 + 9.88 ≈ 17.28 yd³",
+      result: "Concrete Required ≈ 17.28 yd³ (footing + wall)",
     },
   },
   {
@@ -84,6 +87,111 @@ export const calculatorSections: CalculatorSection[] = [
     },
   },
   {
+    slug: "slabs",
+    title: "Slabs",
+    seoTitle: "How Slab Concrete Calculations Work | Foundation Calculator",
+    seoDescription:
+      "Learn how slab concrete volume is calculated per section and combined for an area total using length, width, and thickness.",
+    description:
+      "The slab calculator computes concrete volume for one or more rectangular sections. Each section's volume is calculated individually, then summed for the area total.",
+    inputs: [
+      { name: "Length (ft + in)", description: "Length of the section" },
+      { name: "Width (ft + in)", description: "Width of the section" },
+      { name: "Thickness (in)", description: "Slab thickness in inches" },
+      { name: "Waste %", description: "Optional waste allowance" },
+    ],
+    formula:
+      "Section ft² = (Length ft + Length in ÷ 12) × (Width ft + Width in ÷ 12)\nSection yd³ = ft² × (Thickness ÷ 12) ÷ 27\nArea Total = Sum of all sections",
+    diagramAlt: "Diagram — Slab Calculation",
+    workedExample: {
+      inputs: "Length = 20 ft 0 in, Width = 30 ft 0 in, Thickness = 4 in",
+      steps: "ft² = 20 × 30 = 600\nVolume = 600 × (4 ÷ 12) ÷ 27\n= 600 × 0.333 ÷ 27\n≈ 7.41 yd³",
+      result: "Concrete Required ≈ 7.41 yd³",
+    },
+  },
+  {
+    slug: "slab-rebar",
+    title: "Slab Rebar",
+    seoTitle: "How Slab Rebar Grid Calculations Work | Foundation Calculator",
+    seoDescription:
+      "Learn how slab rebar grid quantities are calculated including bar counts in both directions and total linear feet.",
+    description:
+      "The slab rebar calculator determines the total linear feet of rebar needed for a rectangular slab laid out in a grid pattern. It calculates bar counts in both the length and width directions based on spacing, then computes total linear feet. Waste is applied afterward.",
+    inputs: [
+      { name: "Slab Length (ft)", description: "Length of the slab" },
+      { name: "Slab Width (ft)", description: "Width of the slab" },
+      { name: "Spacing (in)", description: "On-center grid spacing" },
+      { name: "Bar Size", description: "Rebar bar size" },
+      { name: "Overlap (in)", description: "Splice overlap at each joint" },
+      { name: "Waste %", description: "Optional waste allowance" },
+    ],
+    formula:
+      "Bars (Length Direction) = floor(Slab Width ÷ Spacing) + 1\nBars (Width Direction) = floor(Slab Length ÷ Spacing) + 1\n\nTotal Bars = Bars (Length Dir) + Bars (Width Dir)\nTotal Linear Feet = (Bars Length Dir × Slab Length) + (Bars Width Dir × Slab Width)\n\nWaste is applied to the total linear feet afterward.",
+    diagramAlt: "Diagram — Slab Rebar Grid Calculation",
+    workedExample: {
+      inputs:
+        "Slab Length = 30 ft, Slab Width = 20 ft, Spacing = 12 in, Overlap = 12 in",
+      steps:
+        "Bars (Length Dir) = floor(20 × 12 ÷ 12) + 1 = 21\nBars (Width Dir) = floor(30 × 12 ÷ 12) + 1 = 31\nTotal Bars = 21 + 31 = 52\nTotal LF = (21 × 30) + (31 × 20) = 630 + 620 = 1,250 LF",
+      result: "Grid Rebar ≈ 1,250 LF (before waste)",
+    },
+  },
+  {
+    slug: "wall-rebar",
+    title: "Wall Rebar",
+    seoTitle: "How Wall Rebar Calculations Work | Foundation Calculator",
+    seoDescription:
+      "Learn how horizontal and vertical rebar quantities are calculated for walls, footings, and grade beams.",
+    description:
+      "The wall rebar calculator computes total linear feet of rebar for horizontal rows and vertical bars. Horizontal rebar accounts for splice overlaps at every 20-foot bar joint. Vertical rebar calculates bar count based on spacing and height.",
+    inputs: [
+      { name: "Linear Feet", description: "Total run length" },
+      { name: "Bar Size", description: "Rebar bar size" },
+      { name: "Num Rows", description: "Number of horizontal rows" },
+      { name: "Overlap (in)", description: "Splice overlap at each joint" },
+      { name: "Spacing (in)", description: "On-center spacing for vertical bars" },
+      { name: "Bar Height (ft + in)", description: "Height of each vertical bar" },
+      { name: "Waste %", description: "Optional waste allowance" },
+    ],
+    formula:
+      "Horizontal:\n  Splices = floor(Linear Feet ÷ 20)\n  Overlap LF = Splices × (Overlap ÷ 12) × Num Rows\n  Total LF = (Linear Feet × Num Rows) + Overlap LF\n\nVertical:\n  Num Bars = floor(Linear Feet × 12 ÷ Spacing) + 1\n  Total LF = Num Bars × Bar Height (ft)",
+    diagramAlt: "Diagram — Wall Rebar Calculation",
+    workedExample: {
+      inputs:
+        "Linear Feet = 100, 2 rows, Overlap = 12 in, Bar Length = 20 ft",
+      steps:
+        "Splices = floor(100 ÷ 20) = 5\nOverlap LF = 5 × 1 × 2 = 10\nTotal LF = (100 × 2) + 10 = 210 LF",
+      result: "Horizontal Rebar ≈ 210 LF",
+    },
+  },
+  {
+    slug: "l-bars",
+    title: "L-Bars",
+    seoTitle: "How L-Bar Rebar Calculations Work | Foundation Calculator",
+    seoDescription:
+      "Learn how L-bar rebar quantities are calculated for footing-to-wall connections using spacing and bar dimensions.",
+    description:
+      "L-bars (also called dowel bars or bent bars) are used to tie a footing to a wall. The calculator determines the number of L-bars based on spacing along the run length, then computes total linear feet using the combined leg lengths of each L-bar.",
+    inputs: [
+      { name: "Linear Feet", description: "Total run length of the footing" },
+      { name: "Spacing (in)", description: "On-center spacing of the L-bars" },
+      { name: "Vertical Leg (in)", description: "Vertical leg length of the L-bar" },
+      { name: "Horizontal Leg (in)", description: "Horizontal leg length of the L-bar" },
+      { name: "Bar Size", description: "Rebar bar size" },
+      { name: "Waste %", description: "Optional waste allowance" },
+    ],
+    formula:
+      "Num L-Bars = floor(Linear Feet × 12 ÷ Spacing) + 1\nBar Length (ft) = (Vertical Leg + Horizontal Leg) ÷ 12\nTotal LF = Num L-Bars × Bar Length",
+    diagramAlt: "Diagram — L-Bar Rebar Calculation",
+    workedExample: {
+      inputs:
+        "Linear Feet = 100, Spacing = 24 in, Vertical Leg = 24 in, Horizontal Leg = 12 in",
+      steps:
+        "Num L-Bars = floor(100 × 12 ÷ 24) + 1 = 51\nBar Length = (24 + 12) ÷ 12 = 3 ft\nTotal LF = 51 × 3 = 153 LF",
+      result: "L-Bar Rebar ≈ 153 LF",
+    },
+  },
+  {
     slug: "grade-beams",
     title: "Grade Beams",
     seoTitle: "How Grade Beam Concrete Calculations Work | Foundation Calculator",
@@ -107,8 +215,32 @@ export const calculatorSections: CalculatorSection[] = [
     },
   },
   {
-    slug: "curb-gutter",
-    title: "Curb & Gutter",
+    slug: "pier-pads",
+    title: "Pier Pads",
+    seoTitle: "How Pier Pad Concrete Calculations Work | Foundation Calculator",
+    seoDescription:
+      "Learn how pier pad concrete volume is calculated using length, width, depth, and quantity.",
+    description:
+      "The pier pad calculator determines the concrete volume for rectangular pier pads. Each pad's volume is calculated from its individual dimensions, then multiplied by the number of pads to get the total volume. The result is converted to cubic yards.",
+    inputs: [
+      { name: "Length (in)", description: "Length of the pier pad in inches" },
+      { name: "Width (in)", description: "Width of the pier pad in inches" },
+      { name: "Depth (in)", description: "Depth of the pier pad in inches" },
+      { name: "Quantity", description: "Number of identical pier pads" },
+      { name: "Waste %", description: "Optional waste allowance" },
+    ],
+    formula:
+      "Volume per Pad (yd³) = (Length ÷ 12) × (Width ÷ 12) × (Depth ÷ 12) ÷ 27\nTotal Volume = Volume per Pad × Quantity",
+    diagramAlt: "Diagram — Pier Pad Calculation",
+    workedExample: {
+      inputs: "Length = 24 in, Width = 24 in, Depth = 12 in, Quantity = 8",
+      steps: "Per Pad = (24 ÷ 12) × (24 ÷ 12) × (12 ÷ 12) ÷ 27\n= 2 × 2 × 1 ÷ 27 ≈ 0.148 yd³\nTotal = 0.148 × 8 ≈ 1.19 yd³",
+      result: "Concrete Required ≈ 1.19 yd³",
+    },
+  },
+  {
+    slug: "curbs",
+    title: "Curbs",
     seoTitle: "How Curb & Gutter Concrete Calculations Work | Foundation Calculator",
     seoDescription:
       "Learn how curb and gutter concrete volume is calculated by combining the curb body and gutter flag volumes.",
@@ -134,181 +266,47 @@ export const calculatorSections: CalculatorSection[] = [
     },
   },
   {
-    slug: "slabs",
-    title: "Slabs",
-    seoTitle: "How Slab Concrete Calculations Work | Foundation Calculator",
-    seoDescription:
-      "Learn how slab concrete volume is calculated per section and combined for an area total using length, width, and thickness.",
-    description:
-      "The slab calculator computes concrete volume for one or more rectangular sections. Each section's volume is calculated individually, then summed for the area total.",
-    inputs: [
-      { name: "Length (ft + in)", description: "Length of the section" },
-      { name: "Width (ft + in)", description: "Width of the section" },
-      { name: "Thickness (in)", description: "Slab thickness in inches" },
-      { name: "Waste %", description: "Optional waste allowance" },
-    ],
-    formula:
-      "Section ft² = (Length ft + Length in ÷ 12) × (Width ft + Width in ÷ 12)\nSection yd³ = ft² × (Thickness ÷ 12) ÷ 27\nArea Total = Sum of all sections",
-    diagramAlt: "Diagram — Slab Calculation",
-    workedExample: {
-      inputs: "Length = 20 ft 0 in, Width = 30 ft 0 in, Thickness = 4 in",
-      steps: "ft² = 20 × 30 = 600\nVolume = 600 × (4 ÷ 12) ÷ 27\n= 600 × 0.333 ÷ 27\n≈ 7.41 yd³",
-      result: "Concrete Required ≈ 7.41 yd³",
-    },
-  },
-  {
-    slug: "pier-pads",
-    title: "Pier Pads",
-    seoTitle: "How Pier Pad Concrete Calculations Work | Foundation Calculator",
-    seoDescription:
-      "Learn how pier pad concrete volume is calculated using length, width, depth, and quantity.",
-    description:
-      "The pier pad calculator determines the concrete volume for rectangular pier pads based on individual dimensions and the number of pads.",
-    inputs: [
-      { name: "Length (in)", description: "Length of the pier pad" },
-      { name: "Width (in)", description: "Width of the pier pad" },
-      { name: "Depth (in)", description: "Depth of the pier pad" },
-      { name: "Quantity", description: "Number of identical pier pads" },
-      { name: "Waste %", description: "Optional waste allowance" },
-    ],
-    formula:
-      "Volume Each (yd³) = (Length ÷ 12) × (Width ÷ 12) × (Depth ÷ 12) ÷ 27\nTotal = Volume Each × Quantity",
-    diagramAlt: "Diagram — Pier Pad Calculation",
-    workedExample: {
-      inputs: "Length = 24 in, Width = 24 in, Depth = 12 in, Quantity = 8",
-      steps: "Each = (24 ÷ 12) × (24 ÷ 12) × (12 ÷ 12) ÷ 27\n= 2 × 2 × 1 ÷ 27 ≈ 0.148 yd³\nTotal = 0.148 × 8 ≈ 1.19 yd³",
-      result: "Concrete Required ≈ 1.19 yd³",
-    },
-  },
-  {
-    slug: "cylinders",
-    title: "Cylinders",
-    seoTitle: "How Cylinder Concrete Calculations Work | Foundation Calculator",
-    seoDescription:
-      "Learn how cylinder (sonotube / pier) concrete volume is calculated using diameter, height, and π.",
-    description:
-      "The cylinder calculator determines the concrete volume for round forms (sonotubes, piers, columns) using the standard πr²h cylinder formula.",
-    inputs: [
-      { name: "Diameter (in)", description: "Inside diameter of the cylinder" },
-      { name: "Height (ft + in)", description: "Total height of the cylinder" },
-      { name: "Quantity", description: "Number of identical cylinders" },
-      { name: "Waste %", description: "Optional waste allowance" },
-    ],
-    formula:
-      "Radius (ft) = (Diameter ÷ 12) ÷ 2\nVolume Each (yd³) = π × Radius² × Height (ft) ÷ 27\nTotal = Volume Each × Quantity",
-    diagramAlt: "Diagram — Cylinder Calculation",
-    workedExample: {
-      inputs: "Diameter = 12 in, Height = 4 ft 0 in, Quantity = 10",
-      steps:
-        "Radius = (12 ÷ 12) ÷ 2 = 0.5 ft\nEach = π × 0.5² × 4 ÷ 27\n= 3.1416 × 0.25 × 4 ÷ 27 ≈ 0.116 yd³\nTotal = 0.116 × 10 ≈ 1.16 yd³",
-      result: "Concrete Required ≈ 1.16 yd³",
-    },
-  },
-  {
-    slug: "steps-stairs",
-    title: "Steps / Stairs",
-    seoTitle: "How Step & Stair Concrete Calculations Work | Foundation Calculator",
-    seoDescription:
-      "Learn how step and stair concrete volume is calculated using a slope-adjusted method for accurate stringer volume.",
-    description:
-      "The steps/stairs calculator uses a slope-adjusted method. Unlike a simple rectangular block, this formula accounts for the sloped underside of the stair stringer, yielding a more accurate volume estimate. An optional platform volume is added when present.",
-    inputs: [
-      { name: "Rise (in)", description: "Vertical rise of each step" },
-      { name: "Run (in)", description: "Horizontal depth of each step" },
-      { name: "Width (in)", description: "Width of the stairway" },
-      { name: "Number of Steps", description: "Total step count" },
-      { name: "Throat Depth (in)", description: "Minimum thickness at the thinnest point of the stringer" },
-      { name: "Platform Depth (in)", description: "Depth of the landing platform (optional)" },
-      { name: "Platform Width (in)", description: "Width of the landing platform (optional, defaults to stair width)" },
-      { name: "Waste %", description: "Optional waste allowance" },
-    ],
-    formula:
-      "A = Rise × Run × Width ÷ 2\nh = √(Rise² + Run²)\nB = h × Width × Throat Depth\nV1 = (A + B) × (Num Steps − 1)\nV2 = Rise × Run × Width\nStairs ft³ = (V1 + V2) × 0.0005787037\nPlatform ft³ = (Platform Depth ÷ 12) × (Platform Width ÷ 12) × (Width ÷ 12)\nVolume (yd³) = (Stairs ft³ + Platform ft³) ÷ 27",
-    diagramAlt: "Diagram — Steps / Stairs Calculation (Slope-Adjusted Method)",
-    workedExample: {
-      inputs:
-        "Rise = 7 in, Run = 11 in, Width = 36 in, Steps = 5, Throat Depth = 6 in",
-      steps:
-        "A = 7 × 11 × 36 ÷ 2 = 1386\nh = √(49 + 121) = √170 ≈ 13.04\nB = 13.04 × 36 × 6 = 2816.6\nV1 = (1386 + 2816.6) × 4 = 16810.5\nV2 = 7 × 11 × 36 = 2772\nStairs ft³ = (16810.5 + 2772) × 0.0005787037 ≈ 11.33 ft³\nVolume = 11.33 ÷ 27 ≈ 0.42 yd³",
-      result: "Concrete Required ≈ 0.42 yd³",
-    },
-  },
-  {
-    slug: "rebar-linear",
-    title: "Rebar (Linear)",
-    seoTitle: "How Linear Rebar Calculations Work | Foundation Calculator",
-    seoDescription:
-      "Learn how horizontal and vertical rebar quantities are calculated for footings, walls, and grade beams.",
-    description:
-      "The linear rebar calculator computes total linear feet of rebar for horizontal rows and vertical bars. Horizontal rebar accounts for splice overlaps at every 20-foot bar joint. Vertical rebar calculates bar count based on spacing and height.",
-    inputs: [
-      { name: "Linear Feet", description: "Total run length" },
-      { name: "Bar Size", description: "Rebar bar size" },
-      { name: "Num Rows", description: "Number of horizontal rows (horizontal)" },
-      { name: "Overlap (in)", description: "Splice overlap at each joint" },
-      { name: "Spacing (in)", description: "On-center spacing for vertical bars" },
-      { name: "Bar Height (ft + in)", description: "Height of each vertical bar" },
-      { name: "Waste %", description: "Optional waste allowance" },
-    ],
-    formula:
-      "Horizontal:\n  Splices = floor(Linear Feet ÷ 20)\n  Overlap LF = Splices × (Overlap ÷ 12) × Num Rows\n  Total LF = (Linear Feet × Num Rows) + Overlap LF\n\nVertical:\n  Num Bars = floor(Linear Feet × 12 ÷ Spacing) + 1\n  Total LF = Num Bars × Bar Height (ft)",
-    diagramAlt: "Diagram — Rebar Linear Calculation",
-    workedExample: {
-      inputs:
-        "Linear Feet = 100, 2 rows, Overlap = 12 in, Bar Length = 20 ft",
-      steps:
-        "Splices = floor(100 ÷ 20) = 5\nOverlap LF = 5 × 1 × 2 = 10\nTotal LF = (100 × 2) + 10 = 210 LF",
-      result: "Horizontal Rebar ≈ 210 LF",
-    },
-  },
-  {
-    slug: "rebar-grid",
-    title: "Rebar (Slab Grid)",
-    seoTitle: "How Rebar Grid Calculations Work | Foundation Calculator",
-    seoDescription:
-      "Learn how slab rebar grid quantities are calculated including bar counts in both directions and splice overlaps.",
-    description:
-      "The slab grid rebar calculator determines the total linear feet of rebar needed for a rectangular slab laid out in a grid pattern. It calculates bar counts in both length and width directions, then adds splice overlaps for bars that exceed the standard 20-foot length.",
-    inputs: [
-      { name: "Length (ft)", description: "Slab length" },
-      { name: "Width (ft)", description: "Slab width" },
-      { name: "Spacing (in)", description: "On-center grid spacing" },
-      { name: "Bar Size", description: "Rebar bar size" },
-      { name: "Overlap (in)", description: "Splice overlap at each joint" },
-      { name: "Waste %", description: "Optional waste allowance" },
-    ],
-    formula:
-      "Bars Lengthwise = floor(Width × 12 ÷ Spacing) + 1\nBars Widthwise = floor(Length × 12 ÷ Spacing) + 1\nSplice Length = splice count × (Overlap ÷ 12)\nLF Lengthwise = Bars Lengthwise × (Length + Splice Length)\nLF Widthwise = Bars Widthwise × (Width + Splice Width)\nTotal LF = LF Lengthwise + LF Widthwise",
-    diagramAlt: "Diagram — Rebar Slab Grid Calculation",
-    workedExample: {
-      inputs:
-        "Length = 30 ft, Width = 20 ft, Spacing = 12 in, Overlap = 12 in",
-      steps:
-        "Bars Lengthwise = floor(20 × 12 ÷ 12) + 1 = 21\nBars Widthwise = floor(30 × 12 ÷ 12) + 1 = 31\nSplice (30 ft span) = 1 × 1 = 1 ft\nLF Lengthwise = 21 × 31 = 651\nLF Widthwise = 31 × 21 = 651\nTotal ≈ 1302 LF",
-      result: "Grid Rebar ≈ 1,302 LF",
-    },
-  },
-  {
     slug: "stone-base",
     title: "Stone Base",
     seoTitle: "How Stone Base Calculations Work | Foundation Calculator",
     seoDescription:
-      "Learn how stone base tonnage is calculated from square footage, depth, and stone density.",
+      "Learn how stone base tonnage is calculated from square footage, depth, waste percentage, and stone density.",
     description:
-      "The stone base calculator converts a square footage area and depth into cubic yards, then multiplies by the stone density to produce a tonnage estimate.",
+      "The stone base calculator converts a square footage area and depth into cubic feet, applies a waste percentage, converts to cubic yards, then multiplies by the stone density to produce a tonnage estimate. Material factors vary by stone type.",
     inputs: [
       { name: "Square Feet", description: "Total area to cover" },
       { name: "Depth (in)", description: "Stone base depth in inches" },
-      { name: "Density (tons/yd³)", description: "Density of the stone material" },
+      { name: "Density (tons/yd³)", description: "Density of the stone material (varies by type)" },
       { name: "Waste %", description: "Optional waste allowance" },
     ],
     formula:
-      "Volume (yd³) = Square Feet × (Depth ÷ 12) ÷ 27\nTons = Volume × Density (tons/yd³)",
+      "Volume (ft³) = Square Feet × (Depth ÷ 12)\nVolume w/ Waste = Volume × (1 + Waste %)\nCubic Yards = Volume w/ Waste ÷ 27\nTons = Cubic Yards × Material Factor (tons/yd³)\n\nMaterial factors vary by stone type.",
     diagramAlt: "Diagram — Stone Base Calculation",
     workedExample: {
-      inputs: "Square Feet = 600, Depth = 4 in, Density = 1.4 tons/yd³",
-      steps: "Volume = 600 × (4 ÷ 12) ÷ 27\n= 600 × 0.333 ÷ 27 ≈ 7.41 yd³\nTons = 7.41 × 1.4 ≈ 10.37 tons",
-      result: "Stone Required ≈ 10.37 tons",
+      inputs: "Square Feet = 600, Depth = 4 in, Density = 1.4 tons/yd³, Waste = 5%",
+      steps: "Volume = 600 × (4 ÷ 12) = 200 ft³\nWith Waste = 200 × 1.05 = 210 ft³\nCubic Yards = 210 ÷ 27 ≈ 7.78 yd³\nTons = 7.78 × 1.4 ≈ 10.89 tons",
+      result: "Stone Required ≈ 10.89 tons",
+    },
+  },
+  {
+    slug: "concrete-totals",
+    title: "Concrete Totals",
+    seoTitle: "How Concrete Totals Are Calculated | Foundation Calculator",
+    seoDescription:
+      "Learn how the total concrete volume is aggregated across all areas in a project, including waste adjustments.",
+    description:
+      "The concrete totals section aggregates volumes from all calculator areas in a project. Each area's volume (with waste applied) is summed to produce the overall project total in cubic yards. This gives a single ordering quantity for concrete delivery.",
+    inputs: [
+      { name: "Area Volumes", description: "Calculated volume from each area (footings, slabs, walls, etc.)" },
+      { name: "Waste %", description: "Applied per-area before summing" },
+    ],
+    formula:
+      "Project Total (yd³) = Σ (Area Volume with Waste)\n\nEach area's waste is applied individually before summing.",
+    diagramAlt: "Diagram — Concrete Totals Aggregation",
+    workedExample: {
+      inputs: "Footing Area = 7.41 yd³, Slab Area = 7.41 yd³, Wall Area = 7.90 yd³",
+      steps: "Total = 7.41 + 7.41 + 7.90 = 22.72 yd³",
+      result: "Project Concrete Total ≈ 22.72 yd³",
     },
   },
 ];
@@ -337,11 +335,11 @@ export const faqItems: FAQItem[] = [
   {
     question: "What is the formula for concrete footings?",
     answer:
-      "Footing volume = Linear Feet × (Width in inches ÷ 12) × (Depth in inches ÷ 12) ÷ 27. This converts all dimensions to feet, multiplies them together, then divides by 27 to get cubic yards.",
+      "Footing volume = Linear Feet × (Width in inches ÷ 12) × (Depth in inches ÷ 12) ÷ 27. This converts all dimensions to feet, multiplies them together, then divides by 27 to get cubic yards. An optional wall add-on can be included by adding Wall Height × Wall Thickness volume on top.",
   },
   {
-    question: "How are steps and stairs calculated differently from slabs?",
+    question: "How are concrete totals calculated for a project?",
     answer:
-      "Steps use a slope-adjusted method, which accounts for the triangular step profile and the sloped stringer underside rather than treating the entire staircase as a rectangular block. This yields a more accurate — and typically lower — volume estimate than a simple box calculation.",
+      "Each area's volume is calculated individually with its own waste percentage applied, then all area volumes are summed to produce the project's total concrete requirement in cubic yards.",
   },
 ];
