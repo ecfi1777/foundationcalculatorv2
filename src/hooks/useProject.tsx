@@ -325,7 +325,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
             length_inches_decimal: s.lengthInchesDecimal,
             sort_order: s.sortOrder,
           }));
-          await supabase.from("segments").upsert(segmentRows);
+          const { error: segErr } = await supabase.from("segments").upsert(segmentRows);
+          if (segErr) throw segErr;
         }
         // Delete segments that are no longer present
         const { data: existingSegs } = await supabase
