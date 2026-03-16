@@ -22,6 +22,7 @@ interface AreaSelectorProps {
 }
 
 export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, onRename, type }: AreaSelectorProps) {
+  const { currentProject } = useProject();
   const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editing, setEditing] = useState(false);
