@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
           totalVolumeCy = r.volumeWithWasteCy;
           break;
         }
-        case "gradeBeam": {
+        case "grade_beam": {
           const r = calcGradeBeam({
             linearFt: totalLinearFt,
             widthIn: dims.widthIn ?? 12,
