@@ -30,6 +30,8 @@ export function ProjectListPanel({ open, onClose }: Props) {
   );
 
   const handleSelect = (id: string) => {
+    if (isLoading) return;
+
     if (isDirty) {
       setDiscardTarget(id);
     } else {
