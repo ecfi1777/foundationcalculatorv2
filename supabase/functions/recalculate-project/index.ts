@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
           }
           break;
         }
-        case "wall": {
+        case "walls": {
           const r = calcWall({
             linearFt: totalLinearFt,
             heightIn: dims.heightIn ?? 48,
