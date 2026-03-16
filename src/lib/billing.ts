@@ -19,8 +19,11 @@ export async function startCheckout(session: Session, activeOrgId: string): Prom
 
   const inIframe = window.self !== window.top;
   if (inIframe) {
-    const opened = window.open(data.url, "_blank", "noopener,noreferrer");
-    if (!opened) window.location.href = data.url;
+    try {
+      window.top!.location.href = data.url;
+    } catch {
+      window.location.href = data.url;
+    }
   } else {
     window.location.href = data.url;
   }
