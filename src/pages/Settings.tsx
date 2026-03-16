@@ -101,6 +101,14 @@ export default function Settings() {
         .eq("user_id", user.id)
         .eq("status", "active");
       setAllOrgs(allMemberships || []);
+
+      // Affiliate check
+      const { data: affData } = await supabase
+        .from("affiliates")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setAffiliate(affData);
     } finally {
       setLoading(false);
     }
