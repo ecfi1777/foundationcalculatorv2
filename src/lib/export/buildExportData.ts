@@ -41,7 +41,7 @@ export function buildExportData(
   let hasSqft = false;
 
   for (const area of state.areas) {
-    const result = computeArea(area);
+    const result = computeArea(area, stoneTypes);
     const dbType = CALC_TYPE_TO_DB[area.type] as ExportCalculatorType;
     const isLinear = LINEAR_TYPES.includes(dbType);
 
