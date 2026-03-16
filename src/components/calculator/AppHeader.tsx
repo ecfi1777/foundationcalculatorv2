@@ -33,6 +33,7 @@ interface AppHeaderProps {
   onExportCSV?: () => void;
   isExporting?: boolean;
   canExport?: boolean;
+  onSignOut?: () => void;
 }
 
 export function AppHeader({
