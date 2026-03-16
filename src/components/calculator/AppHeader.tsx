@@ -24,6 +24,8 @@ interface AppHeaderProps {
   isSaving: boolean;
   isProjectLocked: boolean;
   hasProject: boolean;
+  isDirty: boolean;
+  onResetToBlank: () => void;
 }
 
 export function AppHeader({
