@@ -295,7 +295,7 @@ export function CalculatorLayout() {
           <div className="px-4 pt-3"><CalculatorTabBar /></div>
           <div className="flex-1 overflow-y-auto px-4 py-4">
             <div className="rounded-lg border border-border bg-card p-4">
-              <ActiveForm disabled={isProjectLocked} />
+              <ActiveForm />
             </div>
           </div>
         </div>
