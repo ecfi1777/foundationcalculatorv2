@@ -209,9 +209,9 @@ export const calculatorSections: CalculatorSection[] = [
     title: "Steps / Stairs",
     seoTitle: "How Step & Stair Concrete Calculations Work | Foundation Calculator",
     seoDescription:
-      "Learn how step and stair concrete volume is calculated using the Spike VM slope-adjusted method for accurate stringer volume.",
+      "Learn how step and stair concrete volume is calculated using a slope-adjusted method for accurate stringer volume.",
     description:
-      "The steps/stairs calculator uses the Spike VM slope-adjusted method. Unlike a simple rectangular block, this formula accounts for the sloped underside of the stair stringer, yielding a more accurate volume estimate. An optional platform volume is added when present.",
+      "The steps/stairs calculator uses a slope-adjusted method. Unlike a simple rectangular block, this formula accounts for the sloped underside of the stair stringer, yielding a more accurate volume estimate. An optional platform volume is added when present.",
     inputs: [
       { name: "Rise (in)", description: "Vertical rise of each step" },
       { name: "Run (in)", description: "Horizontal depth of each step" },
