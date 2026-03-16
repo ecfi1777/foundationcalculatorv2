@@ -307,6 +307,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           sort_order: area.sortOrder,
           waste_pct: area.wastePct,
           rebar_enabled: anyEnabled,
+          stone_enabled: area.sections.some(s => s.includeStone),
           inputs: { footingMode: area.footingMode, dimensions: area.dimensions },
           inputs_version: 1,
         };

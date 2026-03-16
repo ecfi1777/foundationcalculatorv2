@@ -287,6 +287,9 @@ export function CalculatorLayout() {
       {isProjectLocked && (
         <div className="px-4 pt-2"><LockedBanner /></div>
       )}
+      <div className="px-4 pt-2">
+        <SaveBanner hasAreas={hasAreas} />
+      </div>
       <div className="flex flex-1 overflow-hidden">
         <div className={cn(
           "flex-1 flex flex-col border-r border-border overflow-hidden",

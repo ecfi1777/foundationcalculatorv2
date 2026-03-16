@@ -290,5 +290,6 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
     rebarResults,
     stoneTons,
     stoneDepthIn,
+    stoneTypeName,
   };
 }

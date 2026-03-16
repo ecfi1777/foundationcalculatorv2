@@ -153,9 +153,6 @@ export function makeDefaultRebar(elementType: RebarElementType): RebarConfig {
   };
 }
 
-/** @deprecated Use makeDefaultRebar instead */
-export const DEFAULT_REBAR: RebarConfig = makeDefaultRebar("footing");
-
 /** Map of element_type → RebarConfig */
 export type RebarConfigsMap = Partial<Record<RebarElementType, RebarConfig>>;
 

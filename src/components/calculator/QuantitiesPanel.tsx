@@ -233,7 +233,7 @@ export function QuantitiesPanel() {
 
                 {r.stoneTons !== null && (
                   <div className="flex justify-between text-sm">
-                    <span className="text-muted-foreground">Stone Base ({r.stoneDepthIn}" #57):</span>
+                    <span className="text-muted-foreground">Stone Base ({r.stoneDepthIn}" {r.stoneTypeName ?? "#57"}):</span>
                     <span className="font-mono text-foreground">{r.stoneTons.toFixed(2)} tons</span>
                   </div>
                 )}
