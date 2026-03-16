@@ -251,7 +251,7 @@ export function CalculatorLayout() {
                 "rounded-lg border border-border bg-card p-4",
                 isProjectLocked && "opacity-60 pointer-events-none"
               )}>
-                <ActiveForm disabled={isProjectLocked} />
+                <ActiveForm />
               </div>
             </div>
           ) : (

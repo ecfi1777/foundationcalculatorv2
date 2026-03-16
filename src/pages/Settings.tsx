@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase/client";
 import { startCheckout } from "@/lib/billing";
 import { useAuth } from "@/hooks/useAuth";
+import { callEdgeFunction } from "@/lib/edgeFunctions";
 import { toast } from "sonner";
 import { ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -157,20 +158,12 @@ export default function Settings() {
     if (!session || !org) return;
     setBillingLoading(true);
     try {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/create-portal-session`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ orgId: org.id }),
-        }
+      const data = await callEdgeFunction<{ url: string }>(
+        "create-portal-session",
+        { orgId: org.id },
+        session
       );
-      const data = await res.json();
-      if (!res.ok || !data.url) throw new Error(data.error || "Could not open billing portal");
+      if (!data.url) throw new Error("Could not open billing portal");
       window.location.href = data.url;
     } catch (e: any) {
       toast.error(e.message);
@@ -206,20 +199,11 @@ export default function Settings() {
     if (!session || !org || !inviteEmail) return;
     setInviteLoading(true);
     try {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/add-seat`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ orgId: org.id, email: inviteEmail }),
-        }
+      await callEdgeFunction(
+        "add-seat",
+        { orgId: org.id, email: inviteEmail },
+        session
       );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not send invite");
       toast.success(`Invite sent to ${inviteEmail}`);
       setInviteEmail("");
       fetchData();
@@ -233,20 +217,11 @@ export default function Settings() {
   const handleSuspendMember = async (memberId: string) => {
     if (!session || !org) return;
     try {
-      const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-      const res = await fetch(
-        `https://${projectId}.supabase.co/functions/v1/remove-seat`,
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${session.access_token}`,
-          },
-          body: JSON.stringify({ orgId: org.id, memberId }),
-        }
+      await callEdgeFunction(
+        "remove-seat",
+        { orgId: org.id, memberId },
+        session
       );
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || "Could not suspend member");
       toast.success("Member suspended");
       fetchData();
     } catch (e: any) {
@@ -398,6 +373,32 @@ export default function Settings() {
           </CardContent>
         </Card>
 
+        {/* Org Switcher — visible to all users with multiple orgs */}
+        {allOrgs.length > 1 && (
+          <Card className="bg-card border-border">
+            <CardHeader>
+              <CardTitle>Switch Organization</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <Select
+                value={userSettings?.active_org_id || ""}
+                onValueChange={handleSwitchOrg}
+              >
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {allOrgs.map((m: any) => (
+                    <SelectItem key={m.org_id} value={m.org_id}>
+                      {(m.organizations as any)?.name || m.org_id}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </CardContent>
+          </Card>
+        )}
+
         {/* SECTION 2 — Organization (owner only) */}
         {isOwner && (
           <Card className="bg-card border-border">
@@ -413,30 +414,6 @@ export default function Settings() {
                   Save
                 </Button>
               </div>
-
-              {/* Org switcher */}
-              {allOrgs.length > 1 && (
-                <div>
-                  <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-                    Switch Organization
-                  </span>
-                  <Select
-                    value={userSettings?.active_org_id || ""}
-                    onValueChange={handleSwitchOrg}
-                  >
-                    <SelectTrigger className="mt-1">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {allOrgs.map((m: any) => (
-                        <SelectItem key={m.org_id} value={m.org_id}>
-                          {(m.organizations as any)?.name || m.org_id}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
 
               {/* Team members (pro only) */}
               {org?.subscription_tier === "pro" && (

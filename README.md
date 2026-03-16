@@ -1,37 +1,30 @@
 # Total Foundation Calculator V2
 
 Cloud-based foundation takeoff tool for concrete contractors.
+Add areas, enter segment measurements, and see real-time
+concrete volumes, rebar, and stone base quantities.
 
 ## Tech Stack
 
-- React + Vite + TypeScript
-- Supabase (auth, database, edge functions)
-- Stripe (billing)
-- Tailwind CSS + shadcn/ui
-- Lovable Cloud
+React + Vite + TypeScript, Tailwind CSS, shadcn/ui,
+Supabase (auth + database + edge functions), Stripe,
+Lovable Cloud
 
 ## Local Development
 
+1. Clone the repo
+2. Run: `npm install`
+3. Copy `.env.example` to `.env` and fill in your values
+4. Run: `npm run dev`
+
+## Build
+
 ```sh
-# Clone the repository
-git clone <YOUR_GIT_URL>
-cd <YOUR_PROJECT_NAME>
-
-# Install dependencies
-npm install
-
-# Copy environment variables and fill in values
-cp .env.example .env
-
-# Start development server
-npm run dev
+npm run build
 ```
 
-## Environment Variables
+## Tests
 
-See `.env.example` for required variables:
-
-- `VITE_SUPABASE_URL` — Supabase project URL
-- `VITE_SUPABASE_PUBLISHABLE_KEY` — Supabase anon/public key
-- `VITE_SUPABASE_PROJECT_ID` — Supabase project ID
-- `STRIPE_PRICE_ID` — Stripe price ID for subscription checkout
+```sh
+npm run test
+```

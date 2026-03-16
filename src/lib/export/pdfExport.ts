@@ -2,20 +2,8 @@
  * PDF export — internal module called only by exportService.
  * Uses html2pdf.js for client-side generation.
  */
-import type { ProjectExportData, AreaExportData, ExportCalculatorType } from "@/types/export";
-
-const LINEAR_TYPES: ExportCalculatorType[] = ["footings", "walls", "grade_beam", "curb"];
-
-const TYPE_LABELS: Record<ExportCalculatorType, string> = {
-  footings: "Footings",
-  walls: "Walls",
-  grade_beam: "Grade Beam",
-  curb: "Curb & Gutter",
-  slab: "Slab",
-  pier_pad: "Pier Pad",
-  cylinder: "Cylinder",
-  steps: "Steps/Stairs",
-};
+import type { ProjectExportData, AreaExportData } from "@/types/export";
+import { LINEAR_TYPES, TYPE_LABELS, sanitizeFilename } from "./exportUtils";
 
 function fmtConcrete(v: number): string {
   return v.toFixed(2);
@@ -35,15 +23,6 @@ function fmtStone(v: number): string {
 
 function fmtRebar(v: number): string {
   return Math.round(v).toLocaleString();
-}
-
-function sanitizeFilename(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
 }
 
 function buildAreaHTML(area: AreaExportData): string {

@@ -16,8 +16,12 @@ export default function Auth() {
   const { user, loading } = useAuth();
   const navigate = useNavigate();
   const [tab, setTab] = useState<"login" | "signup">("login");
-  const [email, setEmail] = useState("");
-  const [password, setPassword] = useState("");
+
+  // Separate state for login and signup forms
+  const [loginEmail, setLoginEmail] = useState("");
+  const [loginPassword, setLoginPassword] = useState("");
+  const [signupEmail, setSignupEmail] = useState("");
+  const [signupPassword, setSignupPassword] = useState("");
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -37,7 +41,10 @@ export default function Auth() {
   const handleEmailLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setSubmitting(true);
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    const { error } = await supabase.auth.signInWithPassword({
+      email: loginEmail,
+      password: loginPassword,
+    });
     setSubmitting(false);
     if (error) {
       toast.error(error.message);
@@ -48,8 +55,8 @@ export default function Auth() {
     e.preventDefault();
     setSubmitting(true);
     const { error } = await supabase.auth.signUp({
-      email,
-      password,
+      email: signupEmail,
+      password: signupPassword,
       options: { emailRedirectTo: window.location.origin },
     });
     setSubmitting(false);
@@ -138,8 +145,8 @@ export default function Auth() {
                     id="login-email"
                     type="email"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={loginEmail}
+                    onChange={(e) => setLoginEmail(e.target.value)}
                     placeholder="you@example.com"
                   />
                 </div>
@@ -150,8 +157,8 @@ export default function Auth() {
                     type="password"
                     required
                     minLength={6}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={loginPassword}
+                    onChange={(e) => setLoginPassword(e.target.value)}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting}>
@@ -168,8 +175,8 @@ export default function Auth() {
                     id="signup-email"
                     type="email"
                     required
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    value={signupEmail}
+                    onChange={(e) => setSignupEmail(e.target.value)}
                     placeholder="you@example.com"
                   />
                 </div>
@@ -180,8 +187,8 @@ export default function Auth() {
                     type="password"
                     required
                     minLength={6}
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
+                    value={signupPassword}
+                    onChange={(e) => setSignupPassword(e.target.value)}
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting}>

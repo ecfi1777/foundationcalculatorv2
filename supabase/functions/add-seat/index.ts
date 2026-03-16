@@ -113,53 +113,63 @@ serve(async (req) => {
     await stripe.subscriptionItems.update(itemId, { quantity: currentQty + 1 });
     log("Stripe seat incremented successfully");
 
-    // 4. Only if Stripe succeeded — create invite
-    const inviteToken = crypto.randomUUID();
-    const { data: invite, error: inviteErr } = await supabase
-      .from("org_invites")
-      .insert({
-        org_id: orgId,
-        invited_by: userId,
-        email,
-        token: inviteToken,
-        status: "pending",
-      })
-      .select("id")
-      .single();
-
-    if (inviteErr) throw inviteErr;
-    log("Invite created", { inviteId: invite.id });
-
-    // Send invite email via Resend
-    const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
-    const appUrl = Deno.env.get("VITE_APP_URL") || "https://foundationcalculatorv2.lovable.app";
-
+    // 4. Only if Stripe succeeded — create invite + send email
+    // If any Supabase operation fails, decrement Stripe back
+    let inviteId: string;
     try {
-      const res = await fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${resendApiKey}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          from: "Total Foundation Calculator <noreply@totalfoundationcalculator.com>",
-          to: [email],
-          subject: "You've been invited to join a team on Total Foundation Calculator",
-          html: `
-            <h2>You've been invited!</h2>
-            <p>You've been invited to join a team on Total Foundation Calculator.</p>
-            <p><a href="${appUrl}/auth?invite=${inviteToken}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">Accept Invite</a></p>
-            <p>If you didn't expect this invitation, you can safely ignore this email.</p>
-          `,
-        }),
-      });
-      const result = await res.json();
-      log("Invite email sent", { to: email, result });
-    } catch (emailErr) {
-      log("Failed to send invite email (invite still created)", { error: String(emailErr) });
+      const inviteToken = crypto.randomUUID();
+      const { data: invite, error: inviteErr } = await supabase
+        .from("org_invites")
+        .insert({
+          org_id: orgId,
+          invited_by: userId,
+          email,
+          token: inviteToken,
+          status: "pending",
+        })
+        .select("id")
+        .single();
+
+      if (inviteErr) throw inviteErr;
+      inviteId = invite.id;
+      log("Invite created", { inviteId });
+
+      // Send invite email via Resend
+      const resendApiKey = Deno.env.get("RESEND_API_KEY")!;
+      const appUrl = Deno.env.get("VITE_APP_URL") || "https://foundationcalculatorv2.lovable.app";
+
+      try {
+        const res = await fetch("https://api.resend.com/emails", {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${resendApiKey}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            from: "Total Foundation Calculator <noreply@totalfoundationcalculator.com>",
+            to: [email],
+            subject: "You've been invited to join a team on Total Foundation Calculator",
+            html: `
+              <h2>You've been invited!</h2>
+              <p>You've been invited to join a team on Total Foundation Calculator.</p>
+              <p><a href="${appUrl}/auth?invite=${inviteToken}" style="display:inline-block;padding:12px 24px;background:#2563eb;color:#fff;text-decoration:none;border-radius:6px;">Accept Invite</a></p>
+              <p>If you didn't expect this invitation, you can safely ignore this email.</p>
+            `,
+          }),
+        });
+        const result = await res.json();
+        log("Invite email sent", { to: email, result });
+      } catch (emailErr) {
+        log("Failed to send invite email (invite still created)", { error: String(emailErr) });
+      }
+    } catch (supabaseErr) {
+      // Rollback Stripe quantity
+      log("Supabase operation failed, rolling back Stripe seat", { error: String(supabaseErr) });
+      await stripe.subscriptionItems.update(itemId, { quantity: currentQty });
+      throw supabaseErr;
     }
 
-    return new Response(JSON.stringify({ success: true, inviteId: invite.id }), {
+    return new Response(JSON.stringify({ success: true, inviteId }), {
       status: 200,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

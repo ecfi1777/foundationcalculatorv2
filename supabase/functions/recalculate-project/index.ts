@@ -14,7 +14,6 @@ import {
   calcRebarHorizontal,
   calcRebarVertical,
   calcRebarSlabGrid,
-  calcSpliceOverlap,
 } from "../_shared/calculations.ts";
 
 const corsHeaders = {
