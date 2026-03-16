@@ -180,6 +180,8 @@ export function CalculatorLayout() {
           isSaving={isSaving}
           isProjectLocked={isProjectLocked}
           hasProject={!!currentProject}
+          isDirty={isDirty}
+          onResetToBlank={resetToBlank}
         />
 
         {isProjectLocked && (
