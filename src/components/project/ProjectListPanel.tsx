@@ -87,11 +87,19 @@ export function ProjectListPanel({ open, onClose }: Props) {
             ) : (
               <div className="space-y-1 p-2">
                 {filtered.map((p) => (
-                  <button
+                  <div
                     key={p.id}
+                    role="button"
+                    tabIndex={isLoading ? -1 : 0}
+                    aria-disabled={isLoading}
                     onClick={() => handleSelect(p.id)}
-                    disabled={isLoading}
-                    className={`w-full text-left rounded-lg p-3 transition-colors group ${
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        handleSelect(p.id);
+                      }
+                    }}
+                    className={`w-full text-left rounded-lg p-3 transition-colors group cursor-pointer ${
                       currentProject?.id === p.id
                         ? "bg-primary/10 border border-primary/30"
                         : "hover:bg-secondary/30 border border-transparent"
@@ -108,6 +116,7 @@ export function ProjectListPanel({ open, onClose }: Props) {
                           </span>
                         )}
                         <Button
+                          type="button"
                           size="icon"
                           variant="ghost"
                           className="h-6 w-6 opacity-0 group-hover:opacity-100 text-destructive"
@@ -126,7 +135,7 @@ export function ProjectListPanel({ open, onClose }: Props) {
                     <p className="text-xs text-muted-foreground mt-1">
                       {new Date(p.updated_at).toLocaleDateString()}
                     </p>
-                  </button>
+                  </div>
                 ))}
               </div>
             )}
