@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
           totalVolumeCy = r.volumeWithWasteCy;
           break;
         }
-        case "curbGutter": {
+        case "curb": {
           const r = calcCurbGutter({
             linearFt: totalLinearFt,
             curbDepthIn: dims.curbDepthIn ?? 6,
