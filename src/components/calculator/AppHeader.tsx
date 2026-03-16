@@ -32,6 +32,7 @@ export function AppHeader({
   projectName, onProjectNameChange, onSave,
   onOpenProjects, onNewProject, onEditProject,
   isSaving, isProjectLocked, hasProject,
+  isDirty, onResetToBlank,
 }: AppHeaderProps) {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
