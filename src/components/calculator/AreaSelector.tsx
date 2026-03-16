@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import { useProject } from "@/hooks/useProject";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -21,6 +22,7 @@ interface AreaSelectorProps {
 }
 
 export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, onRename, type }: AreaSelectorProps) {
+  const { currentProject } = useProject();
   const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [editing, setEditing] = useState(false);
@@ -115,7 +117,7 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
           <Plus className="h-3.5 w-3.5" />
           Add Area
         </Button>
-        {activeAreaId && onDiscard && (
+        {activeAreaId && onDiscard && !currentProject && (
           <Button
             size="sm"
             variant="outline"
