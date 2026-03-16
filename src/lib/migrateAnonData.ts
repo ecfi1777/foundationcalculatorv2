@@ -56,7 +56,7 @@ export async function migrateAnonData(userId: string) {
       .insert({
         project_id: newProjectId,
         name: area.name,
-        calculator_type: area.calculator_type,
+        calculator_type: CALC_TYPE_TO_DB[area.calculator_type as CalculatorType] ?? area.calculator_type,
         sort_order: area.sort_order,
         inputs: area.inputs as any,
       })
