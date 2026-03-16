@@ -59,6 +59,7 @@ export function CalculatorLayout() {
   const handleSignOut = useCallback(async () => {
     clearAllState();
     localStorage.removeItem("tfc_calculator_state");
+    localStorage.removeItem("tfc_anon_has_data");
     try {
       await signOut();
     } catch (err) {

@@ -233,9 +233,6 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
   // Persist to localStorage
   useEffect(() => {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    if (state.areas.length > 0) {
-      localStorage.setItem("tfc_anon_has_data", "true");
-    }
   }, [state]);
 
   const getAreasForType = useCallback(
