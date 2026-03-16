@@ -1,10 +1,11 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import type {
   AreaResult, ProjectTotals,
   RebarResult, RebarElementType,
 } from "@/types/calculator";
 import { computeArea } from "@/lib/computeArea";
+import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
@@ -32,6 +33,20 @@ export function QuantitiesPanel() {
   const [deleteAreaId, setDeleteAreaId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
+  const [stoneTypeMap, setStoneTypeMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    supabase
+      .from("stone_types")
+      .select("id, name")
+      .eq("is_active", true)
+      .then(({ data }) => {
+        if (data) {
+          setStoneTypeMap(new Map(data.map((r) => [r.id, r.name])));
+        }
+      });
+  }, []);
+
   const confirmRename = () => {
     const trimmed = renameValue.trim();
     if (trimmed && renamingAreaId) {
@@ -45,8 +60,8 @@ export function QuantitiesPanel() {
   };
 
   const results = useMemo(
-    () => state.areas.map((area) => computeArea(area)),
-    [state.areas]
+    () => state.areas.map((area) => computeArea(area, stoneTypeMap)),
+    [state.areas, stoneTypeMap]
   );
 
   const totals: ProjectTotals = useMemo(() => {

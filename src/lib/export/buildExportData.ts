@@ -41,7 +41,7 @@ export function buildExportData(
   let hasSqft = false;
 
   for (const area of state.areas) {
-    const result = computeArea(area);
+    const result = computeArea(area, stoneTypes);
     const dbType = CALC_TYPE_TO_DB[area.type] as ExportCalculatorType;
     const isLinear = LINEAR_TYPES.includes(dbType);
 
@@ -76,7 +76,7 @@ export function buildExportData(
           widthIn: sec.widthIn,
           thicknessIn: sec.thicknessIn,
           sqft: slabResult.sqft,
-          volumeCY: slabResult.volumeCy,
+          volumeCY: slabResult.volumeCy * (1 + area.wastePct / 100),
           stoneEnabled: sec.includeStone,
           stoneTons: sec.includeStone && sec.stoneDepthIn > 0 ? (result.stoneTons ?? null) : null,
           stoneDepthIn: sec.includeStone ? sec.stoneDepthIn : null,
