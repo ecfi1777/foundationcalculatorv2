@@ -46,14 +46,27 @@ function ActiveForm() {
 export function CalculatorLayout() {
   const isMobile = useIsMobile();
   const { state } = useCalculatorState();
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const {
     currentProject, isSaving, isDirty, isProjectLocked,
-    saveProject, createNewProject, resetToBlank, updateProjectMeta,
+    saveProject, createNewProject, resetToBlank, clearAllState, updateProjectMeta,
     pendingAction, setPendingAction, clearPendingAction,
     subscriptionTier, loadProjects, projectCount, editableProjectCount,
   } = useProject();
+
+  // ── Sign-out handler: reset all state, clear storage, navigate home ──
+  const handleSignOut = useCallback(async () => {
+    clearAllState();
+    localStorage.removeItem("tfc_calculator_state");
+    try {
+      await signOut();
+    } catch (err) {
+      console.error("Sign-out error:", err);
+      toast.error("Signed out locally, but session cleanup failed. Please clear your browser data if issues persist.");
+    }
+    navigate("/");
+  }, [clearAllState, signOut, navigate]);
 
   const [mobileTab, setMobileTab] = useState<"calculator" | "quantities">("calculator");
   const [showNameModal, setShowNameModal] = useState(false);
