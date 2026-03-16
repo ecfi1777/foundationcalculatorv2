@@ -232,6 +232,7 @@ export interface AffiliateCommission {
   period_end: string;
   created_at: string;
   paid_at: string | null;
+  stripe_transfer_id: string | null;
 }
 
 // ──────────────────────────────────────────────

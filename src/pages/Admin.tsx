@@ -81,6 +81,9 @@ export default function Admin() {
         {activeTab === "promos" && (
           <PromoCodesSection adminCall={adminCall} onError={handleAdminError} />
         )}
+        {activeTab === "affiliates" && (
+          <AffiliatesSection adminCall={adminCall} onError={handleAdminError} />
+        )}
         {activeTab === "stats" && (
           <UsageStatsSection adminCall={adminCall} onError={handleAdminError} />
         )}
