@@ -436,8 +436,8 @@ export function QuantitiesPanel() {
                           variant="ghost"
                           className="h-6 w-6"
                           onClick={() => {
-                            dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId });
                             dispatch({ type: "SET_TAB", tab: r.type });
+                            dispatch({ type: "SET_ACTIVE_AREA", id: r.areaId });
                           }}
                         >
                           <Pencil className="h-3 w-3" />
