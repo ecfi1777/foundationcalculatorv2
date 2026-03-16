@@ -1,4 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
+import { CALC_TYPE_TO_DB } from "@/types/calculator";
+import type { CalculatorType } from "@/types/calculator";
 import {
   getAnonProjects,
   getAnonAreas,
