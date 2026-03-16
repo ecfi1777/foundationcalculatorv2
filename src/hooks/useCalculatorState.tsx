@@ -235,6 +235,8 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
   const [state, baseDispatch] = useReducer(reducer, initialState, loadState);
   const isDirtyRef = useRef(false);
   const [isDirty, setIsDirty] = React.useState(false);
+  const stateRef = useRef(state);
+  useEffect(() => { stateRef.current = state; }, [state]);
 
   // Wrap dispatch to track dirty state
   const dispatch: React.Dispatch<Action> = useCallback((action: Action) => {
@@ -246,7 +248,20 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     if (DATA_ACTIONS.has(action.type)) {
       isDirtyRef.current = true;
       setIsDirty(true);
-      localStorage.setItem("tfc_anon_has_data", "true");
+
+      // Only flag anon data for committed work
+      if (action.type === "SAVE_AREA") {
+        localStorage.setItem("tfc_anon_has_data", "true");
+      } else if (action.type !== "ADD_AREA") {
+        const currentState = stateRef.current;
+        const targetId = 'areaId' in action ? (action as any).areaId
+          : 'id' in action ? (action as any).id
+          : currentState.activeAreaId;
+        const targetArea = currentState.areas.find(a => a.id === targetId);
+        if (targetArea && !targetArea.isDraft) {
+          localStorage.setItem("tfc_anon_has_data", "true");
+        }
+      }
     }
     if (action.type === "LOAD" || action.type === "RESET") {
       isDirtyRef.current = false;
