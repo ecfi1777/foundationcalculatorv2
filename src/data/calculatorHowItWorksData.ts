@@ -342,6 +342,6 @@ export const faqItems: FAQItem[] = [
   {
     question: "How are steps and stairs calculated differently from slabs?",
     answer:
-      "Steps use the Spike VM slope-adjusted method, which accounts for the triangular step profile and the sloped stringer underside rather than treating the entire staircase as a rectangular block. This yields a more accurate — and typically lower — volume estimate than a simple box calculation.",
+      "Steps use a slope-adjusted method, which accounts for the triangular step profile and the sloped stringer underside rather than treating the entire staircase as a rectangular block. This yields a more accurate — and typically lower — volume estimate than a simple box calculation.",
   },
 ];

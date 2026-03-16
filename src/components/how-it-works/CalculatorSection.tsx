@@ -17,7 +17,7 @@ export function CalculatorSection({ section }: Props) {
       </h2>
       {isSteps && (
         <Badge variant="secondary" className="mb-3">
-          Spike VM slope-adjusted method
+          Slope-adjusted method
         </Badge>
       )}
 
