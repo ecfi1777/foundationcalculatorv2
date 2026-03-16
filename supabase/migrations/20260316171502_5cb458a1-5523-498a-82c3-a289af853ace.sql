@@ -1,0 +1,1 @@
+ALTER TABLE public.affiliate_commissions ADD COLUMN stripe_transfer_id text NULL;

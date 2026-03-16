@@ -26,6 +26,7 @@ export type Database = {
           referral_id: string
           status: string
           stripe_payment_id: string | null
+          stripe_transfer_id: string | null
         }
         Insert: {
           affiliate_id: string
@@ -38,6 +39,7 @@ export type Database = {
           referral_id: string
           status?: string
           stripe_payment_id?: string | null
+          stripe_transfer_id?: string | null
         }
         Update: {
           affiliate_id?: string
@@ -50,6 +52,7 @@ export type Database = {
           referral_id?: string
           status?: string
           stripe_payment_id?: string | null
+          stripe_transfer_id?: string | null
         }
         Relationships: [
           {
