@@ -5,17 +5,18 @@ import {
 } from "@/components/ui/select";
 import type { CalcArea, CalculatorType } from "@/types/calculator";
 import { CALCULATOR_LABELS } from "@/types/calculator";
-import { Plus } from "lucide-react";
+import { Plus, X } from "lucide-react";
 
 interface AreaSelectorProps {
   areas: CalcArea[];
   activeAreaId: string | null;
   onSelect: (id: string) => void;
   onAdd: (customName?: string) => void;
+  onDiscard?: (id: string) => void;
   type: CalculatorType;
 }
 
-export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, type }: AreaSelectorProps) {
+export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, type }: AreaSelectorProps) {
   const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
 
   return (
@@ -45,6 +46,17 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, type }: Are
           <Plus className="h-3.5 w-3.5" />
           Add Area
         </Button>
+        {activeAreaId && onDiscard && (
+          <Button
+            size="sm"
+            variant="outline"
+            className="h-9 gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
+            onClick={() => onDiscard(activeAreaId)}
+          >
+            <X className="h-3.5 w-3.5" />
+            Discard Area
+          </Button>
+        )}
       </div>
     </div>
   );
