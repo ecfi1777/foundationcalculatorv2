@@ -90,12 +90,18 @@ export function CalculatorLayout() {
       setShowAccountModal(true);
       return;
     }
-    if (!currentProject) {
-      setShowNameModal(true);
+    // Existing project — always allow update
+    if (currentProject) {
+      saveProject();
       return;
     }
-    saveProject();
-  }, [user, currentProject, saveProject, setPendingAction]);
+    // New project — enforce free-tier limit
+    if (subscriptionTier === "free" && editableProjectCount >= 1) {
+      setShowPaywall(true);
+      return;
+    }
+    setShowNameModal(true);
+  }, [user, currentProject, saveProject, setPendingAction, subscriptionTier, editableProjectCount]);
 
   // ── New Project handler ──
   const handleNewProject = useCallback(() => {
