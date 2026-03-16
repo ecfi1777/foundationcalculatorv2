@@ -6,16 +6,18 @@ import { UsersSection } from "@/components/admin/UsersSection";
 import { OrganizationsSection } from "@/components/admin/OrganizationsSection";
 import { PromoCodesSection } from "@/components/admin/PromoCodesSection";
 import { UsageStatsSection } from "@/components/admin/UsageStatsSection";
+import { AffiliatesSection } from "@/components/admin/AffiliatesSection";
 import { Button } from "@/components/ui/button";
-import { Users, Building2, Tag, BarChart3 } from "lucide-react";
+import { Users, Building2, Tag, BarChart3, Handshake } from "lucide-react";
 import { toast } from "sonner";
 
-type AdminTab = "users" | "organizations" | "promos" | "stats";
+type AdminTab = "users" | "organizations" | "promos" | "stats" | "affiliates";
 
 const tabs: { key: AdminTab; label: string; icon: React.ReactNode }[] = [
   { key: "users", label: "Users", icon: <Users className="h-4 w-4" /> },
   { key: "organizations", label: "Organizations", icon: <Building2 className="h-4 w-4" /> },
   { key: "promos", label: "Promo Codes", icon: <Tag className="h-4 w-4" /> },
+  { key: "affiliates", label: "Affiliates", icon: <Handshake className="h-4 w-4" /> },
   { key: "stats", label: "Usage Stats", icon: <BarChart3 className="h-4 w-4" /> },
 ];
 
