@@ -59,9 +59,15 @@ export function QuantitiesPanel() {
     setRenamingAreaId(null);
   };
 
+  // Filter out draft areas — they haven't been validated yet
+  const committedAreas = useMemo(
+    () => state.areas.filter((a) => !a.isDraft),
+    [state.areas]
+  );
+
   const results = useMemo(
-    () => state.areas.map((area) => computeArea(area, stoneTypeMap)),
-    [state.areas, stoneTypeMap]
+    () => committedAreas.map((area) => computeArea(area, stoneTypeMap)),
+    [committedAreas, stoneTypeMap]
   );
 
   const totals: ProjectTotals = useMemo(() => {
