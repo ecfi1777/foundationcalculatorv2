@@ -49,10 +49,10 @@ export function ProjectListPanel({ open, onClose }: Props) {
   };
 
   const confirmDelete = async () => {
-    if (deleteTarget) {
-      await deleteProject(deleteTarget.id);
-      setDeleteTarget(null);
-    }
+    if (!deleteTarget) return;
+    const targetId = deleteTarget.id;
+    setDeleteTarget(null);
+    await deleteProject(targetId);
   };
 
   return (
