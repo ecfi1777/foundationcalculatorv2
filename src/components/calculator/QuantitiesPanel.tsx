@@ -1,10 +1,11 @@
-import { useMemo, useState, useCallback } from "react";
+import { useMemo, useState, useCallback, useEffect } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import type {
   AreaResult, ProjectTotals,
   RebarResult, RebarElementType,
 } from "@/types/calculator";
 import { computeArea } from "@/lib/computeArea";
+import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
