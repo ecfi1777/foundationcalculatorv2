@@ -463,21 +463,15 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const deleteProject = useCallback(async (id: string) => {
     const timestamp = new Date().toISOString();
 
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("projects")
       .update({ deleted_at: timestamp, updated_at: timestamp })
       .eq("id", id)
-      .is("deleted_at", null)
-      .select("id")
-      .maybeSingle();
+      .is("deleted_at", null);
 
     if (error) {
+      console.error("Delete project error:", error);
       toast.error("Failed to delete project");
-      return;
-    }
-
-    if (!data) {
-      toast.error("Could not delete this project");
       return;
     }
 
