@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
-import { migrateAnonData } from "@/lib/migrateAnonData";
+import { migrateAnonData, attachReferralIfNeeded } from "@/lib/migrateAnonData";
 import { hasAnonData, captureRefCode } from "@/lib/localStorage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,11 +30,14 @@ export default function Auth() {
 
   useEffect(() => {
     if (!loading && user) {
-      if (hasAnonData()) {
-        migrateAnonData(user.id).then(() => navigate("/"));
-      } else {
+      const postLogin = async () => {
+        await attachReferralIfNeeded(user.id);
+        if (hasAnonData()) {
+          await migrateAnonData(user.id);
+        }
         navigate("/");
-      }
+      };
+      postLogin();
     }
   }, [user, loading, navigate]);
 

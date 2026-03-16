@@ -38,6 +38,10 @@ export function hasAnonData(): boolean {
 
 // --- Cleanup ---
 
+export function clearRefCode() {
+  localStorage.removeItem(REF_CODE_KEY);
+}
+
 export function clearAnonData() {
   localStorage.removeItem(ANON_HAS_DATA_KEY);
   localStorage.removeItem(REF_CODE_KEY);
