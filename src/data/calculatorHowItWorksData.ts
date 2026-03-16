@@ -224,7 +224,7 @@ export const calculatorSections: CalculatorSection[] = [
     ],
     formula:
       "A = Rise × Run × Width ÷ 2\nh = √(Rise² + Run²)\nB = h × Width × Throat Depth\nV1 = (A + B) × (Num Steps − 1)\nV2 = Rise × Run × Width\nStairs ft³ = (V1 + V2) × 0.0005787037\nPlatform ft³ = (Platform Depth ÷ 12) × (Platform Width ÷ 12) × (Width ÷ 12)\nVolume (yd³) = (Stairs ft³ + Platform ft³) ÷ 27",
-    diagramAlt: "Diagram — Steps / Stairs Calculation (Spike VM Method)",
+    diagramAlt: "Diagram — Steps / Stairs Calculation (Slope-Adjusted Method)",
     workedExample: {
       inputs:
         "Rise = 7 in, Run = 11 in, Width = 36 in, Steps = 5, Throat Depth = 6 in",
