@@ -27,6 +27,41 @@ export const CALCULATOR_LABELS: Record<CalculatorType, string> = {
   steps: "Steps",
 };
 
+/** DB spec value for areas.calculator_type */
+export type DbCalculatorType =
+  | "footings"
+  | "walls"
+  | "grade_beam"
+  | "curb"
+  | "slab"
+  | "pier_pad"
+  | "cylinder"
+  | "steps";
+
+/** App type → DB spec value */
+export const CALC_TYPE_TO_DB: Record<CalculatorType, DbCalculatorType> = {
+  footing: "footings",
+  wall: "walls",
+  gradeBeam: "grade_beam",
+  curbGutter: "curb",
+  slab: "slab",
+  pierPad: "pier_pad",
+  cylinder: "cylinder",
+  steps: "steps",
+};
+
+/** DB spec value → App type */
+export const DB_TO_CALC_TYPE: Record<DbCalculatorType, CalculatorType> = {
+  footings: "footing",
+  walls: "wall",
+  grade_beam: "gradeBeam",
+  curb: "curbGutter",
+  slab: "slab",
+  pier_pad: "pierPad",
+  cylinder: "cylinder",
+  steps: "steps",
+};
+
 export const AREA_NAME_PREFIXES: Record<CalculatorType, string> = {
   footing: "Footing Area",
   wall: "Wall Area",

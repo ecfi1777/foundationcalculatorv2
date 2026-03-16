@@ -4,9 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCalculatorState, type CalcState } from "@/hooks/useCalculatorState";
 import type {
   CalcArea, CalcSection, Segment, RebarConfig, RebarConfigsMap,
-  RebarElementType, CalculatorType, FootingMode,
+  RebarElementType, CalculatorType, FootingMode, DbCalculatorType,
 } from "@/types/calculator";
-import { makeDefaultRebar, deriveRebarEnabled } from "@/types/calculator";
+import { makeDefaultRebar, deriveRebarEnabled, CALC_TYPE_TO_DB, DB_TO_CALC_TYPE } from "@/types/calculator";
 import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────
@@ -82,7 +82,8 @@ function mapDbRebarToConfig(rc: any): RebarConfig {
 }
 
 function dbAreaToCalcArea(dbArea: any, segments: any[], sections: any[], rebarConfigs: any[]): CalcArea {
-  const type = dbArea.calculator_type as CalculatorType;
+  const dbType = dbArea.calculator_type as DbCalculatorType;
+  const type = DB_TO_CALC_TYPE[dbType] ?? (dbArea.calculator_type as CalculatorType);
   const inputs = (dbArea.inputs ?? {}) as Record<string, any>;
 
   // Group rebar configs by element_type
@@ -302,7 +303,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           id: area.id,
           project_id: projectId,
           name: area.name,
-          calculator_type: area.type,
+          calculator_type: CALC_TYPE_TO_DB[area.type],
           sort_order: area.sortOrder,
           waste_pct: area.wastePct,
           rebar_enabled: anyEnabled,
@@ -310,7 +311,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           inputs_version: 1,
         };
 
-        await supabase.from("areas").upsert(areaRow);
+        const { error: areaErr } = await supabase.from("areas").upsert(areaRow);
+        if (areaErr) throw areaErr;
 
         // Upsert segments
         if (area.segments.length > 0) {
@@ -323,7 +325,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
             length_inches_decimal: s.lengthInchesDecimal,
             sort_order: s.sortOrder,
           }));
-          await supabase.from("segments").upsert(segmentRows);
+          const { error: segErr } = await supabase.from("segments").upsert(segmentRows);
+          if (segErr) throw segErr;
         }
         // Delete segments that are no longer present
         const { data: existingSegs } = await supabase
@@ -352,7 +355,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
             stone_type_id: s.stoneTypeId || null,
             sort_order: s.sortOrder,
           }));
-          await supabase.from("sections").upsert(sectionRows);
+          const { error: secErr } = await supabase.from("sections").upsert(sectionRows);
+          if (secErr) throw secErr;
         }
         // Delete removed sections
         const { data: existingSecs } = await supabase
@@ -368,7 +372,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         // Upsert rebar configs — ALL configs, not just active ones
         for (const [elementType, config] of Object.entries(area.rebarConfigs)) {
           if (!config) continue;
-          await supabase.from("rebar_configs").upsert(
+          const { error: rebarErr } = await supabase.from("rebar_configs").upsert(
             {
               area_id: area.id,
               element_type: elementType,
@@ -395,6 +399,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
             },
             { onConflict: "area_id,element_type" }
           );
+          if (rebarErr) throw rebarErr;
         }
       }
 

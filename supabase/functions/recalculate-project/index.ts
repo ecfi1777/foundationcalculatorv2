@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       let totalSqft = 0;
 
       switch (area.calculator_type) {
-        case "footing": {
+        case "footings": {
           const footingMode = inputs.footingMode ?? "footingsOnly";
           const showFooting = footingMode !== "wallsOnly";
           const showWall = footingMode === "footingsWalls" || footingMode === "wallsOnly";
@@ -117,7 +117,7 @@ Deno.serve(async (req) => {
           }
           break;
         }
-        case "wall": {
+        case "walls": {
           const r = calcWall({
             linearFt: totalLinearFt,
             heightIn: dims.heightIn ?? 48,
@@ -127,7 +127,7 @@ Deno.serve(async (req) => {
           totalVolumeCy = r.volumeWithWasteCy;
           break;
         }
-        case "gradeBeam": {
+        case "grade_beam": {
           const r = calcGradeBeam({
             linearFt: totalLinearFt,
             widthIn: dims.widthIn ?? 12,
@@ -137,7 +137,7 @@ Deno.serve(async (req) => {
           totalVolumeCy = r.volumeWithWasteCy;
           break;
         }
-        case "curbGutter": {
+        case "curb": {
           const r = calcCurbGutter({
             linearFt: totalLinearFt,
             curbDepthIn: dims.curbDepthIn ?? 6,
@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
           }
           break;
         }
-        case "pierPad": {
+        case "pier_pad": {
           if (areaSections.length > 0) {
             // PierPad uses sections for multiple pads
             let totalPierVol = 0;
