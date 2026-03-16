@@ -33,6 +33,20 @@ export function QuantitiesPanel() {
   const [deleteAreaId, setDeleteAreaId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
+  const [stoneTypeMap, setStoneTypeMap] = useState<Map<string, string>>(new Map());
+
+  useEffect(() => {
+    supabase
+      .from("stone_types")
+      .select("id, name")
+      .eq("is_active", true)
+      .then(({ data }) => {
+        if (data) {
+          setStoneTypeMap(new Map(data.map((r) => [r.id, r.name])));
+        }
+      });
+  }, []);
+
   const confirmRename = () => {
     const trimmed = renameValue.trim();
     if (trimmed && renamingAreaId) {
