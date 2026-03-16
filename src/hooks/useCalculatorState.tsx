@@ -209,10 +209,15 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
 
   // Wrap dispatch to track dirty state
   const dispatch: React.Dispatch<Action> = useCallback((action: Action) => {
+    if (action.type === "RESET") {
+      localStorage.removeItem(STORAGE_KEY);
+      localStorage.removeItem("tfc_anon_has_data");
+    }
     baseDispatch(action);
     if (DATA_ACTIONS.has(action.type)) {
       isDirtyRef.current = true;
       setIsDirty(true);
+      localStorage.setItem("tfc_anon_has_data", "true");
     }
     if (action.type === "LOAD" || action.type === "RESET") {
       isDirtyRef.current = false;
