@@ -1,5 +1,6 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useProject } from "@/hooks/useProject";
+import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -8,8 +9,9 @@ import {
 } from "@/components/ui/select";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import type { CalcArea, CalculatorType } from "@/types/calculator";
-import { CALCULATOR_LABELS } from "@/types/calculator";
-import { Plus, X, Pencil, Check } from "lucide-react";
+import { CALCULATOR_LABELS, hasRequiredData } from "@/types/calculator";
+import { Plus, X, Pencil, Check, Save } from "lucide-react";
+import { toast } from "sonner";
 
 interface AreaSelectorProps {
   areas: CalcArea[];
@@ -23,14 +25,62 @@ interface AreaSelectorProps {
 
 export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, onRename, type }: AreaSelectorProps) {
   const { currentProject } = useProject();
+  const { saveArea, dispatch } = useCalculatorState();
   const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
   const [confirmOpen, setConfirmOpen] = useState(false);
+  const [discardDraftOpen, setDiscardDraftOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<(() => void) | null>(null);
   const [editing, setEditing] = useState(false);
   const [editName, setEditName] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const savingRef = useRef(false);
 
   const activeArea = areas.find((a) => a.id === activeAreaId);
+
+  /** Guard navigation away from an unsaved draft with data */
+  const guardDraftNavigation = useCallback((action: () => void) => {
+    if (activeArea?.isDraft && hasRequiredData(activeArea)) {
+      setPendingAction(() => action);
+      setDiscardDraftOpen(true);
+    } else {
+      action();
+    }
+  }, [activeArea]);
+
+  const handleSelect = (id: string) => {
+    if (id === activeAreaId) return;
+    guardDraftNavigation(() => onSelect(id));
+  };
+
+  const handleAdd = () => {
+    guardDraftNavigation(() => onAdd());
+  };
+
+  const handleSaveArea = () => {
+    if (!activeAreaId) return;
+    const result = saveArea(activeAreaId);
+    if (!result.valid) {
+      toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
+    } else {
+      toast.success("Area saved");
+    }
+  };
+
+  const confirmDiscardDraft = () => {
+    if (activeAreaId) {
+      dispatch({ type: "DELETE_AREA", id: activeAreaId });
+    }
+    setDiscardDraftOpen(false);
+    const action = pendingAction;
+    setPendingAction(null);
+    // Execute the pending action after discarding
+    if (action) action();
+  };
+
+  const cancelDiscardDraft = () => {
+    setDiscardDraftOpen(false);
+    setPendingAction(null);
+  };
 
   const startEditing = () => {
     if (!activeArea) return;
@@ -87,14 +137,14 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
         ) : (
           <>
             {areas.length > 0 ? (
-              <Select value={activeAreaId ?? ""} onValueChange={onSelect}>
+              <Select value={activeAreaId ?? ""} onValueChange={handleSelect}>
                 <SelectTrigger className="h-9 flex-1 bg-secondary/50">
                   <SelectValue placeholder="Select area…" />
                 </SelectTrigger>
                 <SelectContent>
                   {areas.map((a) => (
                     <SelectItem key={a.id} value={a.id}>
-                      {a.name}
+                      {a.name}{a.isDraft ? " (draft)" : ""}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -109,10 +159,23 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
             )}
           </>
         )}
+
+        {activeArea?.isDraft && (
+          <Button
+            size="sm"
+            className="h-9 gap-1"
+            onClick={handleSaveArea}
+          >
+            <Save className="h-3.5 w-3.5" />
+            Save Area
+          </Button>
+        )}
+
         <Button
           size="sm"
+          variant={activeArea?.isDraft ? "outline" : "default"}
           className="h-9 gap-1"
-          onClick={() => onAdd()}
+          onClick={handleAdd}
         >
           <Plus className="h-3.5 w-3.5" />
           Add Area
@@ -139,6 +202,16 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
         }}
         title="Discard Area"
         description={`Are you sure you want to discard "${activeArea?.name ?? "this area"}"? All sections, measurements, and settings for this area will be permanently removed.`}
+        confirmLabel="Discard"
+        variant="destructive"
+      />
+
+      <ConfirmDialog
+        open={discardDraftOpen}
+        onClose={cancelDiscardDraft}
+        onConfirm={confirmDiscardDraft}
+        title="Discard unsaved area?"
+        description={`"${activeArea?.name ?? "This area"}" has unsaved measurements. Do you want to discard it?`}
         confirmLabel="Discard"
         variant="destructive"
       />

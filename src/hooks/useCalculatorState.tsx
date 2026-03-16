@@ -9,7 +9,7 @@ import type {
   Segment,
   FootingMode,
 } from "@/types/calculator";
-import { AREA_NAME_PREFIXES, makeDefaultRebar, deriveRebarEnabled, hasRequiredData } from "@/types/calculator";
+import { AREA_NAME_PREFIXES, makeDefaultRebar, deriveRebarEnabled, hasRequiredData, getMissingFields } from "@/types/calculator";
 
 const STORAGE_KEY = "tfc_calculator_state";
 
@@ -33,6 +33,7 @@ type Action =
   | { type: "UPDATE_SECTION"; areaId: string; sectionId: string; patch: Partial<CalcSection> }
   | { type: "DELETE_SECTION"; areaId: string; sectionId: string }
   | { type: "UPDATE_REBAR"; areaId: string; elementType: RebarElementType; rebar: Partial<RebarConfig> }
+  | { type: "SAVE_AREA"; id: string }
   | { type: "LOAD"; state: CalcState }
   | { type: "RESET" };
 
@@ -41,35 +42,24 @@ const DATA_ACTIONS = new Set([
   "ADD_AREA", "DELETE_AREA", "UPDATE_AREA", "RENAME_AREA",
   "ADD_SEGMENT", "UPDATE_SEGMENT", "DELETE_SEGMENT",
   "ADD_SECTION", "UPDATE_SECTION", "DELETE_SECTION",
-  "UPDATE_REBAR",
+  "UPDATE_REBAR", "SAVE_AREA",
 ]);
 
 /**
- * After modifying an area, check if a draft should be promoted.
- * Returns the areas array with the draft flag cleared if required data exists.
- */
-function maybePromoteDraft(areas: CalcArea[], areaId: string): CalcArea[] {
-  return areas.map((a) => {
-    if (a.id !== areaId || !a.isDraft) return a;
-    if (hasRequiredData(a)) return { ...a, isDraft: false };
-    return a;
-  });
-}
-
-/**
- * When leaving a draft area (tab/area switch), promote or discard it.
+ * When leaving a draft area (tab/area switch), discard it only if empty.
+ * If it has data, leave it in place — the UI handles the confirmation dialog.
  */
 function resolveOutgoingDraft(areas: CalcArea[], leavingAreaId: string | null): CalcArea[] {
   if (!leavingAreaId) return areas;
   const area = areas.find((a) => a.id === leavingAreaId);
   if (!area || !area.isDraft) return areas;
 
-  if (hasRequiredData(area)) {
-    // Promote
-    return areas.map((a) => a.id === leavingAreaId ? { ...a, isDraft: false } : a);
+  if (!hasRequiredData(area)) {
+    // Discard empty draft silently
+    return areas.filter((a) => a.id !== leavingAreaId);
   }
-  // Discard empty draft
-  return areas.filter((a) => a.id !== leavingAreaId);
+  // Draft has data — leave it for UI-level confirmation
+  return areas;
 }
 
 function reducer(state: CalcState, action: Action): CalcState {
@@ -94,8 +84,7 @@ function reducer(state: CalcState, action: Action): CalcState {
         activeAreaId: state.activeAreaId === action.id ? null : state.activeAreaId,
       };
     case "UPDATE_AREA": {
-      let areas = state.areas.map((a) => (a.id === action.id ? { ...a, ...action.patch } : a));
-      areas = maybePromoteDraft(areas, action.id);
+      const areas = state.areas.map((a) => (a.id === action.id ? { ...a, ...action.patch } : a));
       return { ...state, areas };
     }
     case "RENAME_AREA":
@@ -104,14 +93,13 @@ function reducer(state: CalcState, action: Action): CalcState {
         areas: state.areas.map((a) => (a.id === action.id ? { ...a, name: action.name } : a)),
       };
     case "ADD_SEGMENT": {
-      let areas = state.areas.map((a) =>
+      const areas = state.areas.map((a) =>
         a.id === action.areaId ? { ...a, segments: [...a.segments, action.segment] } : a
       );
-      areas = maybePromoteDraft(areas, action.areaId);
       return { ...state, areas };
     }
     case "UPDATE_SEGMENT": {
-      let areas = state.areas.map((a) =>
+      const areas = state.areas.map((a) =>
         a.id === action.areaId
           ? {
               ...a,
@@ -121,7 +109,6 @@ function reducer(state: CalcState, action: Action): CalcState {
             }
           : a
       );
-      areas = maybePromoteDraft(areas, action.areaId);
       return { ...state, areas };
     }
     case "DELETE_SEGMENT":
@@ -134,14 +121,13 @@ function reducer(state: CalcState, action: Action): CalcState {
         ),
       };
     case "ADD_SECTION": {
-      let areas = state.areas.map((a) =>
+      const areas = state.areas.map((a) =>
         a.id === action.areaId ? { ...a, sections: [...a.sections, action.section] } : a
       );
-      areas = maybePromoteDraft(areas, action.areaId);
       return { ...state, areas };
     }
     case "UPDATE_SECTION": {
-      let areas = state.areas.map((a) =>
+      const areas = state.areas.map((a) =>
         a.id === action.areaId
           ? {
               ...a,
@@ -151,7 +137,6 @@ function reducer(state: CalcState, action: Action): CalcState {
             }
           : a
       );
-      areas = maybePromoteDraft(areas, action.areaId);
       return { ...state, areas };
     }
     case "DELETE_SECTION":
@@ -164,7 +149,7 @@ function reducer(state: CalcState, action: Action): CalcState {
         ),
       };
     case "UPDATE_REBAR": {
-      let areas = state.areas.map((a) => {
+      const areas = state.areas.map((a) => {
         if (a.id !== action.areaId) return a;
         const existing = a.rebarConfigs[action.elementType] ?? makeDefaultRebar(action.elementType);
         const updated: RebarConfig = { ...existing, ...action.rebar };
@@ -175,7 +160,13 @@ function reducer(state: CalcState, action: Action): CalcState {
           rebarEnabled: deriveRebarEnabled(newConfigs),
         };
       });
-      areas = maybePromoteDraft(areas, action.areaId);
+      return { ...state, areas };
+    }
+    case "SAVE_AREA": {
+      const areas = state.areas.map((a) => {
+        if (a.id !== action.id || !a.isDraft) return a;
+        return { ...a, isDraft: false };
+      });
       return { ...state, areas };
     }
     case "LOAD":
@@ -201,6 +192,7 @@ interface CalcCtx {
   activeArea: CalcArea | null;
   isDirty: boolean;
   markClean: () => void;
+  saveArea: (id: string) => { valid: boolean; missingFields: string[] };
 }
 
 const CalculatorContext = createContext<CalcCtx | null>(null);
@@ -311,12 +303,26 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     [state.areas, dispatch]
   );
 
+  const saveArea = useCallback(
+    (id: string): { valid: boolean; missingFields: string[] } => {
+      const area = state.areas.find((a) => a.id === id);
+      if (!area || !area.isDraft) return { valid: true, missingFields: [] };
+      const missingFields = getMissingFields(area);
+      if (missingFields.length === 0) {
+        dispatch({ type: "SAVE_AREA", id });
+        return { valid: true, missingFields: [] };
+      }
+      return { valid: false, missingFields };
+    },
+    [state.areas, dispatch]
+  );
+
   const activeArea = state.activeAreaId
     ? state.areas.find((a) => a.id === state.activeAreaId) ?? null
     : null;
 
   return (
-    <CalculatorContext.Provider value={{ state, dispatch, addArea, getAreasForType, activeArea, isDirty, markClean }}>
+    <CalculatorContext.Provider value={{ state, dispatch, addArea, getAreasForType, activeArea, isDirty, markClean, saveArea }}>
       {children}
     </CalculatorContext.Provider>
   );

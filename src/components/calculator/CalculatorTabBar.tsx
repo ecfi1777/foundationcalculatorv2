@@ -1,8 +1,9 @@
+import { useState, useRef, useEffect, useCallback } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import type { CalculatorType } from "@/types/calculator";
-import { CALCULATOR_LABELS } from "@/types/calculator";
+import { CALCULATOR_LABELS, hasRequiredData } from "@/types/calculator";
 import { cn } from "@/lib/utils";
-import { useRef, useEffect } from "react";
+import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 
 const TABS: CalculatorType[] = [
   "footing",
@@ -16,30 +17,71 @@ const TABS: CalculatorType[] = [
 ];
 
 export function CalculatorTabBar() {
-  const { state, dispatch } = useCalculatorState();
+  const { state, dispatch, activeArea } = useCalculatorState();
   const activeRef = useRef<HTMLButtonElement>(null);
+  const [discardOpen, setDiscardOpen] = useState(false);
+  const [pendingTab, setPendingTab] = useState<CalculatorType | null>(null);
 
   useEffect(() => {
     activeRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [state.activeTab]);
 
+  const handleTabClick = useCallback((tab: CalculatorType) => {
+    if (tab === state.activeTab) return;
+    // Guard: unsaved draft with data
+    if (activeArea?.isDraft && hasRequiredData(activeArea)) {
+      setPendingTab(tab);
+      setDiscardOpen(true);
+      return;
+    }
+    dispatch({ type: "SET_TAB", tab });
+  }, [state.activeTab, activeArea, dispatch]);
+
+  const confirmDiscard = () => {
+    if (activeArea) {
+      dispatch({ type: "DELETE_AREA", id: activeArea.id });
+    }
+    setDiscardOpen(false);
+    if (pendingTab) {
+      dispatch({ type: "SET_TAB", tab: pendingTab });
+      setPendingTab(null);
+    }
+  };
+
+  const cancelDiscard = () => {
+    setDiscardOpen(false);
+    setPendingTab(null);
+  };
+
   return (
-    <div className="flex items-center gap-1 overflow-x-auto border-b border-border pb-0 scrollbar-hide">
-      {TABS.map((tab) => (
-        <button
-          key={tab}
-          ref={state.activeTab === tab ? activeRef : undefined}
-          onClick={() => dispatch({ type: "SET_TAB", tab })}
-          className={cn(
-            "whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px",
-            state.activeTab === tab
-              ? "border-primary text-primary bg-secondary/30"
-              : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-          )}
-        >
-          {CALCULATOR_LABELS[tab]}
-        </button>
-      ))}
-    </div>
+    <>
+      <div className="flex items-center gap-1 overflow-x-auto border-b border-border pb-0 scrollbar-hide">
+        {TABS.map((tab) => (
+          <button
+            key={tab}
+            ref={state.activeTab === tab ? activeRef : undefined}
+            onClick={() => handleTabClick(tab)}
+            className={cn(
+              "whitespace-nowrap px-4 py-3 text-sm font-medium transition-colors border-b-2 -mb-px",
+              state.activeTab === tab
+                ? "border-primary text-primary bg-secondary/30"
+                : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+            )}
+          >
+            {CALCULATOR_LABELS[tab]}
+          </button>
+        ))}
+      </div>
+
+      <ConfirmDialog
+        open={discardOpen}
+        onClose={cancelDiscard}
+        onConfirm={confirmDiscard}
+        title="Discard unsaved area?"
+        description={`"${activeArea?.name ?? "This area"}" has unsaved measurements. Do you want to discard it?`}
+        confirmLabel="Discard"
+        variant="destructive"
+      />
+    </>
   );
 }
