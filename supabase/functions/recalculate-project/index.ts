@@ -162,7 +162,7 @@ Deno.serve(async (req) => {
           }
           break;
         }
-        case "pierPad": {
+        case "pier_pad": {
           if (areaSections.length > 0) {
             // PierPad uses sections for multiple pads
             let totalPierVol = 0;
