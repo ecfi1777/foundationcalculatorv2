@@ -72,6 +72,11 @@ export function CalculatorLayout() {
       if (pendingAction.type === "save") {
         clearPendingAction();
         if (!currentProject) {
+          // Enforce free-tier limit before first save
+          if (subscriptionTier === "free" && editableProjectCount >= 1) {
+            setShowPaywall(true);
+            return;
+          }
           setShowNameModal(true);
         } else {
           saveProject();
@@ -81,7 +86,7 @@ export function CalculatorLayout() {
         createNewProject();
       }
     }
-  }, [user, pendingAction, clearPendingAction, currentProject, saveProject, createNewProject]);
+  }, [user, pendingAction, clearPendingAction, currentProject, saveProject, createNewProject, subscriptionTier, editableProjectCount]);
 
   // ── Save handler ──
   const handleSave = useCallback(() => {
