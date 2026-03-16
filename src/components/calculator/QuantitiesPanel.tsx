@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useState, useCallback } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import type {
   CalcArea, AreaResult, ProjectTotals, BarSize,
@@ -23,6 +23,7 @@ import { Button } from "@/components/ui/button";
 import { Pencil, Trash2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
+import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 
 function computeRebarForElement(
   area: CalcArea,
@@ -322,6 +323,7 @@ function getRebarLabel(
 export function QuantitiesPanel() {
   const { state, dispatch } = useCalculatorState();
   const [renamingAreaId, setRenamingAreaId] = useState<string | null>(null);
+  const [deleteAreaId, setDeleteAreaId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
   const confirmRename = () => {
@@ -444,7 +446,7 @@ export function QuantitiesPanel() {
                           size="icon"
                           variant="ghost"
                           className="h-6 w-6 text-destructive"
-                          onClick={() => dispatch({ type: "DELETE_AREA", id: r.areaId })}
+                          onClick={() => setDeleteAreaId(r.areaId)}
                         >
                           <Trash2 className="h-3 w-3" />
                         </Button>
@@ -563,6 +565,18 @@ export function QuantitiesPanel() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={!!deleteAreaId}
+        onClose={() => setDeleteAreaId(null)}
+        onConfirm={() => {
+          if (deleteAreaId) dispatch({ type: "DELETE_AREA", id: deleteAreaId });
+          setDeleteAreaId(null);
+        }}
+        title="Delete Area"
+        description={`Are you sure you want to delete "${results.find((r) => r.areaId === deleteAreaId)?.areaName ?? "this area"}"? All measurements and settings for this area will be permanently removed.`}
+        confirmLabel="Delete"
+        variant="destructive"
+      />
     </div>
   );
 }
