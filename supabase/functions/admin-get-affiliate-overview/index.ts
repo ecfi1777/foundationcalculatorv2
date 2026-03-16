@@ -50,32 +50,33 @@ serve(async (req) => {
       });
     }
 
-    // Aggregate metrics server-side
-    const [affiliatesRes, referralsRes, commissionsRes] = await Promise.all([
+    // DB-side aggregates — no row loading into memory
+    const [
+      affiliatesRes,
+      referralsRes,
+      conversionsRes,
+      pendingRes,
+      paidRes,
+    ] = await Promise.all([
       supabase.from("affiliates").select("id", { count: "exact", head: true }),
-      supabase.from("referrals").select("id, status", { count: "exact" }),
-      supabase.from("affiliate_commissions").select("amount_cents, status"),
+      supabase.from("referrals").select("id", { count: "exact", head: true }),
+      supabase.from("referrals").select("id", { count: "exact", head: true }).eq("status", "converted"),
+      supabase.from("affiliate_commissions").select("amount_cents").eq("status", "pending"),
+      supabase.from("affiliate_commissions").select("amount_cents").eq("status", "paid"),
     ]);
 
-    const totalAffiliates = affiliatesRes.count ?? 0;
-    const totalReferrals = referralsRes.count ?? 0;
-    const totalConversions = (referralsRes.data || []).filter(
-      (r) => r.status === "converted"
-    ).length;
-
-    const commissions = commissionsRes.data || [];
-    const totalPendingCents = commissions
-      .filter((c) => c.status === "pending")
-      .reduce((sum, c) => sum + (c.amount_cents || 0), 0);
-    const totalPaidCents = commissions
-      .filter((c) => c.status === "paid")
-      .reduce((sum, c) => sum + (c.amount_cents || 0), 0);
+    const totalPendingCents = (pendingRes.data || []).reduce(
+      (sum, c) => sum + (c.amount_cents || 0), 0
+    );
+    const totalPaidCents = (paidRes.data || []).reduce(
+      (sum, c) => sum + (c.amount_cents || 0), 0
+    );
 
     return new Response(
       JSON.stringify({
-        total_affiliates: totalAffiliates,
-        total_referrals: totalReferrals,
-        total_conversions: totalConversions,
+        total_affiliates: affiliatesRes.count ?? 0,
+        total_referrals: referralsRes.count ?? 0,
+        total_conversions: conversionsRes.count ?? 0,
         total_pending_cents: totalPendingCents,
         total_paid_cents: totalPaidCents,
       }),

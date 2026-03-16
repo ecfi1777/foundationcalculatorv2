@@ -30,11 +30,14 @@ export default function Auth() {
 
   useEffect(() => {
     if (!loading && user) {
-      if (hasAnonData()) {
-        migrateAnonData(user.id).then(() => navigate("/"));
-      } else {
+      const postLogin = async () => {
+        await attachReferralIfNeeded(user.id);
+        if (hasAnonData()) {
+          await migrateAnonData(user.id);
+        }
         navigate("/");
-      }
+      };
+      postLogin();
     }
   }, [user, loading, navigate]);
 

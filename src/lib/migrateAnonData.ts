@@ -1,7 +1,7 @@
 import { supabase } from "@/lib/supabase/client";
 import { CALC_TYPE_TO_DB } from "@/types/calculator";
 import type { CalcState } from "@/hooks/useCalculatorState";
-import { getRefCode, clearAnonData } from "./localStorage";
+import { getRefCode, clearRefCode, clearAnonData } from "./localStorage";
 
 const STORAGE_KEY = "tfc_calculator_state";
 
@@ -17,6 +17,69 @@ const FRACTION_MAP: Record<string, number> = {
  */
 export function hasCalcState(): boolean {
   return localStorage.getItem(STORAGE_KEY) !== null;
+}
+
+/**
+ * Idempotently attach a referral for the given user based on the
+ * ref code stored in localStorage.
+ *
+ * - No-ops if no ref code is stored.
+ * - No-ops if a referral already exists for this user (clears code).
+ * - No-ops if the ref code is invalid / affiliate not found (clears code).
+ * - On insert failure due to unique constraint (race), treats as no-op (clears code).
+ * - On any other insert failure, does NOT clear the code so it retries next login.
+ */
+export async function attachReferralIfNeeded(userId: string) {
+  const refCode = getRefCode();
+  if (!refCode) return;
+
+  // Check if referral already exists for this user
+  const { data: existing } = await supabase
+    .from("referrals")
+    .select("id")
+    .eq("referred_user_id", userId)
+    .maybeSingle();
+
+  if (existing) {
+    // Already attached — confirmed no-op
+    clearRefCode();
+    return;
+  }
+
+  // Look up affiliate by referral code
+  const { data: affiliate } = await supabase
+    .from("affiliates")
+    .select("id")
+    .eq("referral_code", refCode)
+    .maybeSingle();
+
+  if (!affiliate) {
+    // Invalid code — no point retaining
+    clearRefCode();
+    return;
+  }
+
+  // Insert referral row
+  const { error: insertErr } = await supabase
+    .from("referrals")
+    .insert({
+      affiliate_id: affiliate.id,
+      referred_user_id: userId,
+    });
+
+  if (insertErr) {
+    // Unique constraint violation (23505) = race condition duplicate — treat as no-op
+    if (insertErr.code === "23505") {
+      clearRefCode();
+      return;
+    }
+    // Any other error — keep code for retry on next login
+    console.error("Failed to attach referral:", insertErr.message);
+    return;
+  }
+
+  // Success — clear only the ref code
+  clearRefCode();
 }
 
 /**
@@ -106,22 +169,6 @@ export async function migrateAnonData(userId: string) {
         stone_type_id: sec.stoneTypeId || null,
       }));
       await supabase.from("sections").insert(sectionRows);
-    }
-  }
-
-  // Handle referral code
-  const refCode = getRefCode();
-  if (refCode) {
-    const { data: affiliate } = await supabase
-      .from("affiliates")
-      .select("id")
-      .eq("referral_code", refCode)
-      .single();
-    if (affiliate) {
-      await supabase.from("referrals").insert({
-        affiliate_id: affiliate.id,
-        referred_user_id: userId,
-      });
     }
   }
 

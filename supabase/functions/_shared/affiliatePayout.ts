@@ -111,11 +111,8 @@ export async function executeAffiliatePayout(
         continue;
       }
 
-      // Only increment earnings if all rows updated successfully
-      await supabase.rpc("increment_affiliate_earnings", {
-        affiliate_row_id: affiliateId,
-        amount: totalCents,
-      });
+      // total_earned_cents is incremented at commission creation time
+      // (in stripe-webhook), not at payout time — no increment here.
 
       paid_affiliates++;
       total_amount_cents += totalCents;
