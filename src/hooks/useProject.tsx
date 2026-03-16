@@ -82,7 +82,8 @@ function mapDbRebarToConfig(rc: any): RebarConfig {
 }
 
 function dbAreaToCalcArea(dbArea: any, segments: any[], sections: any[], rebarConfigs: any[]): CalcArea {
-  const type = dbArea.calculator_type as CalculatorType;
+  const dbType = dbArea.calculator_type as DbCalculatorType;
+  const type = DB_TO_CALC_TYPE[dbType] ?? (dbArea.calculator_type as CalculatorType);
   const inputs = (dbArea.inputs ?? {}) as Record<string, any>;
 
   // Group rebar configs by element_type
