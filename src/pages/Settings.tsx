@@ -578,6 +578,48 @@ export default function Settings() {
             </div>
           </CardContent>
         </Card>
+
+        {/* SECTION 4 — Affiliate Program */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Affiliate Program</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {affiliate ? (
+              <>
+                <p className="text-sm text-muted-foreground">You're an affiliate! View your dashboard to track referrals and earnings.</p>
+                <Button variant="outline" className="w-full" onClick={() => navigate("/affiliate")}>
+                  View Affiliate Dashboard
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Earn commissions by referring other contractors to Foundation Calculator. Get a unique referral link and earn 20% on every paid subscription.
+                </p>
+                <Button
+                  className="w-full"
+                  onClick={async () => {
+                    if (!session) return;
+                    setAffiliateCreating(true);
+                    try {
+                      await callEdgeFunction("create-affiliate-account", {}, session);
+                      navigate("/affiliate");
+                    } catch (e: any) {
+                      toast.error(e.message || "Failed to create affiliate account");
+                    } finally {
+                      setAffiliateCreating(false);
+                    }
+                  }}
+                  disabled={affiliateCreating}
+                >
+                  {affiliateCreating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                  Become an Affiliate
+                </Button>
+              </>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
