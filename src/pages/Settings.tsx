@@ -34,6 +34,8 @@ export default function Settings() {
   const [isOwner, setIsOwner] = useState(false);
   const [allOrgs, setAllOrgs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [affiliate, setAffiliate] = useState<any>(null);
+  const [affiliateCreating, setAffiliateCreating] = useState(false);
 
   // Password change
   const [showPasswordForm, setShowPasswordForm] = useState(false);
@@ -99,6 +101,14 @@ export default function Settings() {
         .eq("user_id", user.id)
         .eq("status", "active");
       setAllOrgs(allMemberships || []);
+
+      // Affiliate check
+      const { data: affData } = await supabase
+        .from("affiliates")
+        .select("*")
+        .eq("user_id", user.id)
+        .maybeSingle();
+      setAffiliate(affData);
     } finally {
       setLoading(false);
     }
@@ -566,6 +576,48 @@ export default function Settings() {
                 </SelectContent>
               </Select>
             </div>
+          </CardContent>
+        </Card>
+
+        {/* SECTION 4 — Affiliate Program */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Affiliate Program</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-3">
+            {affiliate ? (
+              <>
+                <p className="text-sm text-muted-foreground">You're an affiliate! View your dashboard to track referrals and earnings.</p>
+                <Button variant="outline" className="w-full" onClick={() => navigate("/affiliate")}>
+                  View Affiliate Dashboard
+                </Button>
+              </>
+            ) : (
+              <>
+                <p className="text-sm text-muted-foreground">
+                  Earn commissions by referring other contractors to Foundation Calculator. Get a unique referral link and earn 20% on every paid subscription.
+                </p>
+                <Button
+                  className="w-full"
+                  onClick={async () => {
+                    if (!session) return;
+                    setAffiliateCreating(true);
+                    try {
+                      await callEdgeFunction("create-affiliate-account", {}, session);
+                      navigate("/affiliate");
+                    } catch (e: any) {
+                      toast.error(e.message || "Failed to create affiliate account");
+                    } finally {
+                      setAffiliateCreating(false);
+                    }
+                  }}
+                  disabled={affiliateCreating}
+                >
+                  {affiliateCreating && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
+                  Become an Affiliate
+                </Button>
+              </>
+            )}
           </CardContent>
         </Card>
       </div>

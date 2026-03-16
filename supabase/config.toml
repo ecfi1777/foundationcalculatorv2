@@ -47,3 +47,6 @@ verify_jwt = true
 
 [functions.run-affiliate-payout]
 verify_jwt = true
+
+[functions.create-affiliate-account]
+verify_jwt = false
