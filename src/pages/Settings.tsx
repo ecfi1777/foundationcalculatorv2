@@ -34,6 +34,8 @@ export default function Settings() {
   const [isOwner, setIsOwner] = useState(false);
   const [allOrgs, setAllOrgs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [affiliate, setAffiliate] = useState<any>(null);
+  const [affiliateCreating, setAffiliateCreating] = useState(false);
 
   // Password change
   const [showPasswordForm, setShowPasswordForm] = useState(false);
