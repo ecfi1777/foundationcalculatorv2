@@ -102,7 +102,7 @@ async function handleSubscriptionUpdated(subscription: Stripe.Subscription) {
   let status = "active";
   if (subscription.status === "past_due") status = "past_due";
   else if (subscription.status === "canceled" || subscription.status === "unpaid") status = "cancelled";
-  else if (subscription.status === "trialing") status = "active";
+  else if (subscription.status === "trialing") status = "trialing";
 
   const { error } = await supabase
     .from("organizations")
@@ -363,8 +363,8 @@ serve(async (req) => {
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     log("ERROR", { message: msg });
-    return new Response(JSON.stringify({ error: msg }), {
-      status: 400,
+    return new Response(JSON.stringify({ received: true, error: msg }), {
+      status: 200,
       headers: { "Content-Type": "application/json" },
     });
   }

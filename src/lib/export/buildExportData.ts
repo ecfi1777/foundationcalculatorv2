@@ -5,9 +5,10 @@
 import type { CalcState } from "@/hooks/useCalculatorState";
 import type { ProjectExportData, AreaExportData, ExportCalculatorType } from "@/types/export";
 import { CALC_TYPE_TO_DB } from "@/types/calculator";
-import type { DbCalculatorType } from "@/types/calculator";
 import { computeArea } from "@/lib/computeArea";
+import { calcSlabSection } from "@/lib/calculations/slab";
 import { formatSegment } from "@/lib/segmentParser";
+import { LINEAR_TYPES } from "./exportUtils";
 
 interface ProjectInfo {
   name: string;
@@ -21,8 +22,6 @@ function formatExportDate(): string {
   const yyyy = now.getFullYear();
   return `${mm}-${dd}-${yyyy}`;
 }
-
-const LINEAR_TYPES: ExportCalculatorType[] = ["footings", "walls", "grade_beam", "curb"];
 
 export function buildExportData(
   state: CalcState,
@@ -56,16 +55,18 @@ export function buildExportData(
         lengthInchesDecimal: seg.lengthInchesDecimal,
       }));
 
-    // Sections with stone type name resolution
+    // Sections with stone type name resolution — use calcSlabSection for volume
     const sections = area.sections
       .slice()
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((sec) => {
-        const secLenFt = sec.lengthFt + sec.lengthIn / 12;
-        const secWidFt = sec.widthFt + sec.widthIn / 12;
-        const secSqft = secLenFt * secWidFt;
-        // volumeCY per section: (sqft * thickness) / (12 * 27)
-        const secVolCy = (secSqft * sec.thicknessIn) / (12 * 27);
+        const slabResult = calcSlabSection({
+          lengthFt: sec.lengthFt,
+          lengthIn: sec.lengthIn,
+          widthFt: sec.widthFt,
+          widthIn: sec.widthIn,
+          thicknessIn: sec.thicknessIn,
+        });
 
         return {
           name: sec.name,
@@ -74,8 +75,8 @@ export function buildExportData(
           widthFt: sec.widthFt,
           widthIn: sec.widthIn,
           thicknessIn: sec.thicknessIn,
-          sqft: secSqft,
-          volumeCY: secVolCy,
+          sqft: slabResult.sqft,
+          volumeCY: slabResult.volumeCy,
           stoneEnabled: sec.includeStone,
           stoneTons: sec.includeStone && sec.stoneDepthIn > 0 ? (result.stoneTons ?? null) : null,
           stoneDepthIn: sec.includeStone ? sec.stoneDepthIn : null,

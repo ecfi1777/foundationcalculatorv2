@@ -1,27 +1,27 @@
 /**
  * Helper for calling Supabase Edge Functions via fetch.
  */
-export async function callEdgeFunction(
-  functionName: string,
-  options: {
-    method?: string;
-    accessToken?: string;
-    body?: unknown;
-  } = {}
-): Promise<Response> {
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  const url = `https://${projectId}.supabase.co/functions/v1/${functionName}`;
+import type { Session } from "@supabase/supabase-js";
 
-  const headers: Record<string, string> = {
-    "Content-Type": "application/json",
-  };
-  if (options.accessToken) {
-    headers.Authorization = `Bearer ${options.accessToken}`;
-  }
+const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
 
-  return fetch(url, {
-    method: options.method ?? "POST",
-    headers,
-    body: options.body !== undefined ? JSON.stringify(options.body) : undefined,
-  });
+export async function callEdgeFunction<T = unknown>(
+  fnName: string,
+  body: Record<string, unknown>,
+  session: Session
+): Promise<T> {
+  const res = await fetch(
+    `https://${projectId}.supabase.co/functions/v1/${fnName}`,
+    {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${session.access_token}`,
+      },
+      body: JSON.stringify(body),
+    }
+  );
+  const data = await res.json();
+  if (!res.ok) throw new Error(data.error || `${fnName} failed`);
+  return data as T;
 }

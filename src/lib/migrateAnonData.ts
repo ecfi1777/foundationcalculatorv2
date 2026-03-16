@@ -1,22 +1,41 @@
 import { supabase } from "@/lib/supabase/client";
 import { CALC_TYPE_TO_DB } from "@/types/calculator";
-import type { CalculatorType } from "@/types/calculator";
-import {
-  getAnonProjects,
-  getAnonAreas,
-  getAnonSegments,
-  getAnonSections,
-  getRefCode,
-  clearAnonData,
-  hasAnonData,
-} from "./localStorage";
+import type { CalcState } from "@/hooks/useCalculatorState";
+import { getRefCode, clearAnonData } from "./localStorage";
+
+const STORAGE_KEY = "tfc_calculator_state";
+
+const FRACTION_MAP: Record<string, number> = {
+  "1/4": 0.25,
+  "1/2": 0.5,
+  "3/4": 0.75,
+  "0": 0,
+};
 
 /**
- * Migrates anonymous localStorage data into the authenticated user's Supabase account.
+ * Check if anonymous calculator state exists in localStorage.
+ */
+export function hasCalcState(): boolean {
+  return localStorage.getItem(STORAGE_KEY) !== null;
+}
+
+/**
+ * Migrates anonymous localStorage calculator state into the
+ * authenticated user's Supabase account.
  * Called once after signup/login when anon data exists.
  */
 export async function migrateAnonData(userId: string) {
-  if (!hasAnonData()) return;
+  const raw = localStorage.getItem(STORAGE_KEY);
+  if (!raw) return;
+
+  let state: CalcState;
+  try {
+    state = JSON.parse(raw) as CalcState;
+  } catch {
+    return;
+  }
+
+  if (!state.areas || state.areas.length === 0) return;
 
   // Get user's active org
   const { data: settings } = await supabase
@@ -28,73 +47,69 @@ export async function migrateAnonData(userId: string) {
   const orgId = settings?.active_org_id;
   if (!orgId) return;
 
-  const anonProjects = getAnonProjects();
-  const anonAreas = getAnonAreas();
-  const anonSegments = getAnonSegments();
-  const anonSections = getAnonSections();
+  // Create a project for the migrated data
+  const { data: project } = await supabase
+    .from("projects")
+    .insert({ name: "My Project", org_id: orgId })
+    .select("id")
+    .single();
 
-  // Map old local IDs → new Supabase IDs
-  const projectIdMap = new Map<string, string>();
-  const areaIdMap = new Map<string, string>();
+  if (!project) return;
 
-  // 1. Migrate projects
-  for (const proj of anonProjects) {
-    const { data } = await supabase
-      .from("projects")
-      .insert({ name: proj.name, org_id: orgId, notes: proj.notes || null })
-      .select("id")
-      .single();
-    if (data) projectIdMap.set(proj.id, data.id);
-  }
+  // Migrate each area
+  for (const area of state.areas) {
+    const dbCalcType = CALC_TYPE_TO_DB[area.type] ?? area.type;
 
-  // 2. Migrate areas
-  for (const area of anonAreas) {
-    const newProjectId = projectIdMap.get(area.project_id);
-    if (!newProjectId) continue;
-    const { data } = await supabase
+    const { data: areaRow } = await supabase
       .from("areas")
       .insert({
-        project_id: newProjectId,
+        project_id: project.id,
         name: area.name,
-        calculator_type: CALC_TYPE_TO_DB[area.calculator_type as CalculatorType] ?? area.calculator_type,
-        sort_order: area.sort_order,
-        inputs: area.inputs as any,
+        calculator_type: dbCalcType,
+        sort_order: area.sortOrder,
+        waste_pct: area.wastePct ?? 0,
+        inputs: { footingMode: area.footingMode, dimensions: area.dimensions },
+        inputs_version: 1,
       })
       .select("id")
       .single();
-    if (data) areaIdMap.set(area.id, data.id);
+
+    if (!areaRow) continue;
+
+    // Migrate segments
+    if (area.segments.length > 0) {
+      const segmentRows = area.segments.map((seg) => ({
+        area_id: areaRow.id,
+        feet: seg.feet,
+        inches: seg.inches,
+        fraction: seg.fraction,
+        sort_order: seg.sortOrder,
+        length_inches_decimal:
+          seg.feet * 12 + seg.inches + (FRACTION_MAP[seg.fraction] ?? 0),
+      }));
+      await supabase.from("segments").insert(segmentRows);
+    }
+
+    // Migrate sections
+    if (area.sections.length > 0) {
+      const sectionRows = area.sections.map((sec) => ({
+        area_id: areaRow.id,
+        name: sec.name,
+        sort_order: sec.sortOrder,
+        length_ft: sec.lengthFt,
+        length_in: sec.lengthIn,
+        width_ft: sec.widthFt,
+        width_in: sec.widthIn,
+        thickness_in: sec.thicknessIn,
+        include_stone: sec.includeStone,
+        stone_depth_in: sec.stoneDepthIn || null,
+        stone_type_id: sec.stoneTypeId || null,
+      }));
+      await supabase.from("sections").insert(sectionRows);
+    }
   }
 
-  // 3. Migrate segments
-  for (const seg of anonSegments) {
-    const newAreaId = areaIdMap.get(seg.area_id);
-    if (!newAreaId) continue;
-    await supabase.from("segments").insert({
-      area_id: newAreaId,
-      feet: seg.feet,
-      inches: seg.inches,
-      fraction: seg.fraction,
-      sort_order: seg.sort_order,
-    });
-  }
-
-  // 4. Migrate sections
-  for (const sec of anonSections) {
-    const newAreaId = areaIdMap.get(sec.area_id);
-    if (!newAreaId) continue;
-    await supabase.from("sections").insert({
-      area_id: newAreaId,
-      name: sec.name,
-      sort_order: sec.sort_order,
-      length_ft: sec.length_ft,
-      length_in: sec.length_in,
-      width_ft: sec.width_ft,
-      width_in: sec.width_in,
-      thickness_in: sec.thickness_in,
-    });
-  }
-
-  // 5. Handle referral code
+  // Handle referral code
   const refCode = getRefCode();
   if (refCode) {
     const { data: affiliate } = await supabase
@@ -110,6 +125,7 @@ export async function migrateAnonData(userId: string) {
     }
   }
 
-  // 6. Clear localStorage
+  // Clear localStorage
   clearAnonData();
+  localStorage.removeItem(STORAGE_KEY);
 }

@@ -1,20 +1,12 @@
 import type { Session } from "@supabase/supabase-js";
+import { callEdgeFunction } from "@/lib/edgeFunctions";
 
 export async function startCheckout(session: Session, activeOrgId: string): Promise<void> {
-  const projectId = import.meta.env.VITE_SUPABASE_PROJECT_ID;
-  const response = await fetch(
-    `https://${projectId}.supabase.co/functions/v1/create-checkout-session`,
-    {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: `Bearer ${session.access_token}`,
-      },
-      body: JSON.stringify({ email: session.user.email, orgId: activeOrgId }),
-    }
+  const data = await callEdgeFunction<{ url: string }>(
+    "create-checkout-session",
+    { email: session.user.email, orgId: activeOrgId },
+    session
   );
-  const data = await response.json();
-  if (!response.ok) throw new Error(data.error || "Could not start checkout");
   if (!data?.url) throw new Error("Checkout URL was not returned.");
 
   const inIframe = window.self !== window.top;
@@ -27,5 +19,4 @@ export async function startCheckout(session: Session, activeOrgId: string): Prom
   } else {
     window.location.href = data.url;
   }
-  return data.url;
 }

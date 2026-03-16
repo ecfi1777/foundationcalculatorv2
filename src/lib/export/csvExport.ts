@@ -1,33 +1,14 @@
 /**
  * CSV export — internal module called only by exportService.
  */
-import type { ProjectExportData, ExportCalculatorType } from "@/types/export";
-
-const TYPE_LABELS: Record<ExportCalculatorType, string> = {
-  footings: "Footings",
-  walls: "Walls",
-  grade_beam: "Grade Beam",
-  curb: "Curb & Gutter",
-  slab: "Slab",
-  pier_pad: "Pier Pad",
-  cylinder: "Cylinder",
-  steps: "Steps/Stairs",
-};
+import type { ProjectExportData } from "@/types/export";
+import { TYPE_LABELS, sanitizeFilename } from "./exportUtils";
 
 function escapeCSV(val: string): string {
   if (val.includes(",") || val.includes('"') || val.includes("\n")) {
     return `"${val.replace(/"/g, '""')}"`;
   }
   return val;
-}
-
-function sanitizeFilename(name: string): string {
-  return name
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-")
-    .replace(/-+/g, "-")
-    .replace(/^-|-$/g, "");
 }
 
 export async function generateCSV(data: ProjectExportData): Promise<void> {

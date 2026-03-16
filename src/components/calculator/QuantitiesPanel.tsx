@@ -45,7 +45,7 @@ export function QuantitiesPanel() {
   };
 
   const results = useMemo(
-    () => state.areas.map(computeArea),
+    () => state.areas.map((area) => computeArea(area)),
     [state.areas]
   );
 
