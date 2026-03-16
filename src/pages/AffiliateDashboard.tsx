@@ -16,6 +16,14 @@ interface StripeConnectStatus {
   stripe_connect_id: string | null;
 }
 
+interface DashboardStats {
+  total_signups: number;
+  total_conversions: number;
+  active_referrals: number;
+  pending_commission_cents: number;
+  total_earned_cents: number;
+}
+
 export default function AffiliateDashboard() {
   const navigate = useNavigate();
   const { user, session } = useAuth();
@@ -52,39 +60,41 @@ export default function AffiliateDashboard() {
       }
       setAffiliate(aff);
 
-      // 2. Get referrals
-      const { data: referrals } = await supabase
-        .from("referrals")
-        .select("id, status")
-        .eq("affiliate_id", aff.id);
+      // 2. Get dashboard stats via single RPC (replaces 3 separate queries)
+      const { data: stats, error: statsErr } = await supabase.rpc(
+        "get_affiliate_dashboard_stats",
+        { affiliate_id: aff.id }
+      );
 
-      const refs = referrals || [];
-      const totalSignups = refs.length;
-      const converted = refs.filter((r) => r.status === "converted");
+      if (statsErr) {
+        console.error("Failed to fetch dashboard stats:", statsErr);
+      }
 
-      // 3. Get commissions
-      const { data: commissions } = await supabase
-        .from("affiliate_commissions")
-        .select("*")
-        .eq("affiliate_id", aff.id);
-
-      const comms = commissions || [];
-      const pendingCommissionCents = comms
-        .filter((c) => c.status === "pending")
-        .reduce((sum, c) => sum + (c.amount_cents || 0), 0);
-
-      const paidPayouts = comms
-        .filter((c) => c.status === "paid")
-        .sort((a, b) => new Date(b.paid_at || 0).getTime() - new Date(a.paid_at || 0).getTime());
+      const dashStats = (stats as unknown as DashboardStats) || {
+        total_signups: 0,
+        total_conversions: 0,
+        active_referrals: 0,
+        pending_commission_cents: 0,
+        total_earned_cents: 0,
+      };
 
       setMetrics({
-        totalSignups,
-        totalConversions: converted.length,
-        activeReferrals: converted.length,
-        pendingCommissionCents,
-        totalEarnedCents: aff.total_earned_cents || 0,
+        totalSignups: dashStats.total_signups,
+        totalConversions: dashStats.total_conversions,
+        activeReferrals: dashStats.active_referrals,
+        pendingCommissionCents: dashStats.pending_commission_cents,
+        totalEarnedCents: dashStats.total_earned_cents,
       });
-      setPayouts(paidPayouts);
+
+      // 3. Get paid commissions for payout history table (separate query needed for row data)
+      const { data: paidComms } = await supabase
+        .from("affiliate_commissions")
+        .select("id, paid_at, amount_cents, stripe_transfer_id")
+        .eq("affiliate_id", aff.id)
+        .eq("status", "paid")
+        .order("paid_at", { ascending: false });
+
+      setPayouts(paidComms || []);
       setLoading(false);
 
       // 4. Get Stripe Connect status

@@ -20,6 +20,7 @@ export type Database = {
           amount_cents: number
           created_at: string
           id: string
+          invoice_id: string | null
           paid_at: string | null
           period_end: string
           period_start: string
@@ -27,12 +28,14 @@ export type Database = {
           status: string
           stripe_payment_id: string | null
           stripe_transfer_id: string | null
+          subscription_id: string | null
         }
         Insert: {
           affiliate_id: string
           amount_cents: number
           created_at?: string
           id?: string
+          invoice_id?: string | null
           paid_at?: string | null
           period_end: string
           period_start: string
@@ -40,12 +43,14 @@ export type Database = {
           status?: string
           stripe_payment_id?: string | null
           stripe_transfer_id?: string | null
+          subscription_id?: string | null
         }
         Update: {
           affiliate_id?: string
           amount_cents?: number
           created_at?: string
           id?: string
+          invoice_id?: string | null
           paid_at?: string | null
           period_end?: string
           period_start?: string
@@ -53,6 +58,7 @@ export type Database = {
           status?: string
           stripe_payment_id?: string | null
           stripe_transfer_id?: string | null
+          subscription_id?: string | null
         }
         Relationships: [
           {
@@ -80,6 +86,9 @@ export type Database = {
           referral_link: string
           status: string
           stripe_connect_id: string | null
+          stripe_details_submitted: boolean
+          stripe_payouts_enabled: boolean
+          stripe_status_checked_at: string | null
           total_earned_cents: number
           total_referred: number
           updated_at: string
@@ -93,6 +102,9 @@ export type Database = {
           referral_link: string
           status?: string
           stripe_connect_id?: string | null
+          stripe_details_submitted?: boolean
+          stripe_payouts_enabled?: boolean
+          stripe_status_checked_at?: string | null
           total_earned_cents?: number
           total_referred?: number
           updated_at?: string
@@ -106,6 +118,9 @@ export type Database = {
           referral_link?: string
           status?: string
           stripe_connect_id?: string | null
+          stripe_details_submitted?: boolean
+          stripe_payouts_enabled?: boolean
+          stripe_status_checked_at?: string | null
           total_earned_cents?: number
           total_referred?: number
           updated_at?: string
@@ -935,6 +950,10 @@ export type Database = {
     }
     Functions: {
       get_active_org_id: { Args: { _user_id: string }; Returns: string }
+      get_affiliate_dashboard_stats: {
+        Args: { affiliate_id: string }
+        Returns: Json
+      }
       increment_affiliate_earnings: {
         Args: { affiliate_row_id: string; amount: number }
         Returns: undefined

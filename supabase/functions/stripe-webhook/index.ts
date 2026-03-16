@@ -228,7 +228,9 @@ async function handlePaymentFailed(invoice: Stripe.Invoice) {
 async function handleInvoicePaid(invoice: Stripe.Invoice) {
   const customerId = invoice.customer as string;
   const amountPaid = invoice.amount_paid; // in cents
-  log("invoice.paid", { customerId, invoiceId: invoice.id, amountPaid });
+  const invoiceId = invoice.id;
+  const subscriptionId = (invoice.subscription as string) || null;
+  log("invoice.paid", { customerId, invoiceId, amountPaid, subscriptionId });
 
   if (!amountPaid || amountPaid === 0) {
     log("Zero-amount invoice, skipping affiliate commission");
@@ -250,6 +252,34 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     return;
   }
 
+  // ── Idempotency: check if commission already exists for this invoice ──
+  // The partial unique index on invoice_id is the database-level guard.
+  // This application-level check prevents unnecessary insert attempts.
+  const { data: existingCommission } = await supabase
+    .from("affiliate_commissions")
+    .select("id")
+    .eq("invoice_id", invoiceId)
+    .maybeSingle();
+
+  if (existingCommission) {
+    log("Commission already exists for this invoice, skipping duplicate", { invoiceId });
+    return;
+  }
+
+  // ── Convert referral if first payment (idempotent — skip if already converted) ──
+  if (referral.status === "signed_up") {
+    const { error: convErr } = await supabase
+      .from("referrals")
+      .update({ status: "converted", converted_at: new Date().toISOString() })
+      .eq("id", referral.id)
+      .eq("status", "signed_up"); // conditional update prevents race conditions
+    if (convErr) {
+      log("Warning: failed to update referral status", { referralId: referral.id, error: convErr.message });
+    } else {
+      log("Referral converted on first payment", { referralId: referral.id });
+    }
+  }
+
   // Get affiliate commission percentage
   const { data: affiliate } = await supabase
     .from("affiliates")
@@ -258,11 +288,21 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     .single();
 
   if (!affiliate) {
-    log("Affiliate not found", { affiliateId: referral.affiliate_id });
+    log("Affiliate not found, skipping commission", { affiliateId: referral.affiliate_id });
     return;
   }
 
   const commissionCents = Math.floor(amountPaid * (affiliate.commission_pct / 100));
+
+  // ── Commission validation ──
+  if (commissionCents < 0 || commissionCents >= amountPaid) {
+    log("Invalid commission amount, skipping", {
+      commissionCents,
+      amountPaid,
+      commissionPct: affiliate.commission_pct,
+    });
+    return;
+  }
 
   const periodStart = invoice.period_start
     ? new Date(invoice.period_start * 1000).toISOString()
@@ -277,18 +317,19 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
     amount_cents: commissionCents,
     period_start: periodStart,
     period_end: periodEnd,
-    stripe_payment_id: invoice.payment_intent as string | null,
+    stripe_payment_id: (invoice.payment_intent as string) || null,
+    invoice_id: invoiceId,
+    subscription_id: subscriptionId,
     status: "pending",
   });
 
-  if (error) throw error;
-
-  // Update referral status to converted if first payment
-  if (referral.status === "signed_up") {
-    await supabase
-      .from("referrals")
-      .update({ status: "converted", converted_at: new Date().toISOString() })
-      .eq("id", referral.id);
+  if (error) {
+    // Handle unique constraint violation gracefully (duplicate invoice_id)
+    if (error.code === "23505") {
+      log("Duplicate commission prevented by unique index", { invoiceId });
+      return;
+    }
+    throw error;
   }
 
   // Increment affiliate totals atomically
@@ -299,7 +340,9 @@ async function handleInvoicePaid(invoice: Stripe.Invoice) {
 
   log("Affiliate commission created", {
     affiliateId: affiliate.id,
+    invoiceId,
     commissionCents,
+    subscriptionId,
     referralId: referral.id,
   });
 }

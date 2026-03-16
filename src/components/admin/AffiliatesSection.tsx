@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Card, CardContent } from "@/components/ui/card";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
@@ -9,7 +10,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { RefreshCw, DollarSign } from "lucide-react";
+import { RefreshCw, DollarSign, Users, TrendingUp, UserCheck, Clock } from "lucide-react";
 import { toast } from "sonner";
 
 interface AffiliateRow {
@@ -24,6 +25,14 @@ interface AffiliateRow {
   stripe_connect_status: "Connected" | "Not Connected";
   payout_status: string;
   created_at: string;
+}
+
+interface OverviewStats {
+  total_affiliates: number;
+  total_referrals: number;
+  total_conversions: number;
+  total_pending_cents: number;
+  total_paid_cents: number;
 }
 
 interface PayoutResult {
@@ -41,14 +50,19 @@ interface Props {
 
 export function AffiliatesSection({ adminCall, onError }: Props) {
   const [rows, setRows] = useState<AffiliateRow[]>([]);
+  const [overview, setOverview] = useState<OverviewStats | null>(null);
   const [loading, setLoading] = useState(true);
   const [payoutRunning, setPayoutRunning] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
     try {
-      const data = await adminCall<AffiliateRow[]>("admin-get-affiliates");
+      const [data, stats] = await Promise.all([
+        adminCall<AffiliateRow[]>("admin-get-affiliates"),
+        adminCall<OverviewStats>("admin-get-affiliate-overview"),
+      ]);
       setRows(data);
+      setOverview(stats);
     } catch (e) {
       onError(e);
     } finally {
@@ -76,6 +90,16 @@ export function AffiliatesSection({ adminCall, onError }: Props) {
   };
 
   const formatCents = (cents: number) => `$${(cents / 100).toFixed(2)}`;
+
+  const overviewCards = overview
+    ? [
+        { label: "Total Affiliates", value: overview.total_affiliates, icon: Users },
+        { label: "Total Referrals", value: overview.total_referrals, icon: TrendingUp },
+        { label: "Total Conversions", value: overview.total_conversions, icon: UserCheck },
+        { label: "Pending Commission", value: formatCents(overview.total_pending_cents), icon: Clock },
+        { label: "Total Paid", value: formatCents(overview.total_paid_cents), icon: DollarSign },
+      ]
+    : [];
 
   return (
     <div className="space-y-4">
@@ -109,6 +133,21 @@ export function AffiliatesSection({ adminCall, onError }: Props) {
           </AlertDialog>
         </div>
       </div>
+
+      {/* Overview Summary Cards */}
+      {overview && (
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
+          {overviewCards.map((c) => (
+            <Card key={c.label} className="bg-card border-border">
+              <CardContent className="flex flex-col items-center gap-1 p-3 text-center">
+                <c.icon className="h-4 w-4 text-muted-foreground" />
+                <span className="text-lg font-semibold">{c.value}</span>
+                <span className="text-xs text-muted-foreground">{c.label}</span>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      )}
 
       {loading ? (
         <p className="text-muted-foreground text-sm">Loading affiliates…</p>

@@ -57,5 +57,8 @@ verify_jwt = false
 [functions.get-stripe-connect-status]
 verify_jwt = false
 
+[functions.admin-get-affiliate-overview]
+verify_jwt = true
+
 [functions.monthly-affiliate-payout-trigger]
 verify_jwt = false
