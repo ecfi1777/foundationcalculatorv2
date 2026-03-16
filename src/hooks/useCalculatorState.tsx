@@ -9,7 +9,7 @@ import type {
   Segment,
   FootingMode,
 } from "@/types/calculator";
-import { AREA_NAME_PREFIXES, makeDefaultRebar, deriveRebarEnabled } from "@/types/calculator";
+import { AREA_NAME_PREFIXES, makeDefaultRebar, deriveRebarEnabled, hasRequiredData } from "@/types/calculator";
 
 const STORAGE_KEY = "tfc_calculator_state";
 
@@ -44,51 +44,86 @@ const DATA_ACTIONS = new Set([
   "UPDATE_REBAR",
 ]);
 
+/**
+ * After modifying an area, check if a draft should be promoted.
+ * Returns the areas array with the draft flag cleared if required data exists.
+ */
+function maybePromoteDraft(areas: CalcArea[], areaId: string): CalcArea[] {
+  return areas.map((a) => {
+    if (a.id !== areaId || !a.isDraft) return a;
+    if (hasRequiredData(a)) return { ...a, isDraft: false };
+    return a;
+  });
+}
+
+/**
+ * When leaving a draft area (tab/area switch), promote or discard it.
+ */
+function resolveOutgoingDraft(areas: CalcArea[], leavingAreaId: string | null): CalcArea[] {
+  if (!leavingAreaId) return areas;
+  const area = areas.find((a) => a.id === leavingAreaId);
+  if (!area || !area.isDraft) return areas;
+
+  if (hasRequiredData(area)) {
+    // Promote
+    return areas.map((a) => a.id === leavingAreaId ? { ...a, isDraft: false } : a);
+  }
+  // Discard empty draft
+  return areas.filter((a) => a.id !== leavingAreaId);
+}
+
 function reducer(state: CalcState, action: Action): CalcState {
   switch (action.type) {
-    case "SET_TAB":
-      return { ...state, activeTab: action.tab, activeAreaId: null };
-    case "SET_ACTIVE_AREA":
-      return { ...state, activeAreaId: action.id };
-    case "ADD_AREA":
-      return { ...state, areas: [...state.areas, action.area], activeAreaId: action.area.id };
+    case "SET_TAB": {
+      const areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
+      return { ...state, areas, activeTab: action.tab, activeAreaId: null };
+    }
+    case "SET_ACTIVE_AREA": {
+      const areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
+      return { ...state, areas, activeAreaId: action.id };
+    }
+    case "ADD_AREA": {
+      // Resolve any existing draft before adding new one
+      const areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
+      return { ...state, areas: [...areas, action.area], activeAreaId: action.area.id };
+    }
     case "DELETE_AREA":
       return {
         ...state,
         areas: state.areas.filter((a) => a.id !== action.id),
         activeAreaId: state.activeAreaId === action.id ? null : state.activeAreaId,
       };
-    case "UPDATE_AREA":
-      return {
-        ...state,
-        areas: state.areas.map((a) => (a.id === action.id ? { ...a, ...action.patch } : a)),
-      };
+    case "UPDATE_AREA": {
+      let areas = state.areas.map((a) => (a.id === action.id ? { ...a, ...action.patch } : a));
+      areas = maybePromoteDraft(areas, action.id);
+      return { ...state, areas };
+    }
     case "RENAME_AREA":
       return {
         ...state,
         areas: state.areas.map((a) => (a.id === action.id ? { ...a, name: action.name } : a)),
       };
-    case "ADD_SEGMENT":
-      return {
-        ...state,
-        areas: state.areas.map((a) =>
-          a.id === action.areaId ? { ...a, segments: [...a.segments, action.segment] } : a
-        ),
-      };
-    case "UPDATE_SEGMENT":
-      return {
-        ...state,
-        areas: state.areas.map((a) =>
-          a.id === action.areaId
-            ? {
-                ...a,
-                segments: a.segments.map((s) =>
-                  s.id === action.segmentId ? { ...s, ...action.patch } : s
-                ),
-              }
-            : a
-        ),
-      };
+    case "ADD_SEGMENT": {
+      let areas = state.areas.map((a) =>
+        a.id === action.areaId ? { ...a, segments: [...a.segments, action.segment] } : a
+      );
+      areas = maybePromoteDraft(areas, action.areaId);
+      return { ...state, areas };
+    }
+    case "UPDATE_SEGMENT": {
+      let areas = state.areas.map((a) =>
+        a.id === action.areaId
+          ? {
+              ...a,
+              segments: a.segments.map((s) =>
+                s.id === action.segmentId ? { ...s, ...action.patch } : s
+              ),
+            }
+          : a
+      );
+      areas = maybePromoteDraft(areas, action.areaId);
+      return { ...state, areas };
+    }
     case "DELETE_SEGMENT":
       return {
         ...state,
@@ -98,27 +133,27 @@ function reducer(state: CalcState, action: Action): CalcState {
             : a
         ),
       };
-    case "ADD_SECTION":
-      return {
-        ...state,
-        areas: state.areas.map((a) =>
-          a.id === action.areaId ? { ...a, sections: [...a.sections, action.section] } : a
-        ),
-      };
-    case "UPDATE_SECTION":
-      return {
-        ...state,
-        areas: state.areas.map((a) =>
-          a.id === action.areaId
-            ? {
-                ...a,
-                sections: a.sections.map((s) =>
-                  s.id === action.sectionId ? { ...s, ...action.patch } : s
-                ),
-              }
-            : a
-        ),
-      };
+    case "ADD_SECTION": {
+      let areas = state.areas.map((a) =>
+        a.id === action.areaId ? { ...a, sections: [...a.sections, action.section] } : a
+      );
+      areas = maybePromoteDraft(areas, action.areaId);
+      return { ...state, areas };
+    }
+    case "UPDATE_SECTION": {
+      let areas = state.areas.map((a) =>
+        a.id === action.areaId
+          ? {
+              ...a,
+              sections: a.sections.map((s) =>
+                s.id === action.sectionId ? { ...s, ...action.patch } : s
+              ),
+            }
+          : a
+      );
+      areas = maybePromoteDraft(areas, action.areaId);
+      return { ...state, areas };
+    }
     case "DELETE_SECTION":
       return {
         ...state,
@@ -129,20 +164,19 @@ function reducer(state: CalcState, action: Action): CalcState {
         ),
       };
     case "UPDATE_REBAR": {
-      return {
-        ...state,
-        areas: state.areas.map((a) => {
-          if (a.id !== action.areaId) return a;
-          const existing = a.rebarConfigs[action.elementType] ?? makeDefaultRebar(action.elementType);
-          const updated: RebarConfig = { ...existing, ...action.rebar };
-          const newConfigs: RebarConfigsMap = { ...a.rebarConfigs, [action.elementType]: updated };
-          return {
-            ...a,
-            rebarConfigs: newConfigs,
-            rebarEnabled: deriveRebarEnabled(newConfigs),
-          };
-        }),
-      };
+      let areas = state.areas.map((a) => {
+        if (a.id !== action.areaId) return a;
+        const existing = a.rebarConfigs[action.elementType] ?? makeDefaultRebar(action.elementType);
+        const updated: RebarConfig = { ...existing, ...action.rebar };
+        const newConfigs: RebarConfigsMap = { ...a.rebarConfigs, [action.elementType]: updated };
+        return {
+          ...a,
+          rebarConfigs: newConfigs,
+          rebarEnabled: deriveRebarEnabled(newConfigs),
+        };
+      });
+      areas = maybePromoteDraft(areas, action.areaId);
+      return { ...state, areas };
     }
     case "LOAD":
       return action.state;
@@ -175,6 +209,9 @@ function migrateLoadedState(raw: any): CalcState {
   // Migrate old single-rebar areas to rebarConfigs map
   if (raw?.areas) {
     raw.areas = raw.areas.map((a: any) => {
+      // Clear isDraft on loaded areas (they were persisted = they had data)
+      if (a.isDraft) a.isDraft = false;
+
       if (a.rebarConfigs) return a; // already migrated
       // Old format had `rebar: RebarConfig` field
       const oldRebar = a.rebar;
@@ -260,6 +297,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
         type,
         sortOrder: num,
         wastePct: 0,
+        isDraft: true,
         footingMode: type === "footing" ? footingMode ?? "footingsOnly" : undefined,
         dimensions: getDefaultDimensions(type),
         segments: [],

@@ -296,8 +296,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           .eq("id", projectId);
       }
 
-      // Upsert areas
-      for (const area of state.areas) {
+      // Upsert areas — only save committed (non-draft) areas
+      const committedAreas = state.areas.filter((a) => !a.isDraft);
+      for (const area of committedAreas) {
         const anyEnabled = deriveRebarEnabled(area.rebarConfigs);
 
         const areaRow = {
@@ -411,7 +412,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         .select("id")
         .eq("project_id", projectId)
         .is("deleted_at", null);
-      const currentAreaIds = new Set(state.areas.map((a) => a.id));
+      const currentAreaIds = new Set(committedAreas.map((a) => a.id));
       const toDeleteAreas = (existingAreas ?? []).filter((a: any) => !currentAreaIds.has(a.id));
       for (const a of toDeleteAreas) {
         await supabase.from("areas").update({ deleted_at: new Date().toISOString() }).eq("id", a.id);

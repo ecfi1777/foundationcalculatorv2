@@ -230,7 +230,14 @@ export function CalculatorLayout() {
     projectName,
     onProjectNameChange: () => currentProject && setShowEditModal(true),
     onSave: handleSave,
-    onOpenProjects: () => setShowProjectList(true),
+    onOpenProjects: () => {
+      if (!user) {
+        setPendingAction({ type: "save" });
+        setShowAccountModal(true);
+        return;
+      }
+      setShowProjectList(true);
+    },
     onNewProject: handleNewProject,
     onEditProject: () => currentProject && setShowEditModal(true),
     isSaving,
