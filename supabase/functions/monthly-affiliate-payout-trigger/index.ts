@@ -23,6 +23,8 @@ serve(async (req) => {
     });
   }
 
+  const startTime = Date.now();
+
   try {
     const supabase = createClient(
       Deno.env.get("SUPABASE_URL")!,
@@ -35,17 +37,21 @@ serve(async (req) => {
     });
 
     const result = await executeAffiliatePayout(supabase, stripe);
+    const executionTimeMs = Date.now() - startTime;
 
-    console.log("Monthly payout completed:", JSON.stringify(result));
+    const response = { ...result, execution_time_ms: executionTimeMs };
 
-    return new Response(JSON.stringify(result), {
+    console.log("Monthly payout completed:", JSON.stringify(response));
+
+    return new Response(JSON.stringify(response), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
-    console.error("Monthly payout failed:", msg);
-    return new Response(JSON.stringify({ error: msg }), {
+    const executionTimeMs = Date.now() - startTime;
+    console.error("Monthly payout failed:", msg, `(${executionTimeMs}ms)`);
+    return new Response(JSON.stringify({ error: msg, execution_time_ms: executionTimeMs }), {
       status: 500,
       headers: { "Content-Type": "application/json" },
     });

@@ -8,6 +8,9 @@ const corsHeaders = {
     "authorization, x-client-info, apikey, content-type, x-supabase-client-platform, x-supabase-client-platform-version, x-supabase-client-runtime, x-supabase-client-runtime-version",
 };
 
+// Cache duration: 6 hours in milliseconds
+const CACHE_TTL_MS = 6 * 60 * 60 * 1000;
+
 serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response(null, { headers: corsHeaders });
@@ -38,10 +41,10 @@ serve(async (req) => {
       });
     }
 
-    // Load affiliate
+    // Load affiliate (include cache columns)
     const { data: affiliate, error: affErr } = await supabase
       .from("affiliates")
-      .select("id, stripe_connect_id")
+      .select("id, stripe_connect_id, stripe_payouts_enabled, stripe_details_submitted, stripe_status_checked_at")
       .eq("user_id", user.id)
       .maybeSingle();
 
@@ -68,17 +71,51 @@ serve(async (req) => {
       );
     }
 
+    // ── Check cache: return cached values if fresh (< 6 hours old) ──
+    if (affiliate.stripe_status_checked_at) {
+      const checkedAt = new Date(affiliate.stripe_status_checked_at).getTime();
+      const age = Date.now() - checkedAt;
+      if (age < CACHE_TTL_MS) {
+        return new Response(
+          JSON.stringify({
+            connected: true,
+            payouts_enabled: affiliate.stripe_payouts_enabled,
+            details_submitted: affiliate.stripe_details_submitted,
+            stripe_connect_id: affiliate.stripe_connect_id,
+          }),
+          {
+            status: 200,
+            headers: { ...corsHeaders, "Content-Type": "application/json" },
+          }
+        );
+      }
+    }
+
+    // ── Cache stale or missing: call Stripe API ──
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
       apiVersion: "2024-06-20",
     });
 
     const account = await stripe.accounts.retrieve(affiliate.stripe_connect_id);
 
+    const payoutsEnabled = account.payouts_enabled ?? false;
+    const detailsSubmitted = account.details_submitted ?? false;
+
+    // Update cache columns
+    await supabase
+      .from("affiliates")
+      .update({
+        stripe_payouts_enabled: payoutsEnabled,
+        stripe_details_submitted: detailsSubmitted,
+        stripe_status_checked_at: new Date().toISOString(),
+      })
+      .eq("id", affiliate.id);
+
     return new Response(
       JSON.stringify({
         connected: true,
-        payouts_enabled: account.payouts_enabled ?? false,
-        details_submitted: account.details_submitted ?? false,
+        payouts_enabled: payoutsEnabled,
+        details_submitted: detailsSubmitted,
         stripe_connect_id: affiliate.stripe_connect_id,
       }),
       {
