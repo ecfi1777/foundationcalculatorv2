@@ -236,29 +236,43 @@ export interface CalcArea {
  * Cylinder/Steps have dimension defaults that count as valid.
  */
 export function hasRequiredData(area: CalcArea): boolean {
+  return getMissingFields(area).length === 0;
+}
+
+/**
+ * Return human-readable names of missing required fields for the area's calculator type.
+ * Empty array means the area is valid.
+ */
+export function getMissingFields(area: CalcArea): string[] {
+  const missing: string[] = [];
   switch (area.type) {
     case "footing":
     case "wall":
     case "gradeBeam":
     case "curbGutter":
-      return area.segments.length > 0 && area.segments.some(s => s.lengthInchesDecimal > 0);
+      if (area.segments.length === 0 || !area.segments.some(s => s.lengthInchesDecimal > 0))
+        missing.push("At least one segment with length");
+      break;
     case "slab":
     case "pierPad":
-      return area.sections.length > 0 && area.sections.some(s =>
+      if (area.sections.length === 0 || !area.sections.some(s =>
         (s.lengthFt > 0 || s.lengthIn > 0) && (s.widthFt > 0 || s.widthIn > 0)
-      );
+      ))
+        missing.push("At least one section with length and width");
+      break;
     case "cylinder":
-      return (area.dimensions.diameterIn ?? 0) > 0
-        && ((area.dimensions.heightFt ?? 0) > 0 || (area.dimensions.heightIn ?? 0) > 0)
-        && (area.dimensions.quantity ?? 0) > 0;
+      if ((area.dimensions.diameterIn ?? 0) <= 0) missing.push("Diameter");
+      if ((area.dimensions.heightFt ?? 0) <= 0 && (area.dimensions.heightIn ?? 0) <= 0) missing.push("Height");
+      if ((area.dimensions.quantity ?? 0) <= 0) missing.push("Quantity");
+      break;
     case "steps":
-      return (area.dimensions.numSteps ?? 0) > 0
-        && (area.dimensions.riseIn ?? 0) > 0
-        && (area.dimensions.runIn ?? 0) > 0
-        && (area.dimensions.widthIn ?? 0) > 0;
-    default:
-      return false;
+      if ((area.dimensions.numSteps ?? 0) <= 0) missing.push("Number of steps");
+      if ((area.dimensions.riseIn ?? 0) <= 0) missing.push("Rise");
+      if ((area.dimensions.runIn ?? 0) <= 0) missing.push("Run");
+      if ((area.dimensions.widthIn ?? 0) <= 0) missing.push("Width");
+      break;
   }
+  return missing;
 }
 
 // ── Computed Results ───────────────────────────────────
