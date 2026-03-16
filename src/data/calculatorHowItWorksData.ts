@@ -209,9 +209,9 @@ export const calculatorSections: CalculatorSection[] = [
     title: "Steps / Stairs",
     seoTitle: "How Step & Stair Concrete Calculations Work | Foundation Calculator",
     seoDescription:
-      "Learn how step and stair concrete volume is calculated using the Spike VM slope-adjusted method for accurate stringer volume.",
+      "Learn how step and stair concrete volume is calculated using a slope-adjusted method for accurate stringer volume.",
     description:
-      "The steps/stairs calculator uses the Spike VM slope-adjusted method. Unlike a simple rectangular block, this formula accounts for the sloped underside of the stair stringer, yielding a more accurate volume estimate. An optional platform volume is added when present.",
+      "The steps/stairs calculator uses a slope-adjusted method. Unlike a simple rectangular block, this formula accounts for the sloped underside of the stair stringer, yielding a more accurate volume estimate. An optional platform volume is added when present.",
     inputs: [
       { name: "Rise (in)", description: "Vertical rise of each step" },
       { name: "Run (in)", description: "Horizontal depth of each step" },
@@ -224,7 +224,7 @@ export const calculatorSections: CalculatorSection[] = [
     ],
     formula:
       "A = Rise × Run × Width ÷ 2\nh = √(Rise² + Run²)\nB = h × Width × Throat Depth\nV1 = (A + B) × (Num Steps − 1)\nV2 = Rise × Run × Width\nStairs ft³ = (V1 + V2) × 0.0005787037\nPlatform ft³ = (Platform Depth ÷ 12) × (Platform Width ÷ 12) × (Width ÷ 12)\nVolume (yd³) = (Stairs ft³ + Platform ft³) ÷ 27",
-    diagramAlt: "Diagram — Steps / Stairs Calculation (Spike VM Method)",
+    diagramAlt: "Diagram — Steps / Stairs Calculation (Slope-Adjusted Method)",
     workedExample: {
       inputs:
         "Rise = 7 in, Run = 11 in, Width = 36 in, Steps = 5, Throat Depth = 6 in",
@@ -342,6 +342,6 @@ export const faqItems: FAQItem[] = [
   {
     question: "How are steps and stairs calculated differently from slabs?",
     answer:
-      "Steps use the Spike VM slope-adjusted method, which accounts for the triangular step profile and the sloped stringer underside rather than treating the entire staircase as a rectangular block. This yields a more accurate — and typically lower — volume estimate than a simple box calculation.",
+      "Steps use a slope-adjusted method, which accounts for the triangular step profile and the sloped stringer underside rather than treating the entire staircase as a rectangular block. This yields a more accurate — and typically lower — volume estimate than a simple box calculation.",
   },
 ];
