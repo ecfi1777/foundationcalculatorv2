@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabase/client";
-import { CALC_TYPE_TO_DB } from "@/types/calculator";
+import { CALC_TYPE_TO_DB, hasRequiredData } from "@/types/calculator";
 import type { CalcState } from "@/hooks/useCalculatorState";
 import { getRefCode, clearRefCode, clearAnonData } from "./localStorage";
 
@@ -100,6 +100,17 @@ export async function migrateAnonData(userId: string) {
 
   if (!state.areas || state.areas.length === 0) return;
 
+  // Filter out drafts and empty areas — only migrate committed work
+  const migratableAreas = state.areas.filter(
+    (area: any) => area.isDraft !== true && hasRequiredData(area)
+  );
+
+  if (migratableAreas.length === 0) {
+    clearAnonData();
+    localStorage.removeItem(STORAGE_KEY);
+    return;
+  }
+
   // Get user's active org
   const { data: settings } = await supabase
     .from("user_settings")
@@ -120,7 +131,7 @@ export async function migrateAnonData(userId: string) {
   if (!project) return;
 
   // Migrate each area
-  for (const area of state.areas) {
+  for (const area of migratableAreas) {
     const dbCalcType = CALC_TYPE_TO_DB[area.type] ?? area.type;
 
     const { data: areaRow } = await supabase
