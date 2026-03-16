@@ -461,16 +461,15 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
   // ── Delete project ──
   const deleteProject = useCallback(async (id: string) => {
-    const timestamp = new Date().toISOString();
-
-    const { error } = await supabase
-      .from("projects")
-      .update({ deleted_at: timestamp, updated_at: timestamp })
-      .eq("id", id)
-      .is("deleted_at", null);
+    const { data, error } = await supabase.rpc("soft_delete_project", { _project_id: id });
 
     if (error) {
       console.error("Delete project error:", error);
+      toast.error("Failed to delete project");
+      return;
+    }
+
+    if (!data) {
       toast.error("Failed to delete project");
       return;
     }
@@ -482,7 +481,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     }
 
     toast.success("Project deleted");
-  }, [currentProject]);
+  }, [currentProject, resetToBlankInternal]);
 
   // ── Reset to blank ──
   const resetToBlankInternal = useCallback(() => {
