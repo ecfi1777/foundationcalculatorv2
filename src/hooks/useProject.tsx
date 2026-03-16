@@ -303,7 +303,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           id: area.id,
           project_id: projectId,
           name: area.name,
-          calculator_type: area.type,
+          calculator_type: CALC_TYPE_TO_DB[area.type],
           sort_order: area.sortOrder,
           waste_pct: area.wastePct,
           rebar_enabled: anyEnabled,
@@ -311,7 +311,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           inputs_version: 1,
         };
 
-        await supabase.from("areas").upsert(areaRow);
+        const { error: areaErr } = await supabase.from("areas").upsert(areaRow);
+        if (areaErr) throw areaErr;
 
         // Upsert segments
         if (area.segments.length > 0) {
