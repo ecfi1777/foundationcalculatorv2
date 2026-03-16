@@ -241,6 +241,7 @@ export function CalculatorLayout() {
     onExportCSV: () => handleExport("csv"),
     isExporting,
     canExport,
+    onSignOut: handleSignOut,
   };
 
   // ── MOBILE ──

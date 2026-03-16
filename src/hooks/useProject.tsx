@@ -547,6 +547,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       deleteProject,
       createNewProject,
       resetToBlank,
+      clearAllState,
       updateProjectMeta,
       projectCount: projects.length,
       editableProjectCount: projects.filter(p => !p.is_locked).length,

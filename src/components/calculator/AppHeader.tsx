@@ -190,7 +190,7 @@ export function AppHeader({
                   <Settings className="h-4 w-4 mr-2" /> Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
+                <DropdownMenuItem onClick={onSignOut}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign Out
                 </DropdownMenuItem>
               </>
