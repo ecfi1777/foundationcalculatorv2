@@ -258,6 +258,7 @@ export interface AreaResult {
   // Stone (slab sections)
   stoneTons: number | null;
   stoneDepthIn: number | null;
+  stoneTypeName: string | null;
   // Steps
   volumeEachCy?: number;
 }
