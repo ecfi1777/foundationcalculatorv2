@@ -498,6 +498,14 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
   const resetToBlank = resetToBlankInternal;
 
+  const clearAllState = useCallback(() => {
+    dispatch({ type: "RESET" });
+    setCurrentProject(null);
+    setProjects([]);
+    setSubscriptionTier("free");
+    setPendingAction(null);
+  }, [dispatch]);
+
   // ── Create new project ──
   const createNewProject = useCallback(() => {
     resetToBlankInternal();
