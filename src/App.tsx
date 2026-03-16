@@ -8,6 +8,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
+import Admin from "./pages/Admin";
 import Settings from "./pages/Settings";
 import UpgradeRedirect from "./pages/UpgradeRedirect";
 import NotFound from "./pages/NotFound";
