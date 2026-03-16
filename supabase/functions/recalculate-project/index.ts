@@ -89,7 +89,7 @@ Deno.serve(async (req) => {
       let totalSqft = 0;
 
       switch (area.calculator_type) {
-        case "footing": {
+        case "footings": {
           const footingMode = inputs.footingMode ?? "footingsOnly";
           const showFooting = footingMode !== "wallsOnly";
           const showWall = footingMode === "footingsWalls" || footingMode === "wallsOnly";
