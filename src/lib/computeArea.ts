@@ -209,6 +209,9 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
             });
             totalStone += sr.tonsWithWaste;
             stoneDepthIn = sec.stoneDepthIn;
+            if (sec.stoneTypeId && stoneTypeNames) {
+              stoneTypeName = stoneTypeNames.get(sec.stoneTypeId) ?? null;
+            }
           }
         }
         if (stoneActive) stoneTons = totalStone;
