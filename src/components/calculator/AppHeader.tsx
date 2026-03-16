@@ -13,6 +13,9 @@ import {
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
+import {
+  Tooltip, TooltipContent, TooltipProvider, TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface AppHeaderProps {
   projectName: string;
@@ -26,6 +29,10 @@ interface AppHeaderProps {
   hasProject: boolean;
   isDirty: boolean;
   onResetToBlank: () => void;
+  onExportPDF?: () => void;
+  onExportCSV?: () => void;
+  isExporting?: boolean;
+  canExport?: boolean;
 }
 
 export function AppHeader({
@@ -33,10 +40,13 @@ export function AppHeader({
   onOpenProjects, onNewProject, onEditProject,
   isSaving, isProjectLocked, hasProject,
   isDirty, onResetToBlank,
+  onExportPDF, onExportCSV, isExporting, canExport,
 }: AppHeaderProps) {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
+
+  const exportDisabled = !canExport || isExporting;
 
   return (
     <header className="flex items-center gap-2 border-b border-border bg-card px-4 py-2">
@@ -103,12 +113,48 @@ export function AppHeader({
               <FolderOpen className="h-4 w-4 mr-2" /> Open Project
             </DropdownMenuItem>
             <DropdownMenuSeparator />
-            <DropdownMenuItem disabled>
-              <Download className="h-4 w-4 mr-2" /> Export PDF
-            </DropdownMenuItem>
-            <DropdownMenuItem disabled>
-              <Download className="h-4 w-4 mr-2" /> Export CSV
-            </DropdownMenuItem>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <DropdownMenuItem
+                      disabled={exportDisabled}
+                      onClick={onExportPDF}
+                    >
+                      {isExporting ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4 mr-2" />
+                      )}
+                      Export PDF
+                    </DropdownMenuItem>
+                  </div>
+                </TooltipTrigger>
+                {!canExport && (
+                  <TooltipContent>Save project to export</TooltipContent>
+                )}
+              </Tooltip>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div>
+                    <DropdownMenuItem
+                      disabled={exportDisabled}
+                      onClick={onExportCSV}
+                    >
+                      {isExporting ? (
+                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      ) : (
+                        <Download className="h-4 w-4 mr-2" />
+                      )}
+                      Export CSV
+                    </DropdownMenuItem>
+                  </div>
+                </TooltipTrigger>
+                {!canExport && (
+                  <TooltipContent>Save project to export</TooltipContent>
+                )}
+              </Tooltip>
+            </TooltipProvider>
           </DropdownMenuContent>
         </DropdownMenu>
 

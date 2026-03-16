@@ -4,6 +4,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { useProject } from "@/hooks/useProject";
 import { useAuth } from "@/hooks/useAuth";
+import { supabase } from "@/integrations/supabase/client";
 import { AppHeader } from "./AppHeader";
 import { CalculatorTabBar } from "./CalculatorTabBar";
 import { QuantitiesPanel } from "./QuantitiesPanel";
@@ -23,6 +24,9 @@ import { AccountCreationModal } from "@/components/project/AccountCreationModal"
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import PaywallModal from "@/components/PaywallModal";
 import { cn } from "@/lib/utils";
+import { buildExportData } from "@/lib/export/buildExportData";
+import { exportProjectToPDF, exportProjectToCSV } from "@/lib/export/exportService";
+import { toast } from "sonner";
 
 function ActiveForm({ disabled }: { disabled: boolean }) {
   const { state } = useCalculatorState();
@@ -58,8 +62,10 @@ export function CalculatorLayout() {
   const [showAccountModal, setShowAccountModal] = useState(false);
   const [showNewProjectConfirm, setShowNewProjectConfirm] = useState(false);
   const [showPaywall, setShowPaywall] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
 
   const hasAreas = state.areas.length > 0;
+  const canExport = !!currentProject;
 
   // Load projects on mount when authenticated
   useEffect(() => {
@@ -72,7 +78,6 @@ export function CalculatorLayout() {
       if (pendingAction.type === "save") {
         clearPendingAction();
         if (!currentProject) {
-          // Enforce free-tier limit before first save
           if (subscriptionTier === "free" && editableProjectCount >= 1) {
             setShowPaywall(true);
             return;
@@ -95,12 +100,10 @@ export function CalculatorLayout() {
       setShowAccountModal(true);
       return;
     }
-    // Existing project — always allow update
     if (currentProject) {
       saveProject();
       return;
     }
-    // New project — enforce free-tier limit
     if (subscriptionTier === "free" && editableProjectCount >= 1) {
       setShowPaywall(true);
       return;
@@ -115,18 +118,14 @@ export function CalculatorLayout() {
       setShowAccountModal(true);
       return;
     }
-
-    // Check free tier limit (1 editable project for free)
     if (subscriptionTier === "free" && editableProjectCount >= 1) {
       setShowPaywall(true);
       return;
     }
-
     if (isDirty) {
       setShowNewProjectConfirm(true);
       return;
     }
-
     createNewProject();
   }, [user, subscriptionTier, editableProjectCount, isDirty, createNewProject, setPendingAction]);
 
@@ -135,6 +134,42 @@ export function CalculatorLayout() {
     setShowNameModal(false);
     saveProject(name);
   }, [saveProject]);
+
+  // ── Export handlers ──
+  const handleExport = useCallback(async (type: "pdf" | "csv") => {
+    if (!currentProject || isExporting) return;
+    setIsExporting(true);
+    try {
+      // Fetch stone types for name resolution
+      const { data: stoneTypesData } = await supabase
+        .from("stone_types")
+        .select("id, name");
+      const stoneTypesMap = new Map<string, string>();
+      if (stoneTypesData) {
+        for (const st of stoneTypesData) {
+          stoneTypesMap.set(st.id, st.name);
+        }
+      }
+
+      const exportData = buildExportData(
+        state,
+        { name: currentProject.name, notes: currentProject.notes ?? null },
+        stoneTypesMap
+      );
+
+      if (type === "pdf") {
+        await exportProjectToPDF(exportData);
+      } else {
+        await exportProjectToCSV(exportData);
+      }
+      toast.success(`${type.toUpperCase()} exported successfully`);
+    } catch (err) {
+      console.error("Export failed:", err);
+      toast.error(`Failed to export ${type.toUpperCase()}`);
+    } finally {
+      setIsExporting(false);
+    }
+  }, [currentProject, isExporting, state]);
 
   const projectName = currentProject?.name ?? "New Foundation Project";
 
@@ -177,23 +212,29 @@ export function CalculatorLayout() {
     </>
   );
 
+  const headerProps = {
+    projectName,
+    onProjectNameChange: () => currentProject && setShowEditModal(true),
+    onSave: handleSave,
+    onOpenProjects: () => setShowProjectList(true),
+    onNewProject: handleNewProject,
+    onEditProject: () => currentProject && setShowEditModal(true),
+    isSaving,
+    isProjectLocked,
+    hasProject: !!currentProject,
+    isDirty,
+    onResetToBlank: resetToBlank,
+    onExportPDF: () => handleExport("pdf"),
+    onExportCSV: () => handleExport("csv"),
+    isExporting,
+    canExport,
+  };
+
   // ── MOBILE ──
   if (isMobile) {
     return (
       <div className="flex flex-col h-screen bg-background">
-        <AppHeader
-          projectName={projectName}
-          onProjectNameChange={() => currentProject && setShowEditModal(true)}
-          onSave={handleSave}
-          onOpenProjects={() => setShowProjectList(true)}
-          onNewProject={handleNewProject}
-          onEditProject={() => currentProject && setShowEditModal(true)}
-          isSaving={isSaving}
-          isProjectLocked={isProjectLocked}
-          hasProject={!!currentProject}
-          isDirty={isDirty}
-          onResetToBlank={resetToBlank}
-        />
+        <AppHeader {...headerProps} />
 
         {isProjectLocked && (
           <div className="px-3 pt-2"><LockedBanner /></div>
@@ -242,19 +283,7 @@ export function CalculatorLayout() {
   // ── DESKTOP ──
   return (
     <div className="flex flex-col h-screen bg-background">
-      <AppHeader
-        projectName={projectName}
-        onProjectNameChange={() => currentProject && setShowEditModal(true)}
-        onSave={handleSave}
-        onOpenProjects={() => setShowProjectList(true)}
-        onNewProject={handleNewProject}
-        onEditProject={() => currentProject && setShowEditModal(true)}
-        isSaving={isSaving}
-        isProjectLocked={isProjectLocked}
-        hasProject={!!currentProject}
-        isDirty={isDirty}
-        onResetToBlank={resetToBlank}
-      />
+      <AppHeader {...headerProps} />
       {isProjectLocked && (
         <div className="px-4 pt-2"><LockedBanner /></div>
       )}
