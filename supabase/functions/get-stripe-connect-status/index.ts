@@ -1,7 +1,6 @@
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from "npm:@supabase/supabase-js@2.57.2";
 import Stripe from "https://esm.sh/stripe@17.7.0?target=deno";
-import { executeAffiliatePayout } from "../_shared/affiliatePayout.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -15,13 +14,7 @@ serve(async (req) => {
   }
 
   try {
-    const supabase = createClient(
-      Deno.env.get("SUPABASE_URL")!,
-      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
-      { auth: { persistSession: false } }
-    );
-
-    // Auth check
+    // Auth
     const authHeader = req.headers.get("Authorization");
     if (!authHeader?.startsWith("Bearer ")) {
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
@@ -29,6 +22,13 @@ serve(async (req) => {
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const supabase = createClient(
+      Deno.env.get("SUPABASE_URL")!,
+      Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!,
+      { auth: { persistSession: false } }
+    );
+
     const token = authHeader.replace("Bearer ", "");
     const { data: { user }, error: userErr } = await supabase.auth.getUser(token);
     if (userErr || !user) {
@@ -38,30 +38,54 @@ serve(async (req) => {
       });
     }
 
-    // Admin check
-    const { data: adminRow } = await supabase
-      .from("users")
-      .select("is_admin")
-      .eq("id", user.id)
-      .single();
+    // Load affiliate
+    const { data: affiliate, error: affErr } = await supabase
+      .from("affiliates")
+      .select("id, stripe_connect_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
 
-    if (!adminRow?.is_admin) {
-      return new Response(JSON.stringify({ error: "Forbidden" }), {
+    if (affErr) throw affErr;
+    if (!affiliate) {
+      return new Response(JSON.stringify({ error: "Not an affiliate" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    if (!affiliate.stripe_connect_id) {
+      return new Response(
+        JSON.stringify({
+          connected: false,
+          payouts_enabled: false,
+          details_submitted: false,
+          stripe_connect_id: null,
+        }),
+        {
+          status: 200,
+          headers: { ...corsHeaders, "Content-Type": "application/json" },
+        }
+      );
     }
 
     const stripe = new Stripe(Deno.env.get("STRIPE_SECRET_KEY")!, {
       apiVersion: "2024-06-20",
     });
 
-    const result = await executeAffiliatePayout(supabase, stripe);
+    const account = await stripe.accounts.retrieve(affiliate.stripe_connect_id);
 
-    return new Response(JSON.stringify(result), {
-      status: 200,
-      headers: { ...corsHeaders, "Content-Type": "application/json" },
-    });
+    return new Response(
+      JSON.stringify({
+        connected: true,
+        payouts_enabled: account.payouts_enabled ?? false,
+        details_submitted: account.details_submitted ?? false,
+        stripe_connect_id: affiliate.stripe_connect_id,
+      }),
+      {
+        status: 200,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      }
+    );
   } catch (error) {
     const msg = error instanceof Error ? error.message : String(error);
     return new Response(JSON.stringify({ error: msg }), {
