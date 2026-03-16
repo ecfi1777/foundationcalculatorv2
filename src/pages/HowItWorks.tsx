@@ -38,7 +38,7 @@ export default function HowItWorks() {
       <Helmet>
         <title>{title}</title>
         <meta name="description" content={description} />
-        <link rel="canonical" href={`https://foundationcalculatorv2.lovable.app/how-it-works${sectionSlug ? `/${sectionSlug}` : ""}`} />
+        <link rel="canonical" href={`https://foundationcalculator.com/how-it-works${sectionSlug ? `/${sectionSlug}` : ""}`} />
         {!isSingle && (
           <script type="application/ld+json">{JSON.stringify(faqJsonLd)}</script>
         )}
