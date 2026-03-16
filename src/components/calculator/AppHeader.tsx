@@ -24,12 +24,15 @@ interface AppHeaderProps {
   isSaving: boolean;
   isProjectLocked: boolean;
   hasProject: boolean;
+  isDirty: boolean;
+  onResetToBlank: () => void;
 }
 
 export function AppHeader({
   projectName, onProjectNameChange, onSave,
   onOpenProjects, onNewProject, onEditProject,
   isSaving, isProjectLocked, hasProject,
+  isDirty, onResetToBlank,
 }: AppHeaderProps) {
   const { user, signOut } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -38,14 +41,25 @@ export function AppHeader({
   return (
     <header className="flex items-center gap-2 border-b border-border bg-card px-4 py-2">
       {/* TFC Logo badge */}
-      <div className="flex items-center gap-3 mr-2">
+      <button
+        className="flex items-center gap-3 mr-2 cursor-pointer"
+        onClick={() => {
+          if (!isDirty) {
+            onResetToBlank();
+          } else {
+            if (window.confirm("You have unsaved changes. Discard and start fresh?")) {
+              onResetToBlank();
+            }
+          }
+        }}
+      >
         <span className="rounded bg-primary px-2 py-0.5 text-xs font-bold text-primary-foreground tracking-wider">
           TFC
         </span>
         <span className="hidden sm:inline text-sm font-medium text-foreground">
           Total Foundation Calculator
         </span>
-      </div>
+      </button>
 
       {/* Project name breadcrumb */}
       <div className="flex items-center gap-1 flex-1 min-w-0">
