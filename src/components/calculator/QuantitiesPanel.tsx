@@ -564,6 +564,18 @@ export function QuantitiesPanel() {
           </div>
         )}
       </div>
+      <ConfirmDialog
+        open={!!deleteAreaId}
+        onClose={() => setDeleteAreaId(null)}
+        onConfirm={() => {
+          if (deleteAreaId) dispatch({ type: "DELETE_AREA", id: deleteAreaId });
+          setDeleteAreaId(null);
+        }}
+        title="Delete Area"
+        description={`Are you sure you want to delete "${results.find((r) => r.areaId === deleteAreaId)?.areaName ?? "this area"}"? All measurements and settings for this area will be permanently removed.`}
+        confirmLabel="Delete"
+        variant="destructive"
+      />
     </div>
   );
 }
