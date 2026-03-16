@@ -620,6 +620,18 @@ export default function Settings() {
             )}
           </CardContent>
         </Card>
+
+        {/* SECTION — Help & Documentation */}
+        <Card className="bg-card border-border">
+          <CardHeader>
+            <CardTitle>Help & Documentation</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <Button variant="outline" className="w-full justify-start" onClick={() => navigate("/how-it-works")}>
+              How Calculations Work
+            </Button>
+          </CardContent>
+        </Card>
       </div>
     </div>
   );
