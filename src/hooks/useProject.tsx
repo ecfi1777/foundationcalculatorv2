@@ -372,7 +372,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
         // Upsert rebar configs — ALL configs, not just active ones
         for (const [elementType, config] of Object.entries(area.rebarConfigs)) {
           if (!config) continue;
-          await supabase.from("rebar_configs").upsert(
+          const { error: rebarErr } = await supabase.from("rebar_configs").upsert(
             {
               area_id: area.id,
               element_type: elementType,
