@@ -183,8 +183,13 @@ export default function Settings() {
     setBillingLoading(true);
     try {
       await startCheckout(session, userSettings.active_org_id);
+      const inIframe = window.self !== window.top;
+      if (inIframe) {
+        toast.success("Checkout opened — complete payment in the new tab.");
+      }
     } catch {
       toast.error("Could not start checkout. Please try again.");
+    } finally {
       setBillingLoading(false);
     }
   };
