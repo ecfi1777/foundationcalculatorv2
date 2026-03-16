@@ -14,6 +14,15 @@ export async function startCheckout(session: Session, activeOrgId: string): Prom
     }
   );
   const data = await response.json();
-  if (!response.ok || !data.url) throw new Error(data.error || "Could not start checkout");
-  window.location.href = data.url;
+  if (!response.ok) throw new Error(data.error || "Could not start checkout");
+  if (!data?.url) throw new Error("Checkout URL was not returned.");
+
+  const inIframe = window.self !== window.top;
+  if (inIframe) {
+    const opened = window.open(data.url, "_blank", "noopener,noreferrer");
+    if (!opened) window.location.href = data.url;
+  } else {
+    window.location.href = data.url;
+  }
+  return data.url;
 }

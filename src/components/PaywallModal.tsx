@@ -40,8 +40,14 @@ export default function PaywallModal({ open, onClose }: PaywallModalProps) {
 
       setLoading(true);
       await startCheckout(session, settings.active_org_id);
+      const inIframe = window.self !== window.top;
+      if (inIframe) {
+        toast.success("Checkout opened — complete payment in the new tab.");
+        onClose();
+      }
     } catch {
       toast.error("Could not start checkout. Please try again.");
+    } finally {
       setLoading(false);
     }
   };
