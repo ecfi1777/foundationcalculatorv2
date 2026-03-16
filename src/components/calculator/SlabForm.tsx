@@ -14,6 +14,20 @@ export function SlabForm() {
   const handleAdd = (customName?: string) => {
     const area = addArea("slab");
     if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
+    const section: CalcSection = {
+      id: crypto.randomUUID(),
+      name: "Slab Section (1)",
+      lengthFt: 0,
+      lengthIn: 0,
+      widthFt: 0,
+      widthIn: 0,
+      thicknessIn: 4,
+      includeStone: false,
+      stoneDepthIn: 4,
+      stoneTypeId: "57stone",
+      sortOrder: 1,
+    };
+    dispatch({ type: "ADD_SECTION", areaId: area.id, section });
   };
 
   const addSection = () => {
