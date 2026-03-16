@@ -98,7 +98,7 @@ export function computeRebarForElement(
   return result;
 }
 
-export function computeArea(area: CalcArea): AreaResult {
+export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>): AreaResult {
   const totalLinearFt = area.segments.reduce((s, seg) => s + seg.lengthInchesDecimal, 0) / 12;
 
   let footingVolumeCy = 0;
@@ -108,6 +108,7 @@ export function computeArea(area: CalcArea): AreaResult {
   let totalSqft = 0;
   let stoneTons: number | null = null;
   let stoneDepthIn: number | null = null;
+  let stoneTypeName: string | null = null;
 
   switch (area.type) {
     case "footing": {
@@ -208,6 +209,9 @@ export function computeArea(area: CalcArea): AreaResult {
             });
             totalStone += sr.tonsWithWaste;
             stoneDepthIn = sec.stoneDepthIn;
+            if (sec.stoneTypeId && stoneTypeNames) {
+              stoneTypeName = stoneTypeNames.get(sec.stoneTypeId) ?? null;
+            }
           }
         }
         if (stoneActive) stoneTons = totalStone;
@@ -286,5 +290,6 @@ export function computeArea(area: CalcArea): AreaResult {
     rebarResults,
     stoneTons,
     stoneDepthIn,
+    stoneTypeName,
   };
 }

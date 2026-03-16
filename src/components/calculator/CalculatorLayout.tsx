@@ -4,7 +4,7 @@ import { useIsMobile } from "@/hooks/use-mobile";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { useProject } from "@/hooks/useProject";
 import { useAuth } from "@/hooks/useAuth";
-import { supabase } from "@/integrations/supabase/client";
+import { supabase } from "@/lib/supabase/client";
 import { AppHeader } from "./AppHeader";
 import { CalculatorTabBar } from "./CalculatorTabBar";
 import { QuantitiesPanel } from "./QuantitiesPanel";
@@ -28,7 +28,7 @@ import { buildExportData } from "@/lib/export/buildExportData";
 import { exportProjectToPDF, exportProjectToCSV } from "@/lib/export/exportService";
 import { toast } from "sonner";
 
-function ActiveForm({ disabled }: { disabled: boolean }) {
+function ActiveForm() {
   const { state } = useCalculatorState();
   switch (state.activeTab) {
     case "footing":    return <FootingForm />;
@@ -287,6 +287,9 @@ export function CalculatorLayout() {
       {isProjectLocked && (
         <div className="px-4 pt-2"><LockedBanner /></div>
       )}
+      <div className="px-4 pt-2">
+        <SaveBanner hasAreas={hasAreas} />
+      </div>
       <div className="flex flex-1 overflow-hidden">
         <div className={cn(
           "flex-1 flex flex-col border-r border-border overflow-hidden",
@@ -295,7 +298,7 @@ export function CalculatorLayout() {
           <div className="px-4 pt-3"><CalculatorTabBar /></div>
           <div className="flex-1 overflow-y-auto px-4 py-4">
             <div className="rounded-lg border border-border bg-card p-4">
-              <ActiveForm disabled={isProjectLocked} />
+              <ActiveForm />
             </div>
           </div>
         </div>

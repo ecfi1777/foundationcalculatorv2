@@ -153,9 +153,6 @@ export function makeDefaultRebar(elementType: RebarElementType): RebarConfig {
   };
 }
 
-/** @deprecated Use makeDefaultRebar instead */
-export const DEFAULT_REBAR: RebarConfig = makeDefaultRebar("footing");
-
 /** Map of element_type → RebarConfig */
 export type RebarConfigsMap = Partial<Record<RebarElementType, RebarConfig>>;
 
@@ -258,6 +255,7 @@ export interface AreaResult {
   // Stone (slab sections)
   stoneTons: number | null;
   stoneDepthIn: number | null;
+  stoneTypeName: string | null;
   // Steps
   volumeEachCy?: number;
 }
