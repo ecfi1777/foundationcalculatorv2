@@ -180,13 +180,9 @@ export default function Settings() {
 
   const handleUpgrade = async () => {
     if (!session || !userSettings?.active_org_id) return;
-    setBillingLoading(true);
     try {
+      setBillingLoading(true);
       await startCheckout(session, userSettings.active_org_id);
-      const inIframe = window.self !== window.top;
-      if (inIframe) {
-        toast.success("Checkout opened — complete payment in the new tab.");
-      }
     } catch {
       toast.error("Could not start checkout. Please try again.");
     } finally {
