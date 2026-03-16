@@ -60,6 +60,7 @@ export function PierPadForm() {
         onSelect={(id) => dispatch({ type: "SET_ACTIVE_AREA", id })}
         onAdd={handleAdd}
         onDiscard={(id) => dispatch({ type: "DELETE_AREA", id })}
+        onRename={(id, name) => dispatch({ type: "RENAME_AREA", id, name })}
         type="pierPad"
       />
 
