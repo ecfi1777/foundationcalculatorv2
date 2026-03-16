@@ -42,8 +42,9 @@ export function AppHeader({
   isSaving, isProjectLocked, hasProject,
   isDirty, onResetToBlank,
   onExportPDF, onExportCSV, isExporting, canExport,
+  onSignOut,
 }: AppHeaderProps) {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
