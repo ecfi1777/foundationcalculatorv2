@@ -17,3 +17,27 @@ verify_jwt = false
 
 [functions.recalculate-project]
 verify_jwt = false
+
+[functions.admin-get-users]
+verify_jwt = true
+
+[functions.admin-get-organizations]
+verify_jwt = true
+
+[functions.admin-get-promo-codes]
+verify_jwt = true
+
+[functions.admin-create-promo]
+verify_jwt = true
+
+[functions.admin-update-promo]
+verify_jwt = true
+
+[functions.admin-deactivate-promo]
+verify_jwt = true
+
+[functions.admin-toggle-pro]
+verify_jwt = true
+
+[functions.admin-get-usage-stats]
+verify_jwt = true
