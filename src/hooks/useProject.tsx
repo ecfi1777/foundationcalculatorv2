@@ -355,7 +355,8 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
             stone_type_id: s.stoneTypeId || null,
             sort_order: s.sortOrder,
           }));
-          await supabase.from("sections").upsert(sectionRows);
+          const { error: secErr } = await supabase.from("sections").upsert(sectionRows);
+          if (secErr) throw secErr;
         }
         // Delete removed sections
         const { data: existingSecs } = await supabase
