@@ -49,10 +49,10 @@ export function ProjectListPanel({ open, onClose }: Props) {
   };
 
   const confirmDelete = async () => {
-    if (deleteTarget) {
-      await deleteProject(deleteTarget.id);
-      setDeleteTarget(null);
-    }
+    if (!deleteTarget) return;
+    const targetId = deleteTarget.id;
+    setDeleteTarget(null);
+    await deleteProject(targetId);
   };
 
   return (
@@ -159,7 +159,7 @@ export function ProjectListPanel({ open, onClose }: Props) {
         open={!!deleteTarget}
         onClose={() => setDeleteTarget(null)}
         onConfirm={confirmDelete}
-        title={`Delete ${deleteTarget?.name}?`}
+        title={deleteTarget ? `Delete ${deleteTarget.name}?` : "Delete project?"}
         description="This project will be removed from your project list. Your data will not be recoverable."
         confirmLabel="Delete Project"
         variant="destructive"
