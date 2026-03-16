@@ -39,6 +39,7 @@ interface ProjectContextType {
   deleteProject: (id: string) => Promise<void>;
   createNewProject: () => void;
   resetToBlank: () => void;
+  clearAllState: () => void;
   updateProjectMeta: (name: string, notes: string | null) => Promise<void>;
   projectCount: number;
   editableProjectCount: number;
