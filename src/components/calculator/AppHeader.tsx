@@ -33,6 +33,7 @@ interface AppHeaderProps {
   onExportCSV?: () => void;
   isExporting?: boolean;
   canExport?: boolean;
+  onSignOut?: () => void;
 }
 
 export function AppHeader({
@@ -41,8 +42,9 @@ export function AppHeader({
   isSaving, isProjectLocked, hasProject,
   isDirty, onResetToBlank,
   onExportPDF, onExportCSV, isExporting, canExport,
+  onSignOut,
 }: AppHeaderProps) {
-  const { user, signOut } = useAuth();
+  const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
   const navigate = useNavigate();
 
@@ -188,7 +190,7 @@ export function AppHeader({
                   <Settings className="h-4 w-4 mr-2" /> Settings
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={signOut}>
+                <DropdownMenuItem onClick={onSignOut}>
                   <LogOut className="h-4 w-4 mr-2" /> Sign Out
                 </DropdownMenuItem>
               </>

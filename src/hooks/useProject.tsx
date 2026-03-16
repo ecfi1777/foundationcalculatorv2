@@ -39,6 +39,7 @@ interface ProjectContextType {
   deleteProject: (id: string) => Promise<void>;
   createNewProject: () => void;
   resetToBlank: () => void;
+  clearAllState: () => void;
   updateProjectMeta: (name: string, notes: string | null) => Promise<void>;
   projectCount: number;
   editableProjectCount: number;
@@ -497,6 +498,14 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
   const resetToBlank = resetToBlankInternal;
 
+  const clearAllState = useCallback(() => {
+    dispatch({ type: "RESET" });
+    setCurrentProject(null);
+    setProjects([]);
+    setSubscriptionTier("free");
+    setPendingAction(null);
+  }, [dispatch]);
+
   // ── Create new project ──
   const createNewProject = useCallback(() => {
     resetToBlankInternal();
@@ -538,6 +547,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
       deleteProject,
       createNewProject,
       resetToBlank,
+      clearAllState,
       updateProjectMeta,
       projectCount: projects.length,
       editableProjectCount: projects.filter(p => !p.is_locked).length,
