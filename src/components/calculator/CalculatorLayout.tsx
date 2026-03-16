@@ -28,7 +28,7 @@ import { buildExportData } from "@/lib/export/buildExportData";
 import { exportProjectToPDF, exportProjectToCSV } from "@/lib/export/exportService";
 import { toast } from "sonner";
 
-function ActiveForm({ disabled }: { disabled: boolean }) {
+function ActiveForm() {
   const { state } = useCalculatorState();
   switch (state.activeTab) {
     case "footing":    return <FootingForm />;
