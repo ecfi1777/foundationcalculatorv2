@@ -4,9 +4,9 @@ import { useAuth } from "@/hooks/useAuth";
 import { useCalculatorState, type CalcState } from "@/hooks/useCalculatorState";
 import type {
   CalcArea, CalcSection, Segment, RebarConfig, RebarConfigsMap,
-  RebarElementType, CalculatorType, FootingMode,
+  RebarElementType, CalculatorType, FootingMode, DbCalculatorType,
 } from "@/types/calculator";
-import { makeDefaultRebar, deriveRebarEnabled } from "@/types/calculator";
+import { makeDefaultRebar, deriveRebarEnabled, CALC_TYPE_TO_DB, DB_TO_CALC_TYPE } from "@/types/calculator";
 import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────
