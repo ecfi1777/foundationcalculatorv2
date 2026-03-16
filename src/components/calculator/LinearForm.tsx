@@ -39,6 +39,7 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
         activeAreaId={area?.id ?? null}
         onSelect={(id) => dispatch({ type: "SET_ACTIVE_AREA", id })}
         onAdd={handleAdd}
+        onDiscard={(id) => dispatch({ type: "DELETE_AREA", id })}
         type={calcType}
       />
 

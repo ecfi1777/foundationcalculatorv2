@@ -24,6 +24,7 @@ export function CylinderForm() {
         activeAreaId={area?.id ?? null}
         onSelect={(id) => dispatch({ type: "SET_ACTIVE_AREA", id })}
         onAdd={handleAdd}
+        onDiscard={(id) => dispatch({ type: "DELETE_AREA", id })}
         type="cylinder"
       />
 
