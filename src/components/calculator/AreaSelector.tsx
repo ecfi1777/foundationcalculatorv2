@@ -1,8 +1,10 @@
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import type { CalcArea, CalculatorType } from "@/types/calculator";
 import { CALCULATOR_LABELS } from "@/types/calculator";
 import { Plus, X } from "lucide-react";
@@ -18,6 +20,9 @@ interface AreaSelectorProps {
 
 export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, type }: AreaSelectorProps) {
   const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
+  const [confirmOpen, setConfirmOpen] = useState(false);
+
+  const activeArea = areas.find((a) => a.id === activeAreaId);
 
   return (
     <div className="flex flex-col border-b border-border bg-card/50">
@@ -51,13 +56,26 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
             size="sm"
             variant="outline"
             className="h-9 gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
-            onClick={() => onDiscard(activeAreaId)}
+            onClick={() => setConfirmOpen(true)}
           >
             <X className="h-3.5 w-3.5" />
             Discard Area
           </Button>
         )}
       </div>
+
+      <ConfirmDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={() => {
+          if (activeAreaId && onDiscard) onDiscard(activeAreaId);
+          setConfirmOpen(false);
+        }}
+        title="Discard Area"
+        description={`Are you sure you want to discard "${activeArea?.name ?? "this area"}"? All sections, measurements, and settings for this area will be permanently removed.`}
+        confirmLabel="Discard"
+        variant="destructive"
+      />
     </div>
   );
 }
