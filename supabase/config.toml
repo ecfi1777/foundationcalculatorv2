@@ -50,3 +50,12 @@ verify_jwt = true
 
 [functions.create-affiliate-account]
 verify_jwt = false
+
+[functions.create-stripe-connect-onboarding-link]
+verify_jwt = false
+
+[functions.get-stripe-connect-status]
+verify_jwt = false
+
+[functions.monthly-affiliate-payout-trigger]
+verify_jwt = false
