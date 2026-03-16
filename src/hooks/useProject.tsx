@@ -399,6 +399,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
             },
             { onConflict: "area_id,element_type" }
           );
+          if (rebarErr) throw rebarErr;
         }
       }
 
