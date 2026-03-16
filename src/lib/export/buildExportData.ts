@@ -76,7 +76,7 @@ export function buildExportData(
           widthIn: sec.widthIn,
           thicknessIn: sec.thicknessIn,
           sqft: slabResult.sqft,
-          volumeCY: slabResult.volumeCy,
+          volumeCY: slabResult.volumeCy * (1 + area.wastePct / 100),
           stoneEnabled: sec.includeStone,
           stoneTons: sec.includeStone && sec.stoneDepthIn > 0 ? (result.stoneTons ?? null) : null,
           stoneDepthIn: sec.includeStone ? sec.stoneDepthIn : null,

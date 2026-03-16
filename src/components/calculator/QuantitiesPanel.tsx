@@ -60,8 +60,8 @@ export function QuantitiesPanel() {
   };
 
   const results = useMemo(
-    () => state.areas.map((area) => computeArea(area)),
-    [state.areas]
+    () => state.areas.map((area) => computeArea(area, stoneTypeMap)),
+    [state.areas, stoneTypeMap]
   );
 
   const totals: ProjectTotals = useMemo(() => {
