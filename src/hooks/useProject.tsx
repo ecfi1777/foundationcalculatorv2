@@ -481,7 +481,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     }
 
     toast.success("Project deleted");
-  }, [currentProject, resetToBlankInternal]);
+  }, [currentProject]);
 
   // ── Reset to blank ──
   const resetToBlankInternal = useCallback(() => {
