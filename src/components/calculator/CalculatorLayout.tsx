@@ -241,6 +241,8 @@ export function CalculatorLayout() {
         isSaving={isSaving}
         isProjectLocked={isProjectLocked}
         hasProject={!!currentProject}
+        isDirty={isDirty}
+        onResetToBlank={resetToBlank}
       />
       {isProjectLocked && (
         <div className="px-4 pt-2"><LockedBanner /></div>
