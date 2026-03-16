@@ -296,8 +296,9 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
           .eq("id", projectId);
       }
 
-      // Upsert areas
-      for (const area of state.areas) {
+      // Upsert areas — only save committed (non-draft) areas
+      const committedAreas = state.areas.filter((a) => !a.isDraft);
+      for (const area of committedAreas) {
         const anyEnabled = deriveRebarEnabled(area.rebarConfigs);
 
         const areaRow = {
