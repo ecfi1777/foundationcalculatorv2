@@ -97,6 +97,13 @@ export default function Auth() {
               ? "Create an account to save your work"
               : "Sign in to your account"}
           </CardDescription>
+          <Button
+            variant="link"
+            className="text-sm text-muted-foreground hover:text-foreground"
+            onClick={() => navigate("/")}
+          >
+            ← Continue to calculator without an account
+          </Button>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button

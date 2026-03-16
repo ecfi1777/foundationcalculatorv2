@@ -209,6 +209,9 @@ export interface CalcArea {
   sortOrder: number;
   wastePct: number;
 
+  /** True when newly created and not yet validated with required measurements */
+  isDraft?: boolean;
+
   // Footing mode
   footingMode?: FootingMode;
 
@@ -224,6 +227,38 @@ export interface CalcArea {
   // Rebar - keyed by element_type
   rebarEnabled: boolean;
   rebarConfigs: RebarConfigsMap;
+}
+
+/**
+ * Check if an area has enough required measurement data to be shown in quantities.
+ * Linear types need at least one segment with length > 0.
+ * Section-based types need at least one section with non-zero dimensions.
+ * Cylinder/Steps have dimension defaults that count as valid.
+ */
+export function hasRequiredData(area: CalcArea): boolean {
+  switch (area.type) {
+    case "footing":
+    case "wall":
+    case "gradeBeam":
+    case "curbGutter":
+      return area.segments.length > 0 && area.segments.some(s => s.lengthInchesDecimal > 0);
+    case "slab":
+    case "pierPad":
+      return area.sections.length > 0 && area.sections.some(s =>
+        (s.lengthFt > 0 || s.lengthIn > 0) && (s.widthFt > 0 || s.widthIn > 0)
+      );
+    case "cylinder":
+      return (area.dimensions.diameterIn ?? 0) > 0
+        && ((area.dimensions.heightFt ?? 0) > 0 || (area.dimensions.heightIn ?? 0) > 0)
+        && (area.dimensions.quantity ?? 0) > 0;
+    case "steps":
+      return (area.dimensions.numSteps ?? 0) > 0
+        && (area.dimensions.riseIn ?? 0) > 0
+        && (area.dimensions.runIn ?? 0) > 0
+        && (area.dimensions.widthIn ?? 0) > 0;
+    default:
+      return false;
+  }
 }
 
 // ── Computed Results ───────────────────────────────────
