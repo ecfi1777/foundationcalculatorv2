@@ -117,7 +117,7 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
           <Plus className="h-3.5 w-3.5" />
           Add Area
         </Button>
-        {activeAreaId && onDiscard && (
+        {activeAreaId && onDiscard && !currentProject && (
           <Button
             size="sm"
             variant="outline"
