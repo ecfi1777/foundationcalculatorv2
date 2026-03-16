@@ -323,6 +323,7 @@ function getRebarLabel(
 export function QuantitiesPanel() {
   const { state, dispatch } = useCalculatorState();
   const [renamingAreaId, setRenamingAreaId] = useState<string | null>(null);
+  const [deleteAreaId, setDeleteAreaId] = useState<string | null>(null);
   const [renameValue, setRenameValue] = useState("");
 
   const confirmRename = () => {
