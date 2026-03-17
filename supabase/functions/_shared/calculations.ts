@@ -229,21 +229,31 @@ export function calcSpliceOverlap(
   barLengthFt: number,
   overlapIn: number
 ): number {
-  if (totalLengthFt <= 0) return 0;
+  if (totalLengthFt <= 0 || barLengthFt <= 0) return 0;
   const numBars = Math.ceil(totalLengthFt / barLengthFt);
   const splices = Math.max(numBars - 1, 0);
   return splices * inchesToFeet(overlapIn);
 }
 
+// 1/1728 — converts cubic inches to cubic feet (12^3 = 1728)
+const CUBIC_IN_TO_FT3 = 0.0005787037;
+
 // ── Volume Calculators ────────────────────────────────
 
 export function calcFooting(input: FootingInput): FootingResult {
+  if (input.linearFt <= 0 || input.widthIn < 0 || input.depthIn < 0) {
+    return { footingVolumeCy: 0, wallVolumeCy: null, totalVolumeCy: 0, totalWithWasteCy: 0 };
+  }
+
   const widthFt = inchesToFeet(input.widthIn);
   const depthFt = inchesToFeet(input.depthIn);
   const footingVolumeCy = cubicFtToCy(input.linearFt * widthFt * depthFt);
 
   let wallVolumeCy: number | null = null;
   if (input.wall) {
+    if (input.wall.heightIn < 0 || input.wall.thicknessIn < 0) {
+      return { footingVolumeCy: 0, wallVolumeCy: null, totalVolumeCy: 0, totalWithWasteCy: 0 };
+    }
     const wallHeightFt = inchesToFeet(input.wall.heightIn);
     const wallThicknessFt = inchesToFeet(input.wall.thicknessIn);
     wallVolumeCy = cubicFtToCy(input.linearFt * wallThicknessFt * wallHeightFt);
@@ -256,6 +266,9 @@ export function calcFooting(input: FootingInput): FootingResult {
 }
 
 export function calcWall(input: WallInput): WallResult {
+  if (input.linearFt <= 0 || input.heightIn < 0 || input.thicknessIn < 0) {
+    return { volumeCy: 0, volumeWithWasteCy: 0 };
+  }
   const heightFt = inchesToFeet(input.heightIn);
   const thicknessFt = inchesToFeet(input.thicknessIn);
   const volumeCy = cubicFtToCy(input.linearFt * heightFt * thicknessFt);
@@ -264,6 +277,9 @@ export function calcWall(input: WallInput): WallResult {
 }
 
 export function calcGradeBeam(input: GradeBeamInput): GradeBeamResult {
+  if (input.linearFt <= 0 || input.widthIn < 0 || input.depthIn < 0) {
+    return { volumeCy: 0, volumeWithWasteCy: 0 };
+  }
   const widthFt = inchesToFeet(input.widthIn);
   const depthFt = inchesToFeet(input.depthIn);
   const volumeCy = cubicFtToCy(input.linearFt * widthFt * depthFt);
@@ -272,9 +288,13 @@ export function calcGradeBeam(input: GradeBeamInput): GradeBeamResult {
 }
 
 export function calcCurbGutter(input: CurbGutterInput): CurbGutterResult {
-  const curbFt3 = input.linearFt * (input.curbDepthIn / 12) * (input.curbHeightIn / 12);
-  const gutterFt3 = input.linearFt * (input.gutterWidthIn / 12) * (input.flagThicknessIn / 12);
-  const volumeCy = (curbFt3 + gutterFt3) / 27;
+  if (input.linearFt <= 0 || input.curbDepthIn < 0 || input.curbHeightIn < 0 ||
+      input.gutterWidthIn < 0 || input.flagThicknessIn < 0) {
+    return { volumeCy: 0, volumeWithWasteCy: 0 };
+  }
+  const curbFt3 = input.linearFt * inchesToFeet(input.curbDepthIn) * inchesToFeet(input.curbHeightIn);
+  const gutterFt3 = input.linearFt * inchesToFeet(input.gutterWidthIn) * inchesToFeet(input.flagThicknessIn);
+  const volumeCy = cubicFtToCy(curbFt3 + gutterFt3);
   const volumeWithWasteCy = applyWaste(volumeCy, input.wastePct);
   return { volumeCy, volumeWithWasteCy };
 }
@@ -283,6 +303,7 @@ export function calcSlabSection(input: SlabSectionInput): SlabSectionResult {
   const lengthFt = input.lengthFt + inchesToFeet(input.lengthIn);
   const widthFt = input.widthFt + inchesToFeet(input.widthIn);
   const thicknessFt = inchesToFeet(input.thicknessIn);
+  if (lengthFt <= 0 || widthFt <= 0 || thicknessFt < 0) return { sqft: 0, volumeCy: 0 };
   const sqft = lengthFt * widthFt;
   const volumeCy = cubicFtToCy(sqft * thicknessFt);
   return { sqft, volumeCy };
@@ -297,6 +318,9 @@ export function calcSlabArea(input: SlabAreaInput): SlabAreaResult {
 }
 
 export function calcPierPad(input: PierPadInput): PierPadResult {
+  if (input.quantity <= 0 || input.lengthIn < 0 || input.widthIn < 0 || input.depthIn < 0) {
+    return { volumeEachCy: 0, totalVolumeCy: 0, totalWithWasteCy: 0 };
+  }
   const lFt = inchesToFeet(input.lengthIn);
   const wFt = inchesToFeet(input.widthIn);
   const dFt = inchesToFeet(input.depthIn);
@@ -307,8 +331,12 @@ export function calcPierPad(input: PierPadInput): PierPadResult {
 }
 
 export function calcCylinder(input: CylinderInput): CylinderResult {
-  const heightFtTotal = input.heightFt + input.heightIn / 12;
-  const radiusFt = (input.diameterIn / 12) / 2;
+  if (input.quantity <= 0 || input.diameterIn <= 0) {
+    return { volumeEachCy: 0, totalVolumeCy: 0, totalWithWasteCy: 0 };
+  }
+  const heightFtTotal = input.heightFt + inchesToFeet(input.heightIn);
+  if (heightFtTotal <= 0) return { volumeEachCy: 0, totalVolumeCy: 0, totalWithWasteCy: 0 };
+  const radiusFt = inchesToFeet(input.diameterIn) / 2;
   const volumeFt3 = Math.PI * radiusFt * radiusFt * heightFtTotal;
   const volumeEachCy = volumeFt3 / 27;
   const totalVolumeCy = volumeEachCy * input.quantity;
@@ -319,17 +347,21 @@ export function calcCylinder(input: CylinderInput): CylinderResult {
 export function calcSteps(input: StepsInput): StepsResult {
   const { riseIn, runIn, widthIn, numSteps, throatDepthIn, wastePct } = input;
 
+  if (riseIn <= 0 || runIn <= 0 || widthIn <= 0 || numSteps <= 0 || throatDepthIn < 0) {
+    return { volumeCy: 0, volumeWithWasteCy: 0 };
+  }
+
   const A = riseIn * runIn * widthIn / 2;
   const h = Math.sqrt(riseIn * riseIn + runIn * runIn);
   const B = h * widthIn * throatDepthIn;
   const V1 = (A + B) * (numSteps - 1);
   const V2 = riseIn * runIn * widthIn;
-  const stairsFt3 = (V1 + V2) * 0.0005787037;
+  const stairsFt3 = (V1 + V2) * CUBIC_IN_TO_FT3;
 
   let platformFt3 = 0;
   if (input.platformDepthIn && input.platformDepthIn > 0) {
     const platformWidthIn = input.platformWidthIn ?? widthIn;
-    platformFt3 = (input.platformDepthIn / 12) * (platformWidthIn / 12) * (widthIn / 12);
+    platformFt3 = inchesToFeet(input.platformDepthIn) * inchesToFeet(platformWidthIn) * inchesToFeet(widthIn);
   }
 
   const volumeCy = (stairsFt3 + platformFt3) / 27;
@@ -341,7 +373,10 @@ export function calcSteps(input: StepsInput): StepsResult {
 // ── Rebar Calculators ─────────────────────────────────
 
 export function calcRebarHorizontal(input: RebarHorizontalInput): RebarHorizontalResult {
-  const numSplices = Math.floor(input.linearFt / input.barLengthFt);
+  if (input.linearFt <= 0 || input.numRows <= 0 || input.barLengthFt <= 0) {
+    return { totalLf: 0, totalWithWasteLf: 0 };
+  }
+  const numSplices = Math.max(Math.ceil(input.linearFt / input.barLengthFt) - 1, 0);
   const overlapLf = numSplices * inchesToFeet(input.overlapIn) * input.numRows;
   const totalLf = (input.linearFt * input.numRows) + overlapLf;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
@@ -349,14 +384,22 @@ export function calcRebarHorizontal(input: RebarHorizontalInput): RebarHorizonta
 }
 
 export function calcRebarVertical(input: RebarVerticalInput): RebarVerticalResult {
+  if (input.linearFt <= 0 || input.spacingIn <= 0) {
+    return { numBars: 0, totalLf: 0, totalWithWasteLf: 0 };
+  }
   const numBars = Math.floor(input.linearFt * 12 / input.spacingIn) + 1;
   const barHeightFt = input.barHeightFt + inchesToFeet(input.barHeightIn);
+  if (barHeightFt <= 0) return { numBars: 0, totalLf: 0, totalWithWasteLf: 0 };
   const totalLf = numBars * barHeightFt;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
   return { numBars, totalLf, totalWithWasteLf };
 }
 
 export function calcRebarSlabGrid(input: RebarSlabGridInput): RebarSlabGridResult {
+  if (input.lengthFt <= 0 || input.widthFt <= 0 || input.spacingIn <= 0 || input.barLengthFt <= 0) {
+    return { barsLengthwise: 0, barsWidthwise: 0, totalLf: 0, totalWithWasteLf: 0 };
+  }
+
   const lengthIn = input.lengthFt * 12;
   const widthIn = input.widthFt * 12;
 
@@ -378,6 +421,9 @@ export function calcRebarSlabGrid(input: RebarSlabGridInput): RebarSlabGridResul
 // ── Stone Base ────────────────────────────────────────
 
 export function calcStoneBase(input: StoneBaseInput): StoneBaseResult {
+  if (input.sqft <= 0 || input.depthIn < 0 || input.densityTonsPerCy <= 0) {
+    return { volumeCy: 0, tons: 0, tonsWithWaste: 0 };
+  }
   const depthFt = inchesToFeet(input.depthIn);
   const volumeCy = cubicFtToCy(input.sqft * depthFt);
   const tons = volumeCy * input.densityTonsPerCy;
