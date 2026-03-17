@@ -49,11 +49,17 @@ export default function AffiliateDashboard() {
       setLoading(true);
 
       // 1. Get affiliate
-      const { data: aff } = await supabase
+      const { data: aff, error: affErr } = await supabase
         .from("affiliates")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
+
+      if (affErr) {
+        toast({ title: "Failed to load affiliate data", description: affErr.message, variant: "destructive" });
+        setLoading(false);
+        return;
+      }
 
       if (!aff) {
         navigate("/settings", { replace: true });
