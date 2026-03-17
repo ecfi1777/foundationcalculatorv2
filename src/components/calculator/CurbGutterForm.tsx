@@ -4,6 +4,7 @@ import { SegmentEntry } from "./SegmentEntry";
 import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
 import { makeDefaultRebar } from "@/types/calculator";
+import { generateId } from "@/lib/utils";
 
 export function CurbGutterForm() {
   const { dispatch, addArea, getAreasForType, activeArea } = useCalculatorState();
