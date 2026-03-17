@@ -32,6 +32,7 @@ export function InfoIcon({ calculatorName }: InfoIconProps) {
       <>
         <button
           onClick={() => setOpen(true)}
+          aria-label="More information"
           className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground"
         >
           <Info className="h-4 w-4" />
