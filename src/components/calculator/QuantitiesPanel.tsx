@@ -11,6 +11,7 @@ import { Pencil, Trash2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
+import { toast } from "@/hooks/use-toast";
 
 function getRebarLabel(
   elementType: RebarElementType,
