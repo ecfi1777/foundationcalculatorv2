@@ -507,6 +507,13 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     setPendingAction(null);
   }, [dispatch]);
 
+  // Clear all in-memory state reactively when user signs out
+  useEffect(() => {
+    if (!user) {
+      clearAllState();
+    }
+  }, [user, clearAllState]);
+
   // ── Create new project ──
   const createNewProject = useCallback(() => {
     resetToBlankInternal();
