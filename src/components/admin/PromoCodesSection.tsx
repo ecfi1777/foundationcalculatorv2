@@ -118,11 +118,39 @@ export function PromoCodesSection({ adminCall, onError }: Props) {
     setDialogOpen(true);
   };
 
+  const validateForm = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    if (!form.code.trim()) errors.code = "Promo code is required";
+    if (form.type === "pct_discount") {
+      const pct = parseInt(form.discount_pct);
+      if (!form.discount_pct || isNaN(pct) || pct < 1 || pct > 100) {
+        errors.discount_pct = "Discount must be between 1 and 100";
+      }
+    }
+    if (form.type === "flat_discount" && !form.discount_cents) {
+      errors.discount_cents = "Discount amount is required";
+    }
+    if (form.type === "trial" && !form.trial_days) {
+      errors.trial_days = "Trial days is required";
+    }
+    return errors;
+  };
+
+  const isFormValid = (): boolean => {
+    return Object.keys(validateForm()).length === 0;
+  };
+
   const handleSave = async () => {
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setValidationErrors({});
     setSaving(true);
     try {
       const body: Record<string, unknown> = {
-        code: form.code,
+        code: form.code.trim(),
         type: form.type,
         is_active: form.is_active,
         grants_premium: form.grants_premium,
