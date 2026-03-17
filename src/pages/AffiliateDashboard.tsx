@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ReferralLinkCard } from "@/components/affiliate/ReferralLinkCard";
 import { PayoutHistoryTable } from "@/components/affiliate/PayoutHistoryTable";
+import { toast } from "@/hooks/use-toast";
 
 interface StripeConnectStatus {
   connected: boolean;
