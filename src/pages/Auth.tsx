@@ -200,6 +200,7 @@ export default function Auth() {
                     value={signupPassword}
                     onChange={(e) => setSignupPassword(e.target.value)}
                   />
+                  <p className="text-xs text-muted-foreground">Password must be at least 6 characters</p>
                 </div>
                 <Button type="submit" className="w-full" disabled={submitting}>
                   {submitting ? "Creating account…" : "Create Account"}

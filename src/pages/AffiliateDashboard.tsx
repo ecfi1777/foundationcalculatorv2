@@ -140,6 +140,7 @@ export default function AffiliateDashboard() {
       window.location.href = url;
     } catch (err) {
       console.error("Failed to create onboarding link:", err);
+      toast({ title: "Failed to create affiliate account", description: "Could not generate Stripe onboarding link. Please try again.", variant: "destructive" });
       setOnboardingLoading(false);
     }
   };

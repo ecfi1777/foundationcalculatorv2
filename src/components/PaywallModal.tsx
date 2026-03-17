@@ -41,7 +41,7 @@ export default function PaywallModal({ open, onClose }: PaywallModalProps) {
       setLoading(true);
       await startCheckout(session, settings.active_org_id);
     } catch {
-      toast.error("Could not start checkout. Please try again.");
+      toast.error("Unable to start checkout. Please try again or contact support.");
     } finally {
       setLoading(false);
     }

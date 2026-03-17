@@ -10,6 +10,15 @@ import { inchesToFeet, applyWaste } from "./utils";
 
 const ZERO_CYL: CylinderResult = { volumeEachCy: 0, totalVolumeCy: 0, totalWithWasteCy: 0 };
 
+/**
+ * Calculate cylinder concrete volume for one or more identical cylinders.
+ * @param input.diameterIn - Cylinder diameter in inches
+ * @param input.heightFt - Cylinder height, whole feet portion
+ * @param input.heightIn - Cylinder height, remaining inches portion
+ * @param input.quantity - Number of identical cylinders
+ * @param input.wastePct - Waste percentage (e.g., 5 for 5%)
+ * @returns volumeEachCy per cylinder in cubic yards, totalVolumeCy, totalWithWasteCy
+ */
 export function calcCylinder(input: CylinderInput): CylinderResult {
   if (input.quantity <= 0 || input.diameterIn <= 0) return { ...ZERO_CYL };
   const heightFtTotal = input.heightFt + inchesToFeet(input.heightIn);

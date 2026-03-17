@@ -86,7 +86,7 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
                   <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleEditSave(seg.id)}>
                     Save
                   </Button>
-                  <Button size="sm" variant="ghost" className="h-7 text-xs" onClick={() => setEditingId(null)}>
+                  <Button size="sm" variant="ghost" className="h-7 text-xs" aria-label="Cancel editing" onClick={() => setEditingId(null)}>
                     Cancel
                   </Button>
                 </div>
@@ -100,6 +100,7 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
                       size="icon"
                       variant="ghost"
                       className="h-6 w-6"
+                      aria-label="Edit segment"
                       onClick={() => startEdit(seg)}
                     >
                       <Pencil className="h-3 w-3" />

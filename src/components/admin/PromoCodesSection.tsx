@@ -78,6 +78,7 @@ export function PromoCodesSection({ adminCall, onError }: Props) {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const fetchPromos = useCallback(async () => {
     setLoading(true);
@@ -117,11 +118,39 @@ export function PromoCodesSection({ adminCall, onError }: Props) {
     setDialogOpen(true);
   };
 
+  const validateForm = (): Record<string, string> => {
+    const errors: Record<string, string> = {};
+    if (!form.code.trim()) errors.code = "Promo code is required";
+    if (form.type === "pct_discount") {
+      const pct = parseInt(form.discount_pct);
+      if (!form.discount_pct || isNaN(pct) || pct < 1 || pct > 100) {
+        errors.discount_pct = "Discount must be between 1 and 100";
+      }
+    }
+    if (form.type === "flat_discount" && !form.discount_cents) {
+      errors.discount_cents = "Discount amount is required";
+    }
+    if (form.type === "trial" && !form.trial_days) {
+      errors.trial_days = "Trial days is required";
+    }
+    return errors;
+  };
+
+  const isFormValid = (): boolean => {
+    return Object.keys(validateForm()).length === 0;
+  };
+
   const handleSave = async () => {
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+    setValidationErrors({});
     setSaving(true);
     try {
       const body: Record<string, unknown> = {
-        code: form.code,
+        code: form.code.trim(),
         type: form.type,
         is_active: form.is_active,
         grants_premium: form.grants_premium,
@@ -240,7 +269,8 @@ export function PromoCodesSection({ adminCall, onError }: Props) {
           <div className="space-y-4">
             <div>
               <Label>Code</Label>
-              <Input value={form.code} onChange={(e) => setForm({ ...form, code: e.target.value })} />
+              <Input value={form.code} onChange={(e) => { setForm({ ...form, code: e.target.value }); setValidationErrors(prev => ({ ...prev, code: "" })); }} />
+              {validationErrors.code && <p className="text-xs text-destructive mt-1">{validationErrors.code}</p>}
             </div>
             <div>
               <Label>Type</Label>
@@ -256,19 +286,22 @@ export function PromoCodesSection({ adminCall, onError }: Props) {
             {form.type === "pct_discount" && (
               <div>
                 <Label>Discount %</Label>
-                <Input type="number" value={form.discount_pct} onChange={(e) => setForm({ ...form, discount_pct: e.target.value })} />
+                <Input type="number" min={1} max={100} value={form.discount_pct} onChange={(e) => { setForm({ ...form, discount_pct: e.target.value }); setValidationErrors(prev => ({ ...prev, discount_pct: "" })); }} />
+                {validationErrors.discount_pct && <p className="text-xs text-destructive mt-1">{validationErrors.discount_pct}</p>}
               </div>
             )}
             {form.type === "flat_discount" && (
               <div>
                 <Label>Discount (cents)</Label>
-                <Input type="number" value={form.discount_cents} onChange={(e) => setForm({ ...form, discount_cents: e.target.value })} />
+                <Input type="number" value={form.discount_cents} onChange={(e) => { setForm({ ...form, discount_cents: e.target.value }); setValidationErrors(prev => ({ ...prev, discount_cents: "" })); }} />
+                {validationErrors.discount_cents && <p className="text-xs text-destructive mt-1">{validationErrors.discount_cents}</p>}
               </div>
             )}
             {form.type === "trial" && (
               <div>
                 <Label>Trial Days</Label>
-                <Input type="number" value={form.trial_days} onChange={(e) => setForm({ ...form, trial_days: e.target.value })} />
+                <Input type="number" value={form.trial_days} onChange={(e) => { setForm({ ...form, trial_days: e.target.value }); setValidationErrors(prev => ({ ...prev, trial_days: "" })); }} />
+                {validationErrors.trial_days && <p className="text-xs text-destructive mt-1">{validationErrors.trial_days}</p>}
               </div>
             )}
             <div>
@@ -286,7 +319,7 @@ export function PromoCodesSection({ adminCall, onError }: Props) {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setDialogOpen(false)}>Cancel</Button>
-            <Button onClick={handleSave} disabled={saving}>
+            <Button onClick={handleSave} disabled={saving || !isFormValid()}>
               {saving ? "Saving..." : editing ? "Update" : "Create"}
             </Button>
           </DialogFooter>

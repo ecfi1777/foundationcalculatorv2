@@ -100,6 +100,8 @@ export function ProjectListPanel({ open, onClose }: Props) {
                       }
                     }}
                     className={`w-full text-left rounded-lg p-3 transition-colors group cursor-pointer ${
+                      isLoading ? "opacity-50 pointer-events-none" : ""
+                    } ${
                       currentProject?.id === p.id
                         ? "bg-primary/10 border border-primary/30"
                         : "hover:bg-secondary/30 border border-transparent"
