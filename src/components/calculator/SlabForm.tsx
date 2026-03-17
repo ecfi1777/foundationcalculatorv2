@@ -5,6 +5,7 @@ import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
 import type { CalcSection } from "@/types/calculator";
 import { makeDefaultRebar } from "@/types/calculator";
+import { generateId } from "@/lib/utils";
 
 export function SlabForm() {
   const { dispatch, addArea, getAreasForType, activeArea } = useCalculatorState();
@@ -15,7 +16,7 @@ export function SlabForm() {
     const area = addArea("slab");
     if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
     const section: CalcSection = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: "Slab Section (1)",
       lengthFt: 0,
       lengthIn: 0,
@@ -34,7 +35,7 @@ export function SlabForm() {
     if (!area) return;
     const num = area.sections.length + 1;
     const section: CalcSection = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: `Slab Section (${num})`,
       lengthFt: 0,
       lengthIn: 0,

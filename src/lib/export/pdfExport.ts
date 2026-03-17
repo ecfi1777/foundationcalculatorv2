@@ -137,19 +137,23 @@ export async function generatePDF(data: ProjectExportData): Promise<void> {
   container.innerHTML = buildHTML(data);
   document.body.appendChild(container);
 
-  const safeName = sanitizeFilename(data.projectName);
-  const filename = `${safeName}-foundation-estimate-${data.exportDate}.pdf`;
+  try {
+    const safeName = sanitizeFilename(data.projectName);
+    const filename = `${safeName}-foundation-estimate-${data.exportDate}.pdf`;
 
-  await html2pdf()
-    .set({
-      margin: [10, 10, 10, 10],
-      filename,
-      image: { type: "jpeg", quality: 0.98 },
-      html2canvas: { scale: 2 },
-      jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
-    })
-    .from(container)
-    .save();
-
-  document.body.removeChild(container);
+    await html2pdf()
+      .set({
+        margin: [10, 10, 10, 10],
+        filename,
+        image: { type: "jpeg", quality: 0.98 },
+        html2canvas: { scale: 2 },
+        jsPDF: { unit: "mm", format: "letter", orientation: "portrait" },
+      })
+      .from(container)
+      .save();
+  } finally {
+    if (container.parentNode) {
+      container.parentNode.removeChild(container);
+    }
+  }
 }

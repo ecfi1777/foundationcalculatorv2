@@ -8,6 +8,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ReferralLinkCard } from "@/components/affiliate/ReferralLinkCard";
 import { PayoutHistoryTable } from "@/components/affiliate/PayoutHistoryTable";
+import { toast } from "@/hooks/use-toast";
 
 interface StripeConnectStatus {
   connected: boolean;
@@ -48,11 +49,17 @@ export default function AffiliateDashboard() {
       setLoading(true);
 
       // 1. Get affiliate
-      const { data: aff } = await supabase
+      const { data: aff, error: affErr } = await supabase
         .from("affiliates")
         .select("*")
         .eq("user_id", user.id)
         .maybeSingle();
+
+      if (affErr) {
+        toast({ title: "Failed to load affiliate data", description: affErr.message, variant: "destructive" });
+        setLoading(false);
+        return;
+      }
 
       if (!aff) {
         navigate("/settings", { replace: true });
@@ -87,12 +94,16 @@ export default function AffiliateDashboard() {
       });
 
       // 3. Get paid commissions for payout history table (separate query needed for row data)
-      const { data: paidComms } = await supabase
+      const { data: paidComms, error: payoutsErr } = await supabase
         .from("affiliate_commissions")
         .select("id, paid_at, amount_cents, stripe_transfer_id")
         .eq("affiliate_id", aff.id)
         .eq("status", "paid")
         .order("paid_at", { ascending: false });
+
+      if (payoutsErr) {
+        toast({ title: "Failed to load payout history", description: payoutsErr.message, variant: "destructive" });
+      }
 
       setPayouts(paidComms || []);
       setLoading(false);

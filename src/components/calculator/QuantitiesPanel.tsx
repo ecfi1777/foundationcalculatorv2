@@ -11,6 +11,7 @@ import { Pencil, Trash2, X } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
+import { toast } from "@/hooks/use-toast";
 
 function getRebarLabel(
   elementType: RebarElementType,
@@ -40,7 +41,11 @@ export function QuantitiesPanel() {
       .from("stone_types")
       .select("id, name")
       .eq("is_active", true)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          toast({ title: "Failed to load stone types", description: error.message, variant: "destructive" });
+          return;
+        }
         if (data) {
           setStoneTypeMap(new Map(data.map((r) => [r.id, r.name])));
         }

@@ -5,6 +5,7 @@ import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
 import { calcTypeToElementType, makeDefaultRebar } from "@/types/calculator";
 import type { RebarElementType } from "@/types/calculator";
+import { generateId } from "@/lib/utils";
 
 /** Shared form for both Wall (standalone) and Grade Beam calculators */
 export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
@@ -66,7 +67,7 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
                 dispatch({
                   type: "ADD_SEGMENT",
                   areaId: area.id,
-                  segment: { ...s, id: crypto.randomUUID(), sortOrder: area.segments.length + 1 },
+                  segment: { ...s, id: generateId(), sortOrder: area.segments.length + 1 },
                 })
               }
               onUpdate={(id, patch) => dispatch({ type: "UPDATE_SEGMENT", areaId: area.id, segmentId: id, patch })}
