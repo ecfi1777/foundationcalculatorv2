@@ -9,6 +9,16 @@ import { inchesToFeet, cubicFtToCy, applyWaste } from "./utils";
 
 const ZERO_CURB: CurbGutterResult = { volumeCy: 0, volumeWithWasteCy: 0 };
 
+/**
+ * Calculate curb & gutter concrete volume.
+ * @param input.linearFt - Total linear feet of curb run
+ * @param input.curbDepthIn - Curb depth (thickness) in inches
+ * @param input.curbHeightIn - Curb height in inches
+ * @param input.gutterWidthIn - Gutter width in inches
+ * @param input.flagThicknessIn - Gutter flag (slab) thickness in inches
+ * @param input.wastePct - Waste percentage (e.g., 5 for 5%)
+ * @returns volumeCy in cubic yards, volumeWithWasteCy with waste applied
+ */
 export function calcCurbGutter(input: CurbGutterInput): CurbGutterResult {
   if (input.linearFt <= 0 || input.curbDepthIn < 0 || input.curbHeightIn < 0 ||
       input.gutterWidthIn < 0 || input.flagThicknessIn < 0) {

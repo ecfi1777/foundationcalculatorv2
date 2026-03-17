@@ -7,6 +7,15 @@ import { cubicFtToCy, inchesToFeet, applyWaste } from "./utils";
 
 const ZERO_FOOTING: FootingResult = { footingVolumeCy: 0, wallVolumeCy: null, totalVolumeCy: 0, totalWithWasteCy: 0 };
 
+/**
+ * Calculate footing concrete volume, with optional wall add-on.
+ * @param input.widthIn - Footing width in inches
+ * @param input.depthIn - Footing depth in inches
+ * @param input.linearFt - Total linear feet of footing
+ * @param input.wastePct - Waste percentage (e.g., 5 for 5%)
+ * @param input.wall - Optional wall add-on with heightIn and thicknessIn
+ * @returns footingVolumeCy, wallVolumeCy (nullable), totalVolumeCy, totalWithWasteCy — all in cubic yards
+ */
 export function calcFooting(input: FootingInput): FootingResult {
   if (input.linearFt <= 0 || input.widthIn < 0 || input.depthIn < 0) return { ...ZERO_FOOTING };
 

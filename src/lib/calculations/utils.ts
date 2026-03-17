@@ -25,31 +25,52 @@ const FRACTION_MAP: Record<string, number> = {
   "15/16": 15 / 16,
 };
 
-/** Convert an ImperialLength to total inches (decimal). */
+/**
+ * Convert an ImperialLength (feet + inches + fraction string) to total inches.
+ * @param length - Object with feet (number), inches (number), fraction (string like "1/4")
+ * @returns Total length in decimal inches
+ */
 export function toTotalInches(length: ImperialLength): number {
   const fractionVal = FRACTION_MAP[length.fraction] ?? 0;
   return length.feet * 12 + length.inches + fractionVal;
 }
 
-/** Convert inches to feet (decimal). */
+/**
+ * Convert inches to feet.
+ * @param inches - Value in inches
+ * @returns Value in decimal feet
+ */
 export function inchesToFeet(inches: number): number {
   return inches / 12;
 }
 
-/** Convert cubic feet to cubic yards. */
+/**
+ * Convert cubic feet to cubic yards.
+ * @param cubicFt - Volume in cubic feet
+ * @returns Volume in cubic yards
+ */
 export function cubicFtToCy(cubicFt: number): number {
   return cubicFt / 27;
 }
 
-/** Apply waste percentage: value * (1 + pct/100). */
+/**
+ * Apply a waste percentage to a value.
+ * @param value - Base value (any unit)
+ * @param wastePct - Waste percentage (e.g., 5 for 5%)
+ * @returns value × (1 + wastePct/100)
+ */
 export function applyWaste(value: number, wastePct: number): number {
   return value * (1 + wastePct / 100);
 }
 
 /**
- * Number of splices needed for a given total run using standard bar lengths.
+ * Calculate total splice overlap length for a rebar run.
  * splices = ceil(totalLengthFt / barLengthFt) - 1  (min 0)
  * Each splice adds `overlapIn` inches of extra rebar.
+ * @param totalLengthFt - Total run length in feet
+ * @param barLengthFt - Standard bar length in feet
+ * @param overlapIn - Overlap per splice in inches
+ * @returns Total splice overlap in feet
  */
 export function calcSpliceOverlap(
   totalLengthFt: number,

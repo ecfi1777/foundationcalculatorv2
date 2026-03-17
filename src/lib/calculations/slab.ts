@@ -7,6 +7,15 @@ import { cubicFtToCy, inchesToFeet, applyWaste } from "./utils";
 
 const ZERO_SECTION: SlabSectionResult = { sqft: 0, volumeCy: 0 };
 
+/**
+ * Calculate a single slab section's area and concrete volume.
+ * @param input.lengthFt - Section length, whole feet
+ * @param input.lengthIn - Section length, remaining inches
+ * @param input.widthFt - Section width, whole feet
+ * @param input.widthIn - Section width, remaining inches
+ * @param input.thicknessIn - Slab thickness in inches
+ * @returns sqft in square feet, volumeCy in cubic yards
+ */
 export function calcSlabSection(input: SlabSectionInput): SlabSectionResult {
   const lengthFt = input.lengthFt + inchesToFeet(input.lengthIn);
   const widthFt = input.widthFt + inchesToFeet(input.widthIn);
@@ -20,6 +29,12 @@ export function calcSlabSection(input: SlabSectionInput): SlabSectionResult {
   return { sqft, volumeCy };
 }
 
+/**
+ * Calculate totals for a slab area composed of multiple sections.
+ * @param input.sections - Array of SlabSectionInput
+ * @param input.wastePct - Waste percentage (e.g., 5 for 5%)
+ * @returns sections results array, totalSqft in square feet, totalVolumeCy and totalWithWasteCy in cubic yards
+ */
 export function calcSlabArea(input: SlabAreaInput): SlabAreaResult {
   const sections = input.sections.map(calcSlabSection);
   const totalSqft = sections.reduce((sum, s) => sum + s.sqft, 0);

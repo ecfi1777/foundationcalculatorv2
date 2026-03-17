@@ -18,6 +18,18 @@ const CUBIC_IN_TO_FT3 = 0.0005787037;
 
 const ZERO_STEPS: StepsResult = { volumeCy: 0, volumeWithWasteCy: 0 };
 
+/**
+ * Calculate steps/stairs concrete volume using the slope-adjusted method.
+ * @param input.riseIn - Step rise in inches
+ * @param input.runIn - Step run (tread depth) in inches
+ * @param input.widthIn - Stair width in inches
+ * @param input.numSteps - Number of steps
+ * @param input.throatDepthIn - Minimum slab thickness under the nosing, in inches
+ * @param input.wastePct - Waste percentage (e.g., 5 for 5%)
+ * @param input.platformDepthIn - Optional platform slab depth in inches
+ * @param input.platformWidthIn - Optional platform width in inches (defaults to widthIn)
+ * @returns volumeCy in cubic yards, volumeWithWasteCy with waste applied
+ */
 export function calcSteps(input: StepsInput): StepsResult {
   const { riseIn, runIn, widthIn, numSteps, throatDepthIn, wastePct } = input;
 
