@@ -6,6 +6,7 @@ import { AreaSelector } from "./AreaSelector";
 import { Button } from "@/components/ui/button";
 import type { FootingMode } from "@/types/calculator";
 import { makeDefaultRebar } from "@/types/calculator";
+import { generateId } from "@/lib/utils";
 
 const MODES: { value: FootingMode; label: string }[] = [
   { value: "footingsOnly", label: "Footings Only" },
