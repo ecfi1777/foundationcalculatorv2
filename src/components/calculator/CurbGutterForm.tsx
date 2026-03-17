@@ -60,7 +60,7 @@ export function CurbGutterForm() {
                 dispatch({
                   type: "ADD_SEGMENT",
                   areaId: area.id,
-                  segment: { ...s, id: crypto.randomUUID(), sortOrder: area.segments.length + 1 },
+                  segment: { ...s, id: generateId(), sortOrder: area.segments.length + 1 },
                 })
               }
               onUpdate={(id, patch) => dispatch({ type: "UPDATE_SEGMENT", areaId: area.id, segmentId: id, patch })}

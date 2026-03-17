@@ -41,7 +41,11 @@ export function QuantitiesPanel() {
       .from("stone_types")
       .select("id, name")
       .eq("is_active", true)
-      .then(({ data }) => {
+      .then(({ data, error }) => {
+        if (error) {
+          toast({ title: "Failed to load stone types", description: error.message, variant: "destructive" });
+          return;
+        }
         if (data) {
           setStoneTypeMap(new Map(data.map((r) => [r.id, r.name])));
         }

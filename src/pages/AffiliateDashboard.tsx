@@ -94,12 +94,16 @@ export default function AffiliateDashboard() {
       });
 
       // 3. Get paid commissions for payout history table (separate query needed for row data)
-      const { data: paidComms } = await supabase
+      const { data: paidComms, error: payoutsErr } = await supabase
         .from("affiliate_commissions")
         .select("id, paid_at, amount_cents, stripe_transfer_id")
         .eq("affiliate_id", aff.id)
         .eq("status", "paid")
         .order("paid_at", { ascending: false });
+
+      if (payoutsErr) {
+        toast({ title: "Failed to load payout history", description: payoutsErr.message, variant: "destructive" });
+      }
 
       setPayouts(paidComms || []);
       setLoading(false);

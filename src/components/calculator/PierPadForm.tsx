@@ -3,6 +3,7 @@ import { NumberField } from "./NumberField";
 import { SectionEntry } from "./SectionEntry";
 import { AreaSelector } from "./AreaSelector";
 import type { CalcSection } from "@/types/calculator";
+import { generateId } from "@/lib/utils";
 
 export function PierPadForm() {
   const { dispatch, addArea, getAreasForType, activeArea } = useCalculatorState();
@@ -13,7 +14,7 @@ export function PierPadForm() {
     const area = addArea("pierPad");
     if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
     const section: CalcSection = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: "Pier Pad Section (1)",
       lengthFt: 0,
       lengthIn: 0,
@@ -37,7 +38,7 @@ export function PierPadForm() {
     if (!area) return;
     const num = area.sections.length + 1;
     const section: CalcSection = {
-      id: crypto.randomUUID(),
+      id: generateId(),
       name: `Pier Pad Section (${num})`,
       lengthFt: 0,
       lengthIn: 0,
