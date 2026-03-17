@@ -5,6 +5,7 @@ import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
 import { calcTypeToElementType, makeDefaultRebar } from "@/types/calculator";
 import type { RebarElementType } from "@/types/calculator";
+import { generateId } from "@/lib/utils";
 
 /** Shared form for both Wall (standalone) and Grade Beam calculators */
 export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
