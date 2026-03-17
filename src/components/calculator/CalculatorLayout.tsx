@@ -281,8 +281,10 @@ export function CalculatorLayout() {
           )}
         </div>
 
-        <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-card flex">
+        <div className="fixed bottom-0 left-0 right-0 border-t border-border bg-card flex" role="tablist">
           <button
+            role="tab"
+            aria-selected={mobileTab === "calculator"}
             onClick={() => setMobileTab("calculator")}
             className={cn(
               "flex-1 py-3 text-sm font-medium text-center transition-colors",
@@ -290,6 +292,8 @@ export function CalculatorLayout() {
             )}
           >Calculator</button>
           <button
+            role="tab"
+            aria-selected={mobileTab === "quantities"}
             onClick={() => setMobileTab("quantities")}
             className={cn(
               "flex-1 py-3 text-sm font-medium text-center transition-colors",

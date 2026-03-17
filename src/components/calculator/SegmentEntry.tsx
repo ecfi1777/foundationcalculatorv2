@@ -100,6 +100,7 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
                       size="icon"
                       variant="ghost"
                       className="h-6 w-6"
+                      aria-label="Edit segment"
                       onClick={() => startEdit(seg)}
                     >
                       <Pencil className="h-3 w-3" />

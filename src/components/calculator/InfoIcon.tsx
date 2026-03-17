@@ -52,7 +52,7 @@ export function InfoIcon({ calculatorName }: InfoIconProps) {
   return (
     <Tooltip>
       <TooltipTrigger asChild>
-        <button className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
+        <button aria-label="More information" className="inline-flex items-center justify-center rounded-full text-muted-foreground hover:text-foreground">
           <Info className="h-4 w-4" />
         </button>
       </TooltipTrigger>
