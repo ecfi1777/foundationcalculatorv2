@@ -78,6 +78,7 @@ export function PromoCodesSection({ adminCall, onError }: Props) {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [deactivateId, setDeactivateId] = useState<string | null>(null);
+  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
 
   const fetchPromos = useCallback(async () => {
     setLoading(true);
