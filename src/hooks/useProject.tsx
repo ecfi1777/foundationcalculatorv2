@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useCallback, useRef, type ReactNode } from "react";
+import { createContext, useContext, useState, useCallback, useEffect, useRef, type ReactNode } from "react";
 import { supabase } from "@/lib/supabase/client";
 import { useAuth } from "@/hooks/useAuth";
 import { useCalculatorState, type CalcState } from "@/hooks/useCalculatorState";
@@ -506,6 +506,13 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     setSubscriptionTier("free");
     setPendingAction(null);
   }, [dispatch]);
+
+  // Clear all in-memory state reactively when user signs out
+  useEffect(() => {
+    if (!user) {
+      clearAllState();
+    }
+  }, [user, clearAllState]);
 
   // ── Create new project ──
   const createNewProject = useCallback(() => {

@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useState, useCallback, type ReactNode } from "react";
+import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
 
@@ -19,6 +20,7 @@ const AuthContext = createContext<AuthContextType>({
 export const useAuth = () => useContext(AuthContext);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
+  const navigate = useNavigate();
   const [user, setUser] = useState<User | null>(null);
   const [session, setSession] = useState<Session | null>(null);
   const [loading, setLoading] = useState(true);
@@ -30,6 +32,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         setSession(session);
         setUser(session?.user ?? null);
         setLoading(false);
+        if (_event === 'SIGNED_OUT') {
+          navigate('/');
+        }
       }
     );
 
@@ -41,7 +46,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
 
     return () => subscription.unsubscribe();
-  }, []);
+  }, [navigate]);
 
   const signOut = useCallback(async () => {
     await supabase.auth.signOut();
