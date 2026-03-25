@@ -186,8 +186,8 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
             widthFt: s.widthFt,
             widthIn: s.widthIn,
             thicknessIn: s.thicknessIn,
+            wastePct: s.wastePct ?? 0,
           })),
-          wastePct: area.wastePct,
         });
         totalSqft = r.totalSqft;
         totalVolumeCy = r.totalVolumeCy;
@@ -205,7 +205,7 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
                 sqft: secSqft,
                 depthIn: area.stoneDepthIn ?? 4,
                 densityTonsPerCy: 1.4,
-                wastePct: area.wastePct,
+                wastePct: sec.wastePct ?? 0,
               });
               totalStone += sr.tonsWithWaste;
             }
