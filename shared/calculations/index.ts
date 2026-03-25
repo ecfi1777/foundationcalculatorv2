@@ -76,16 +76,17 @@ export interface SlabSectionInput {
   widthFt: number;
   widthIn: number;
   thicknessIn: number;
+  wastePct: number;
 }
 
 export interface SlabSectionResult {
   sqft: number;
   volumeCy: number;
+  volumeWithWasteCy: number;
 }
 
 export interface SlabAreaInput {
   sections: SlabSectionInput[];
-  wastePct: number;
 }
 
 export interface SlabAreaResult {
@@ -303,17 +304,18 @@ export function calcSlabSection(input: SlabSectionInput): SlabSectionResult {
   const lengthFt = input.lengthFt + inchesToFeet(input.lengthIn);
   const widthFt = input.widthFt + inchesToFeet(input.widthIn);
   const thicknessFt = inchesToFeet(input.thicknessIn);
-  if (lengthFt <= 0 || widthFt <= 0 || thicknessFt < 0) return { sqft: 0, volumeCy: 0 };
+  if (lengthFt <= 0 || widthFt <= 0 || thicknessFt < 0) return { sqft: 0, volumeCy: 0, volumeWithWasteCy: 0 };
   const sqft = lengthFt * widthFt;
   const volumeCy = cubicFtToCy(sqft * thicknessFt);
-  return { sqft, volumeCy };
+  const volumeWithWasteCy = applyWaste(volumeCy, input.wastePct);
+  return { sqft, volumeCy, volumeWithWasteCy };
 }
 
 export function calcSlabArea(input: SlabAreaInput): SlabAreaResult {
   const sections = input.sections.map(calcSlabSection);
   const totalSqft = sections.reduce((sum, s) => sum + s.sqft, 0);
   const totalVolumeCy = sections.reduce((sum, s) => sum + s.volumeCy, 0);
-  const totalWithWasteCy = applyWaste(totalVolumeCy, input.wastePct);
+  const totalWithWasteCy = sections.reduce((sum, s) => sum + s.volumeWithWasteCy, 0);
   return { sections, totalSqft, totalVolumeCy, totalWithWasteCy };
 }
 

@@ -98,16 +98,17 @@ export interface SlabSectionInput {
   widthFt: number;
   widthIn: number;
   thicknessIn: number;
+  wastePct: number;
 }
 
 export interface SlabSectionResult {
   sqft: number;
   volumeCy: number;
+  volumeWithWasteCy: number;
 }
 
 export interface SlabAreaInput {
   sections: SlabSectionInput[];
-  wastePct: number;
 }
 
 export interface SlabAreaResult {

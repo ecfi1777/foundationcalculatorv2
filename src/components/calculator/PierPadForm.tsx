@@ -31,6 +31,7 @@ export function PierPadForm() {
       widthFt: 0,
       widthIn: 0,
       thicknessIn: 0,
+      wastePct: 0,
       includeStone: false,
       stoneDepthIn: 0,
       stoneTypeId: "57stone",

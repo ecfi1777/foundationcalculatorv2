@@ -66,6 +66,7 @@ export function buildExportData(
           widthFt: sec.widthFt,
           widthIn: sec.widthIn,
           thicknessIn: sec.thicknessIn,
+          wastePct: sec.wastePct ?? 0,
         });
 
         return {
