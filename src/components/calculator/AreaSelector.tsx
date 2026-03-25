@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { useProject } from "@/hooks/useProject";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
-import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
@@ -9,8 +7,6 @@ import {
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import type { CalcArea, CalculatorType } from "@/types/calculator";
 import { CALCULATOR_LABELS, hasRequiredData } from "@/types/calculator";
-import { Save, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 import { InlineNameEditor } from "./InlineNameEditor";
 
 interface AreaSelectorProps {
