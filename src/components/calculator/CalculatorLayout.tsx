@@ -275,6 +275,7 @@ export function CalculatorLayout() {
                 isProjectLocked && "opacity-60 pointer-events-none"
               )}>
                 <ActiveForm />
+                <DraftActionButtons />
               </div>
             </div>
           ) : (
@@ -326,6 +327,7 @@ export function CalculatorLayout() {
           <div className="flex-1 overflow-y-auto px-4 py-4">
             <div className="rounded-lg border border-border bg-card p-4">
               <ActiveForm />
+              <DraftActionButtons />
             </div>
           </div>
         </div>
