@@ -29,6 +29,7 @@ export function SlabForm() {
       widthFt: 0,
       widthIn: 0,
       thicknessIn: 4,
+      wastePct: 0,
       includeStone: false,
       stoneDepthIn: 4,
       stoneTypeId: "57stone",
