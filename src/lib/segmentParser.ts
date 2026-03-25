@@ -1,12 +1,14 @@
 /**
  * Parse user-entered segment strings into structured data.
  *
- * Accepted formats:
- *   22' 4-1/2"
- *   22 ft 4-1/2 in
- *   22 feet 4-1/2 inches
- *   22.5  (decimal feet)
+ * Accepted formats (unit symbols REQUIRED):
+ *   10'          → 10 feet
+ *   10' 6"       → 10 feet 6 inches
+ *   10' 6-1/2"   → 10 feet 6.5 inches
+ *   120"         → 120 inches (= 10 feet)
+ *   6-1/2"       → 6.5 inches
  *
+ * Bare numbers without ' or " are REJECTED.
  * Accepted fractions: 1/16 increments (1/16, 1/8, 3/16, 1/4, … 15/16)
  */
 
@@ -28,37 +30,6 @@ const VALID_FRACTIONS: Record<string, number> = {
   "15/16": 15 / 16,
 };
 
-/** Sorted fraction thresholds for snapping decimals to nearest 1/16 */
-const FRACTION_THRESHOLDS: { max: number; label: string }[] = [
-  { max: 1 / 32, label: "0" },
-  { max: 3 / 32, label: "1/16" },
-  { max: 5 / 32, label: "1/8" },
-  { max: 7 / 32, label: "3/16" },
-  { max: 9 / 32, label: "1/4" },
-  { max: 11 / 32, label: "5/16" },
-  { max: 13 / 32, label: "3/8" },
-  { max: 15 / 32, label: "7/16" },
-  { max: 17 / 32, label: "1/2" },
-  { max: 19 / 32, label: "9/16" },
-  { max: 21 / 32, label: "5/8" },
-  { max: 23 / 32, label: "11/16" },
-  { max: 25 / 32, label: "3/4" },
-  { max: 27 / 32, label: "13/16" },
-  { max: 29 / 32, label: "7/8" },
-  { max: 31 / 32, label: "15/16" },
-  { max: Infinity, label: "0" }, // rounds up to next inch
-];
-
-function snapToSixteenth(decimal: number): { fraction: string; extraInch: boolean } {
-  for (const t of FRACTION_THRESHOLDS) {
-    if (decimal < t.max) {
-      return { fraction: t.label, extraInch: false };
-    }
-  }
-  // >= 31/32 rounds up to next inch
-  return { fraction: "0", extraInch: true };
-}
-
 interface ParsedSegment {
   feet: number;
   inches: number;
@@ -66,28 +37,38 @@ interface ParsedSegment {
   lengthInchesDecimal: number;
 }
 
-// Pattern: 22' 4-1/2" or 22' 4" or 22'
-// Fraction part allows multi-digit numerator for sixteenths (e.g. 11/16, 15/16)
-const TICK_PATTERN =
-  /^(\d+)\s*['′]\s*(?:(\d+)\s*[-–]?\s*(\d+\/\d+)\s*["″]?|(\d+)\s*["″]?)?\s*$/;
+// Feet with optional inches: 10' or 10' 6" or 10' 6-1/2"
+const FEET_PATTERN =
+  /^(\d+)\s*['′]\s*(?:(\d+)\s*[-–]?\s*(\d+\/\d+)\s*["″]|(\d+)\s*["″])?\s*$/;
 
-// Pattern: 22 ft 4-1/2 in or 22 feet 4 inches
-const WORD_PATTERN =
-  /^(\d+)\s*(?:ft|feet)\s*(?:(\d+)\s*[-–]?\s*(\d+\/\d+)\s*(?:in|inches?)?|(\d+)\s*(?:in|inches?))?\s*$/i;
+// Inches only: 120" or 6-1/2"
+const INCHES_PATTERN =
+  /^(\d+)\s*[-–]?\s*(\d+\/\d+)?\s*["″]\s*$/;
 
-// Pattern: just decimal feet e.g. 22.5
-const DECIMAL_PATTERN = /^(\d+\.?\d*)\s*$/;
+export type ParseResult =
+  | { ok: true; segment: ParsedSegment }
+  | { ok: false; reason: "empty" | "missing_units" | "invalid_fraction" | "zero_length" };
 
-export function parseSegmentInput(raw: string): ParsedSegment | null {
+/**
+ * Parse a segment input string, requiring explicit unit symbols.
+ * Returns a discriminated result with an error reason on failure.
+ */
+export function parseSegmentInputStrict(raw: string): ParseResult {
   const input = raw.trim();
-  if (!input) return null;
+  if (!input) return { ok: false, reason: "empty" };
+
+  // Check if input has ANY unit symbol
+  const hasUnitSymbol = /['′"″]/.test(input);
+  if (!hasUnitSymbol) {
+    return { ok: false, reason: "missing_units" };
+  }
 
   let feet = 0;
   let inches = 0;
   let fraction = "0";
 
-  // Try tick marks: 22' 4-1/2"
-  let m = input.match(TICK_PATTERN);
+  // Try feet pattern: 10' or 10' 6" or 10' 6-1/2"
+  let m = input.match(FEET_PATTERN);
   if (m) {
     feet = parseInt(m[1], 10);
     if (m[2] !== undefined) {
@@ -97,50 +78,39 @@ export function parseSegmentInput(raw: string): ParsedSegment | null {
       inches = parseInt(m[4], 10);
     }
   } else {
-    // Try word format: 22 ft 4-1/2 in
-    m = input.match(WORD_PATTERN);
+    // Try inches-only pattern: 120" or 6-1/2"
+    m = input.match(INCHES_PATTERN);
     if (m) {
-      feet = parseInt(m[1], 10);
-      if (m[2] !== undefined) {
-        inches = parseInt(m[2], 10);
-        fraction = m[3] || "0";
-      } else if (m[4] !== undefined) {
-        inches = parseInt(m[4], 10);
-      }
+      const rawInches = parseInt(m[1], 10);
+      fraction = m[2] || "0";
+      feet = Math.floor(rawInches / 12);
+      inches = rawInches % 12;
     } else {
-      // Try decimal feet — snap remainder to nearest 1/16
-      m = input.match(DECIMAL_PATTERN);
-      if (m) {
-        const decimalFeet = parseFloat(m[1]);
-        feet = Math.floor(decimalFeet);
-        const remainderIn = (decimalFeet - feet) * 12;
-        inches = Math.floor(remainderIn);
-        const remainderFrac = remainderIn - inches;
-        const snap = snapToSixteenth(remainderFrac);
-        fraction = snap.fraction;
-        if (snap.extraInch) inches += 1;
-        // Handle inch overflow
-        if (inches >= 12) {
-          feet += Math.floor(inches / 12);
-          inches = inches % 12;
-        }
-      } else {
-        return null;
-      }
+      // Has unit symbols but doesn't match any known pattern
+      return { ok: false, reason: "missing_units" };
     }
   }
 
   // Validate fraction
   if (fraction !== "0" && !(fraction in VALID_FRACTIONS)) {
-    return null;
+    return { ok: false, reason: "invalid_fraction" };
   }
 
   const fractionVal = VALID_FRACTIONS[fraction] ?? 0;
   const lengthInchesDecimal = feet * 12 + inches + fractionVal;
 
-  if (lengthInchesDecimal <= 0) return null;
+  if (lengthInchesDecimal <= 0) return { ok: false, reason: "zero_length" };
 
-  return { feet, inches, fraction, lengthInchesDecimal };
+  return { ok: true, segment: { feet, inches, fraction, lengthInchesDecimal } };
+}
+
+/**
+ * Legacy wrapper — returns ParsedSegment | null.
+ * Kept for backward compatibility with existing callers.
+ */
+export function parseSegmentInput(raw: string): ParsedSegment | null {
+  const result = parseSegmentInputStrict(raw);
+  return result.ok ? result.segment : null;
 }
 
 /** Format a segment for display: 22' 4-1/2" */
