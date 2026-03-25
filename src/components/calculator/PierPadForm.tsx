@@ -72,6 +72,7 @@ export function PierPadForm() {
             sections={area.sections}
             sectionPrefix="Pier Pad Section"
             showThickness={false}
+            showFractions
             onAdd={addSection}
             onUpdate={(id, patch) => dispatch({ type: "UPDATE_SECTION", areaId: area.id, sectionId: id, patch })}
             onDelete={(id) => dispatch({ type: "DELETE_SECTION", areaId: area.id, sectionId: id })}
