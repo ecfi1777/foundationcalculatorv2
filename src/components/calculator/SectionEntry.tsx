@@ -1,7 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { Checkbox } from "@/components/ui/checkbox";
 import { Label } from "@/components/ui/label";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { CalcSection } from "@/types/calculator";
 import { NumberField } from "./NumberField";
 import { Trash2, Plus } from "lucide-react";
@@ -10,7 +8,6 @@ interface SectionEntryProps {
   sections: CalcSection[];
   sectionPrefix: string; // "Slab Section" | "Pier Pad Section"
   showThickness?: boolean;
-  showStone?: boolean;
   onAdd: () => void;
   onUpdate: (id: string, patch: Partial<CalcSection>) => void;
   onDelete: (id: string) => void;
@@ -20,7 +17,6 @@ export function SectionEntry({
   sections,
   sectionPrefix,
   showThickness = false,
-  showStone = false,
   onAdd,
   onUpdate,
   onDelete,
@@ -75,45 +71,6 @@ export function SectionEntry({
               value={section.thicknessIn}
               onChange={(v) => onUpdate(section.id, { thicknessIn: v })}
             />
-          )}
-
-          {showStone && (
-            <div className="space-y-2">
-              <div className="flex items-center gap-2">
-                <Checkbox
-                  id={`stone-${section.id}`}
-                  checked={section.includeStone}
-                  onCheckedChange={(c) => onUpdate(section.id, { includeStone: !!c })}
-                />
-                <Label htmlFor={`stone-${section.id}`} className="text-sm">
-                  Stone Base
-                </Label>
-              </div>
-              {section.includeStone && (
-                <div className="grid grid-cols-2 gap-3 pl-6">
-                  <NumberField
-                    label="Stone Depth"
-                    suffix="in"
-                    value={section.stoneDepthIn}
-                    onChange={(v) => onUpdate(section.id, { stoneDepthIn: v })}
-                  />
-                  <div>
-                    <Label className="text-xs font-medium text-muted-foreground">Stone Type</Label>
-                    <Select
-                      value={section.stoneTypeId || "57stone"}
-                      onValueChange={(v) => onUpdate(section.id, { stoneTypeId: v })}
-                    >
-                      <SelectTrigger className="mt-1 h-9">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="57stone">Crushed #57 Stone (3/4 in)</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              )}
-            </div>
           )}
         </div>
       ))}

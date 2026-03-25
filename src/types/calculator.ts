@@ -227,6 +227,11 @@ export interface CalcArea {
   // Rebar - keyed by element_type
   rebarEnabled: boolean;
   rebarConfigs: RebarConfigsMap;
+
+  // Stone base (area-level, applies to all sections when enabled)
+  stoneEnabled?: boolean;
+  stoneDepthIn?: number;
+  stoneTypeId?: string;
 }
 
 /**
