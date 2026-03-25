@@ -13,20 +13,6 @@ export function PierPadForm() {
   const handleAdd = (customName?: string) => {
     const area = addArea("pierPad");
     if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
-    const section: CalcSection = {
-      id: generateId(),
-      name: "Pier Pad Section (1)",
-      lengthFt: 0,
-      lengthIn: 0,
-      widthFt: 0,
-      widthIn: 0,
-      thicknessIn: 0,
-      includeStone: false,
-      stoneDepthIn: 0,
-      stoneTypeId: "57stone",
-      sortOrder: 1,
-    };
-    dispatch({ type: "ADD_SECTION", areaId: area.id, section });
   };
 
   const updateDim = (key: string, value: number) => {
