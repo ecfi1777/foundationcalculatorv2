@@ -228,9 +228,10 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
     case "pierPad": {
       if (area.sections.length > 0) {
         let totalVol = 0;
+        const fracMap: Record<string, number> = { "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 };
         for (const sec of area.sections) {
-          const lFt = sec.lengthFt + sec.lengthIn / 12;
-          const wFt = sec.widthFt + sec.widthIn / 12;
+          const lFt = sec.lengthFt + (sec.lengthIn + (fracMap[sec.lengthFraction] ?? 0)) / 12;
+          const wFt = sec.widthFt + (sec.widthIn + (fracMap[sec.widthFraction] ?? 0)) / 12;
           const r = calcPierPad({
             lengthIn: lFt * 12,
             widthIn: wFt * 12,
@@ -246,10 +247,12 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
       break;
     }
     case "cylinder": {
+      const diameterTotalIn = (area.dimensions.diameterFt ?? 0) * 12 + (area.dimensions.diameterIn ?? 12) + (area.dimensions.diameterFrac ?? 0);
+      const heightTotalIn = (area.dimensions.heightFt ?? 4) * 12 + (area.dimensions.heightIn ?? 0) + (area.dimensions.heightFrac ?? 0);
       const r = calcCylinder({
-        diameterIn: area.dimensions.diameterIn ?? 12,
-        heightFt: area.dimensions.heightFt ?? 4,
-        heightIn: area.dimensions.heightIn ?? 0,
+        diameterIn: diameterTotalIn,
+        heightFt: Math.floor(heightTotalIn / 12),
+        heightIn: heightTotalIn % 12,
         quantity: area.dimensions.quantity ?? 1,
         wastePct: area.wastePct,
       });
