@@ -124,6 +124,7 @@ function dbAreaToCalcArea(dbArea: any, segments: any[], sections: any[], rebarCo
         widthFt: Number(s.width_ft),
         widthIn: Number(s.width_in),
         thicknessIn: Number(s.thickness_in),
+        wastePct: Number(s.stone_waste_pct) || 0,
         includeStone: s.include_stone,
         stoneDepthIn: Number(s.stone_depth_in) || 0,
         stoneTypeId: s.stone_type_id ?? "",
