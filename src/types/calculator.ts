@@ -92,8 +92,10 @@ export interface CalcSection {
   name: string;
   lengthFt: number;
   lengthIn: number;
+  lengthFraction: string; // "0" | "1/4" | "1/2" | "3/4"
   widthFt: number;
   widthIn: number;
+  widthFraction: string; // "0" | "1/4" | "1/2" | "3/4"
   thicknessIn: number; // slabs only
   wastePct: number; // per-section waste percentage
   includeStone: boolean;
