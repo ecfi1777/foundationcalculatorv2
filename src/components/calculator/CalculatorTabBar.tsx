@@ -26,15 +26,7 @@ export function CalculatorTabBar() {
     activeRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [state.activeTab]);
 
-  // Auto-create draft area whenever the active tab has no areas and no active area.
-  // This covers: initial mount, post-discard, post-delete, and RESET flows.
-  const areasForTab = state.areas.filter((a) => a.type === state.activeTab);
-  useEffect(() => {
-    if (!state.activeAreaId && areasForTab.length === 0) {
-      addArea(state.activeTab);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [state.activeAreaId, areasForTab.length, state.activeTab]);
+  // Draft creation is handled centrally in useCalculatorState (state-driven).
 
   const activateTab = useCallback((tab: CalculatorType) => {
     dispatch({ type: "SET_TAB", tab });
