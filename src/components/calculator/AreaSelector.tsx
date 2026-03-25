@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState } from "react";
 import { useProject } from "@/hooks/useProject";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
@@ -10,8 +9,9 @@ import {
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import type { CalcArea, CalculatorType } from "@/types/calculator";
 import { CALCULATOR_LABELS, hasRequiredData } from "@/types/calculator";
-import { X, Pencil, Check, Save, Trash2 } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { InlineNameEditor } from "./InlineNameEditor";
 
 interface AreaSelectorProps {
   areas: CalcArea[];
@@ -24,16 +24,12 @@ interface AreaSelectorProps {
 }
 
 export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, onRename, type }: AreaSelectorProps) {
-  const { currentProject } = useProject();
   const { saveArea, dispatch } = useCalculatorState();
   const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [editName, setEditName] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-  const savingRef = useRef(false);
 
   const activeArea = areas.find((a) => a.id === activeAreaId);
+  const savedAreas = areas.filter((a) => !a.isDraft);
 
   const handleSelect = (id: string) => {
     if (id === activeAreaId) return;
@@ -47,7 +43,6 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
       toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
     } else {
       toast.success("Area saved");
-      // After saving, deselect the area so user returns to empty state
       dispatch({ type: "SET_ACTIVE_AREA", id: null });
     }
   };
@@ -57,7 +52,6 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
     if (activeArea?.isDraft && hasRequiredData(activeArea)) {
       setConfirmOpen(true);
     } else {
-      // Empty draft or non-draft — just delete
       dispatch({ type: "DELETE_AREA", id: activeAreaId });
     }
   };
@@ -69,99 +63,42 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
     setConfirmOpen(false);
   };
 
-  const startEditing = () => {
-    if (!activeArea) return;
-    setEditName(activeArea.name);
-    setEditing(true);
-  };
-
-  useEffect(() => {
-    if (editing && inputRef.current) {
-      inputRef.current.focus();
-      inputRef.current.select();
+  const handleRename = (newName: string) => {
+    if (activeAreaId && onRename) {
+      onRename(activeAreaId, newName);
     }
-  }, [editing]);
-
-  const saveRename = () => {
-    savingRef.current = true;
-    const trimmed = editName.trim();
-    if (trimmed && trimmed !== activeArea?.name && activeAreaId && onRename) {
-      onRename(activeAreaId, trimmed);
-    }
-    setEditing(false);
-    setTimeout(() => { savingRef.current = false; }, 0);
   };
-
-  const cancelRename = () => {
-    setEditing(false);
-  };
-
-  // Saved (non-draft) areas for the dropdown
-  const savedAreas = areas.filter((a) => !a.isDraft);
 
   return (
     <div className="flex flex-col border-b border-border bg-card/50">
       <div className="flex items-center gap-2 px-3 py-2">
-        {editing && activeArea ? (
-          <div className="flex flex-1 items-center gap-1">
-            <Input
-              ref={inputRef}
-              value={editName}
-              onChange={(e) => setEditName(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") { e.preventDefault(); saveRename(); }
-                if (e.key === "Escape") { e.preventDefault(); cancelRename(); }
-              }}
-              onBlur={() => {
-                if (!savingRef.current) cancelRename();
-              }}
-              className="h-9 flex-1"
+        {activeArea?.isDraft ? (
+          <div className="flex-1 min-w-0">
+            <InlineNameEditor
+              name={activeArea.name}
+              onRename={handleRename}
             />
-            <Button size="icon" variant="ghost" className="h-8 w-8 text-primary" onMouseDown={() => saveRename()}>
-              <Check className="h-4 w-4" />
-            </Button>
-            <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground" onClick={cancelRename}>
-              <X className="h-4 w-4" />
-            </Button>
           </div>
+        ) : savedAreas.length > 0 ? (
+          <Select value={activeAreaId ?? ""} onValueChange={handleSelect}>
+            <SelectTrigger className="h-9 flex-1 bg-secondary/50">
+              <SelectValue placeholder="Select area…" />
+            </SelectTrigger>
+            <SelectContent>
+              {savedAreas.map((a) => (
+                <SelectItem key={a.id} value={a.id}>
+                  {a.name}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
         ) : (
-          <>
-            {activeArea?.isDraft ? (
-              <span className="flex-1 text-sm font-medium truncate">
-                {activeArea.name} <span className="text-muted-foreground">(draft)</span>
-              </span>
-            ) : savedAreas.length > 0 ? (
-              <Select value={activeAreaId ?? ""} onValueChange={handleSelect}>
-                <SelectTrigger className="h-9 flex-1 bg-secondary/50">
-                  <SelectValue placeholder="Select area…" />
-                </SelectTrigger>
-                <SelectContent>
-                  {savedAreas.map((a) => (
-                    <SelectItem key={a.id} value={a.id}>
-                      {a.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            ) : (
-              <span className="flex-1 text-sm text-muted-foreground">No {typeLabel} areas</span>
-            )}
-            {activeAreaId && activeArea && !activeArea.isDraft && onRename && (
-              <Button size="icon" variant="ghost" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={startEditing}>
-                <Pencil className="h-3.5 w-3.5" />
-              </Button>
-            )}
-          </>
+          <span className="flex-1 text-sm text-muted-foreground">No {typeLabel} areas</span>
         )}
 
-        {/* Save + Discard buttons for draft areas */}
         {activeArea?.isDraft && (
           <>
-            <Button
-              size="sm"
-              className="h-9 gap-1"
-              onClick={handleSaveArea}
-            >
+            <Button size="sm" className="h-9 gap-1" onClick={handleSaveArea}>
               <Save className="h-3.5 w-3.5" />
               Save Area
             </Button>
@@ -183,7 +120,7 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
         onClose={() => setConfirmOpen(false)}
         onConfirm={confirmDiscard}
         title="Discard Area"
-        description={`Are you sure you want to discard "${activeArea?.name ?? "this area"}"? All measurements for this area will be permanently removed.`}
+        description={`Are you sure you want to discard "${activeArea?.name ?? "this area"}"? All measurements will be permanently removed.`}
         confirmLabel="Discard"
         variant="destructive"
       />
