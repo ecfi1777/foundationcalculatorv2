@@ -95,6 +95,7 @@ export interface CalcSection {
   widthFt: number;
   widthIn: number;
   thicknessIn: number; // slabs only
+  wastePct: number; // per-section waste percentage
   includeStone: boolean;
   stoneDepthIn: number;
   stoneTypeId: string; // default stone type
