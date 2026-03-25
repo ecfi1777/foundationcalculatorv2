@@ -37,6 +37,10 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
     onAdd(result.segment);
     setInput("");
   };
+    }
+    onAdd(result.segment);
+    setInput("");
+  };
 
   const handleEditSave = (id: string) => {
     setEditError("");
