@@ -340,6 +340,20 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     [state.areas, dispatch]
   );
 
+  // Keep an active draft available for the current tab when that tab has no areas.
+  // This is state-driven (not mount-only), so it also covers runtime RESET/discard/delete flows.
+  useEffect(() => {
+    const activeArea = state.activeAreaId
+      ? state.areas.find((a) => a.id === state.activeAreaId) ?? null
+      : null;
+    const hasAreaForActiveTab = state.areas.some((a) => a.type === state.activeTab);
+    const activeAreaMatchesTab = activeArea?.type === state.activeTab;
+
+    if (!hasAreaForActiveTab && !activeAreaMatchesTab) {
+      addArea(state.activeTab);
+    }
+  }, [state.activeAreaId, state.activeTab, state.areas, addArea]);
+
   const saveArea = useCallback(
     (id: string): { valid: boolean; missingFields: string[] } => {
       const area = state.areas.find((a) => a.id === id);
