@@ -1,44 +1,49 @@
 
 
-# Fix: Auto-create default draft area on first render
+# Refactor SegmentEntry: 3-Field Structured Input
 
-## Problem
-On initial load, `activeTab` is `"footing"` but `activeAreaId` is `null`. No draft area exists, so the footing form renders nothing. The draft is only created when the user clicks a tab.
+## Summary
+Replace the single free-text input in `SegmentEntry.tsx` with three separate fields: Feet (numeric), Inches (numeric 0–11), and Fraction (dropdown: 0, 1/4, 1/2, 3/4). This is a single-file change — all linear calculators share this component.
 
-## Root Cause
-`addArea()` is only called inside `CalculatorTabBar`'s click handlers — never on mount.
+## File: `src/components/calculator/SegmentEntry.tsx`
 
-## Fix — 1 file
+### State changes
+Replace `input`/`editInput` strings with structured state:
+- `feetInput`, `inchesInput`: string (for controlled numeric inputs)
+- `fractionInput`: string (`"0"`, `"1/4"`, `"1/2"`, `"3/4"`)
+- Same pattern for edit state: `editFeet`, `editInches`, `editFraction`
 
-### `src/components/calculator/CalculatorTabBar.tsx`
-
-Add a mount-time `useEffect` with guards:
-
-```ts
-useEffect(() => {
-  // Only auto-create if there's no active area AND no areas at all
-  // (prevents interference with project loading or post-save/discard empty state)
-  if (!state.activeAreaId && state.areas.length === 0) {
-    addArea(state.activeTab);
-  }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-}, []);
+### New input row (add mode)
+```text
+[ Feet (ft) ] [ Inches (in) ] [ Fraction ▼ ] [ + Add ]
 ```
+- Feet: `<Input type="number" min={0}>`
+- Inches: `<Input type="number" min={0} max={11}>`
+- Fraction: `<Select>` with options 0, 1/4, 1/2, 3/4
+- Add button: disabled when computed `lengthInchesDecimal <= 0`
+- Error shown if inches ≥ 12
 
-### Why `state.areas.length === 0` guard matters
+### Edit mode
+Same 3-field layout inline (replacing current single edit input). Pre-populated from `seg.feet`, `seg.inches`, `seg.fraction`.
 
-| Scenario | `activeAreaId` | `areas.length` | Result |
-|---|---|---|---|
-| Fresh page load | `null` | `0` | Creates draft — correct |
-| After save/discard | `null` | `≥1` (saved areas exist) | Skips — correct |
-| After project load | set by LOAD | `≥1` | Skips — correct |
-| After RESET (sign-out) | `null` | `0` | Creates draft — correct (user is back to fresh state) |
+### Validation logic
+- Direct numeric parsing — no regex, no `parseSegmentInputStrict`
+- `lengthInchesDecimal = feet * 12 + inches + fractionValue`
+- Fraction map: `{ "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 }`
 
-### Scope
-This applies to **whichever tab is default** (currently `"footing"`). It does not force Footings specifically — it respects `state.activeTab`. Since the initial state is always `"footing"`, that's what gets auto-created on a fresh session.
+### What stays the same
+- `formatSegment()` still used for display labels
+- `onAdd`, `onUpdate`, `onDelete` signatures unchanged
+- `Segment` type unchanged (feet, inches, fraction, lengthInchesDecimal are already the fields)
+- All downstream calculations unaffected
+- Saved/loaded segments continue to work (fraction values like `"1/8"` from old data will still display correctly via `formatSegment`)
 
-### Technical details
-- The `areas.length === 0` check prevents duplicates: if areas already exist (loaded project, saved areas), no auto-create happens
-- The `useEffect` runs once on mount (`[]` deps), so save/discard returning `activeAreaId` to `null` mid-session won't re-trigger it
-- If a user saves an area and wants to start another, they click a tab — existing behavior, unchanged
+### Removed
+- Import of `parseSegmentInputStrict`
+- Old `ERROR_MESSAGES` map
+- Old placeholder text with `'` and `"` symbols
+
+### Responsive
+- Flex-wrap on the input row so Add button wraps on narrow screens
+- Inputs use `flex-1` with min-width to stay usable on mobile
 
