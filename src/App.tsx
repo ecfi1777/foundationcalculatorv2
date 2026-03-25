@@ -14,6 +14,7 @@ import Settings from "./pages/Settings";
 import UpgradeRedirect from "./pages/UpgradeRedirect";
 import AffiliateDashboard from "./pages/AffiliateDashboard";
 import HowItWorks from "./pages/HowItWorks";
+import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -30,6 +31,7 @@ const App = () => (
               <Routes>
                 <Route path="/" element={<Index />} />
                 <Route path="/auth" element={<Auth />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/how-it-works/:sectionSlug" element={<HowItWorks />} />
                 <Route path="/admin" element={<ProtectedRoute><Admin /></ProtectedRoute>} />
