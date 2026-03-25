@@ -304,7 +304,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
         initialSections.push({
           id: crypto.randomUUID(),
           name: "Slab Section (1)",
-          lengthFt: 0, lengthIn: 0, widthFt: 0, widthIn: 0,
+          lengthFt: 0, lengthIn: 0, lengthFraction: "0", widthFt: 0, widthIn: 0, widthFraction: "0",
           thicknessIn: 4, wastePct: 0,
           includeStone: false, stoneDepthIn: 4, stoneTypeId: "57stone",
           sortOrder: 1,
@@ -313,7 +313,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
         initialSections.push({
           id: crypto.randomUUID(),
           name: "Pier/Pad Section (1)",
-          lengthFt: 0, lengthIn: 0, widthFt: 0, widthIn: 0,
+          lengthFt: 0, lengthIn: 0, lengthFraction: "0", widthFt: 0, widthIn: 0, widthFraction: "0",
           thicknessIn: 6, wastePct: 0,
           includeStone: false, stoneDepthIn: 4, stoneTypeId: "57stone",
           sortOrder: 1,

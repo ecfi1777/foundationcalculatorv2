@@ -1,8 +1,15 @@
 import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { CalcSection } from "@/types/calculator";
 import { NumberField } from "./NumberField";
 import { Trash2, Plus } from "lucide-react";
+
+const FRACTION_OPTIONS = [
+  { label: "0", value: "0" },
+  { label: "1/4", value: "1/4" },
+  { label: "1/2", value: "1/2" },
+  { label: "3/4", value: "3/4" },
+] as const;
 
 interface SectionEntryProps {
   sections: CalcSection[];
@@ -39,31 +46,72 @@ export function SectionEntry({
             </Button>
           </div>
 
-          <div className="grid grid-cols-2 gap-3">
-            <NumberField
-              label="Length"
-              suffix="ft"
-              value={section.lengthFt}
-              onChange={(v) => onUpdate(section.id, { lengthFt: v })}
-            />
-            <NumberField
-              label="Length"
-              suffix="in"
-              value={section.lengthIn}
-              onChange={(v) => onUpdate(section.id, { lengthIn: v })}
-            />
-            <NumberField
-              label="Width"
-              suffix="ft"
-              value={section.widthFt}
-              onChange={(v) => onUpdate(section.id, { widthFt: v })}
-            />
-            <NumberField
-              label="Width"
-              suffix="in"
-              value={section.widthIn}
-              onChange={(v) => onUpdate(section.id, { widthIn: v })}
-            />
+          {/* Length: ft / in / fraction */}
+          <div>
+            <span className="text-xs text-muted-foreground mb-1 block">Length</span>
+            <div className="grid grid-cols-3 gap-2">
+              <NumberField
+                label=""
+                suffix="ft"
+                value={section.lengthFt}
+                onChange={(v) => onUpdate(section.id, { lengthFt: v })}
+              />
+              <NumberField
+                label=""
+                suffix="in"
+                value={section.lengthIn}
+                onChange={(v) => onUpdate(section.id, { lengthIn: v })}
+              />
+              <div>
+                <Select
+                  value={section.lengthFraction ?? "0"}
+                  onValueChange={(v) => onUpdate(section.id, { lengthFraction: v })}
+                >
+                  <SelectTrigger className="h-9 text-sm w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FRACTION_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+          </div>
+
+          {/* Width: ft / in / fraction */}
+          <div>
+            <span className="text-xs text-muted-foreground mb-1 block">Width</span>
+            <div className="grid grid-cols-3 gap-2">
+              <NumberField
+                label=""
+                suffix="ft"
+                value={section.widthFt}
+                onChange={(v) => onUpdate(section.id, { widthFt: v })}
+              />
+              <NumberField
+                label=""
+                suffix="in"
+                value={section.widthIn}
+                onChange={(v) => onUpdate(section.id, { widthIn: v })}
+              />
+              <div>
+                <Select
+                  value={section.widthFraction ?? "0"}
+                  onValueChange={(v) => onUpdate(section.id, { widthFraction: v })}
+                >
+                  <SelectTrigger className="h-9 text-sm w-full">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {FRACTION_OPTIONS.map((opt) => (
+                      <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
           </div>
 
           {showThickness && (
