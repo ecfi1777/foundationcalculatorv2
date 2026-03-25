@@ -1,9 +1,15 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { parseSegmentInput, formatSegment } from "@/lib/segmentParser";
+import { parseSegmentInputStrict, formatSegment } from "@/lib/segmentParser";
 import type { Segment } from "@/types/calculator";
 import { Pencil, Trash2, Plus } from "lucide-react";
+
+const ERROR_MESSAGES: Record<string, string> = {
+  missing_units: "Please specify units using ' for feet or \" for inches",
+  invalid_fraction: "Invalid fraction — use 1/16\" increments (e.g. 1/4, 3/8, 7/16)",
+  zero_length: "Length must be greater than zero",
+};
 
 interface SegmentEntryProps {
   segments: Segment[];
@@ -17,104 +23,118 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editInput, setEditInput] = useState("");
   const [error, setError] = useState("");
+  const [editError, setEditError] = useState("");
 
   const totalLf = segments.reduce((sum, s) => sum + s.lengthInchesDecimal, 0) / 12;
 
   const handleAdd = () => {
     setError("");
-    const parsed = parseSegmentInput(input);
-    if (!parsed) {
-      setError("Invalid format. Try: 22' 4-1/2\" or 22.5");
+    const result = parseSegmentInputStrict(input);
+    if (!result.ok) {
+      setError(ERROR_MESSAGES[result.reason] ?? "Invalid format");
       return;
     }
-    onAdd(parsed);
+    onAdd(result.segment);
     setInput("");
   };
 
   const handleEditSave = (id: string) => {
-    const parsed = parseSegmentInput(editInput);
-    if (!parsed) {
-      setError("Invalid format.");
+    setEditError("");
+    const result = parseSegmentInputStrict(editInput);
+    if (!result.ok) {
+      setEditError(ERROR_MESSAGES[result.reason] ?? "Invalid format");
       return;
     }
-    onUpdate(id, parsed);
+    onUpdate(id, result.segment);
     setEditingId(null);
     setEditInput("");
-    setError("");
   };
 
   const startEdit = (seg: Segment) => {
     setEditingId(seg.id);
     setEditInput(formatSegment(seg.feet, seg.inches, seg.fraction));
     setError("");
+    setEditError("");
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditInput("");
+    setEditError("");
   };
 
   return (
     <div className="space-y-3">
-      <div className="flex gap-2">
-        <Input
-          placeholder={`e.g. 22' 4-1/2"`}
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          onKeyDown={(e) => e.key === "Enter" && handleAdd()}
-          className="h-9 flex-1"
-        />
-        <Button size="sm" onClick={handleAdd} className="h-9 gap-1">
-          <Plus className="h-3.5 w-3.5" />
-          Add
-        </Button>
+      <div>
+        <div className="flex gap-2">
+          <Input
+            placeholder={`e.g. 10' 6" or 120"`}
+            value={input}
+            onChange={(e) => { setInput(e.target.value); setError(""); }}
+            onKeyDown={(e) => e.key === "Enter" && handleAdd()}
+            className="h-9 flex-1"
+          />
+          <Button size="sm" onClick={handleAdd} className="h-9 gap-1">
+            <Plus className="h-3.5 w-3.5" />
+            Add
+          </Button>
+        </div>
+        {error && <p className="text-xs text-destructive mt-1">{error}</p>}
       </div>
-
-      {error && <p className="text-xs text-destructive">{error}</p>}
 
       {segments.length > 0 && (
         <div className="space-y-1.5">
           {segments.map((seg) => (
-            <div
-              key={seg.id}
-              className="flex items-center justify-between rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm"
-            >
-              {editingId === seg.id ? (
-                <div className="flex flex-1 gap-2">
-                  <Input
-                    value={editInput}
-                    onChange={(e) => setEditInput(e.target.value)}
-                    onKeyDown={(e) => e.key === "Enter" && handleEditSave(seg.id)}
-                    className="h-7 text-sm"
-                    autoFocus
-                  />
-                  <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleEditSave(seg.id)}>
-                    Save
-                  </Button>
-                  <Button size="sm" variant="ghost" className="h-7 text-xs" aria-label="Cancel editing" onClick={() => setEditingId(null)}>
-                    Cancel
-                  </Button>
-                </div>
-              ) : (
-                <>
-                  <span className="font-mono text-foreground">
-                    {formatSegment(seg.feet, seg.inches, seg.fraction)}
-                  </span>
-                  <div className="flex gap-1">
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-6 w-6"
-                      aria-label="Edit segment"
-                      onClick={() => startEdit(seg)}
-                    >
-                      <Pencil className="h-3 w-3" />
+            <div key={seg.id}>
+              <div className="flex items-center justify-between rounded-md border border-border bg-muted/50 px-3 py-1.5 text-sm">
+                {editingId === seg.id ? (
+                  <div className="flex flex-1 gap-2">
+                    <Input
+                      value={editInput}
+                      onChange={(e) => { setEditInput(e.target.value); setEditError(""); }}
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter") handleEditSave(seg.id);
+                        if (e.key === "Escape") cancelEdit();
+                      }}
+                      className="h-7 text-sm"
+                      autoFocus
+                    />
+                    <Button size="sm" variant="outline" className="h-7 text-xs" onClick={() => handleEditSave(seg.id)}>
+                      Save
                     </Button>
-                    <Button
-                      size="icon"
-                      variant="ghost"
-                      className="h-6 w-6 text-destructive"
-                      onClick={() => onDelete(seg.id)}
-                    >
-                      <Trash2 className="h-3 w-3" />
+                    <Button size="sm" variant="ghost" className="h-7 text-xs" aria-label="Cancel editing" onClick={cancelEdit}>
+                      Cancel
                     </Button>
                   </div>
-                </>
+                ) : (
+                  <>
+                    <span className="font-mono text-foreground">
+                      {formatSegment(seg.feet, seg.inches, seg.fraction)}
+                    </span>
+                    <div className="flex gap-1">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6"
+                        aria-label="Edit segment"
+                        onClick={() => startEdit(seg)}
+                      >
+                        <Pencil className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 text-destructive"
+                        onClick={() => onDelete(seg.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </>
+                )}
+              </div>
+              {editingId === seg.id && editError && (
+                <p className="text-xs text-destructive mt-1 ml-1">{editError}</p>
               )}
             </div>
           ))}
