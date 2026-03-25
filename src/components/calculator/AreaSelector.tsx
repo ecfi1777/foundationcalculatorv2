@@ -1,7 +1,5 @@
 import { useState } from "react";
-import { useProject } from "@/hooks/useProject";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
-import { Button } from "@/components/ui/button";
 import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
@@ -9,8 +7,6 @@ import {
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import type { CalcArea, CalculatorType } from "@/types/calculator";
 import { CALCULATOR_LABELS, hasRequiredData } from "@/types/calculator";
-import { Save, Trash2 } from "lucide-react";
-import { toast } from "sonner";
 import { InlineNameEditor } from "./InlineNameEditor";
 
 interface AreaSelectorProps {
@@ -24,7 +20,7 @@ interface AreaSelectorProps {
 }
 
 export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, onRename, type }: AreaSelectorProps) {
-  const { saveArea, dispatch } = useCalculatorState();
+  const { dispatch } = useCalculatorState();
   const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -34,26 +30,6 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
   const handleSelect = (id: string) => {
     if (id === activeAreaId) return;
     onSelect(id);
-  };
-
-  const handleSaveArea = () => {
-    if (!activeAreaId) return;
-    const result = saveArea(activeAreaId);
-    if (!result.valid) {
-      toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
-    } else {
-      toast.success("Area saved");
-      dispatch({ type: "SET_ACTIVE_AREA", id: null });
-    }
-  };
-
-  const handleDiscardArea = () => {
-    if (!activeAreaId) return;
-    if (activeArea?.isDraft && hasRequiredData(activeArea)) {
-      setConfirmOpen(true);
-    } else {
-      dispatch({ type: "DELETE_AREA", id: activeAreaId });
-    }
   };
 
   const confirmDiscard = () => {
@@ -96,23 +72,6 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
           <span className="flex-1 text-sm text-muted-foreground">No {typeLabel} areas</span>
         )}
 
-        {activeArea?.isDraft && (
-          <>
-            <Button size="sm" className="h-9 gap-1" onClick={handleSaveArea}>
-              <Save className="h-3.5 w-3.5" />
-              Save Area
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-9 gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
-              onClick={handleDiscardArea}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Discard Area
-            </Button>
-          </>
-        )}
       </div>
 
       <ConfirmDialog
