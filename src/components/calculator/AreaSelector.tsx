@@ -96,23 +96,6 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
           <span className="flex-1 text-sm text-muted-foreground">No {typeLabel} areas</span>
         )}
 
-        {activeArea?.isDraft && (
-          <>
-            <Button size="sm" className="h-9 gap-1" onClick={handleSaveArea}>
-              <Save className="h-3.5 w-3.5" />
-              Save Area
-            </Button>
-            <Button
-              size="sm"
-              variant="outline"
-              className="h-9 gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
-              onClick={handleDiscardArea}
-            >
-              <Trash2 className="h-3.5 w-3.5" />
-              Discard Area
-            </Button>
-          </>
-        )}
       </div>
 
       <ConfirmDialog
