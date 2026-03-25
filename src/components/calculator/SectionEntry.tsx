@@ -16,6 +16,7 @@ interface SectionEntryProps {
   sectionPrefix: string;
   showThickness?: boolean;
   showWaste?: boolean;
+  showFractions?: boolean;
   onAdd: () => void;
   onUpdate: (id: string, patch: Partial<CalcSection>) => void;
   onDelete: (id: string) => void;
@@ -26,6 +27,7 @@ export function SectionEntry({
   sectionPrefix,
   showThickness = false,
   showWaste = false,
+  showFractions = false,
   onAdd,
   onUpdate,
   onDelete,
