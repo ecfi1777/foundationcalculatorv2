@@ -20,7 +20,7 @@ interface AreaSelectorProps {
 }
 
 export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, onRename, type }: AreaSelectorProps) {
-  const { saveArea, dispatch } = useCalculatorState();
+  const { dispatch } = useCalculatorState();
   const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
   const [confirmOpen, setConfirmOpen] = useState(false);
 
@@ -30,26 +30,6 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
   const handleSelect = (id: string) => {
     if (id === activeAreaId) return;
     onSelect(id);
-  };
-
-  const handleSaveArea = () => {
-    if (!activeAreaId) return;
-    const result = saveArea(activeAreaId);
-    if (!result.valid) {
-      toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
-    } else {
-      toast.success("Area saved");
-      dispatch({ type: "SET_ACTIVE_AREA", id: null });
-    }
-  };
-
-  const handleDiscardArea = () => {
-    if (!activeAreaId) return;
-    if (activeArea?.isDraft && hasRequiredData(activeArea)) {
-      setConfirmOpen(true);
-    } else {
-      dispatch({ type: "DELETE_AREA", id: activeAreaId });
-    }
   };
 
   const confirmDiscard = () => {
