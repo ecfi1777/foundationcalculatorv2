@@ -26,6 +26,14 @@ export function CalculatorTabBar() {
     activeRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [state.activeTab]);
 
+  // Auto-create draft area for the default tab on first render
+  useEffect(() => {
+    if (!state.activeAreaId && state.areas.length === 0) {
+      addArea(state.activeTab);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const activateTab = useCallback((tab: CalculatorType) => {
     dispatch({ type: "SET_TAB", tab });
     // Auto-create a draft for the new tab
