@@ -49,9 +49,10 @@ export function SectionEntry({
           </div>
 
           {/* Length: ft / in / fraction */}
+          {/* Length: ft / in / fraction */}
           <div>
             <span className="text-xs text-muted-foreground mb-1 block">Length</span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className={`grid ${showFractions ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
               <NumberField
                 label=""
                 suffix="ft"
@@ -64,28 +65,30 @@ export function SectionEntry({
                 value={section.lengthIn}
                 onChange={(v) => onUpdate(section.id, { lengthIn: v })}
               />
-              <div>
-                <Select
-                  value={section.lengthFraction ?? "0"}
-                  onValueChange={(v) => onUpdate(section.id, { lengthFraction: v })}
-                >
-                  <SelectTrigger className="h-9 text-sm w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FRACTION_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {showFractions && (
+                <div>
+                  <Select
+                    value={section.lengthFraction ?? "0"}
+                    onValueChange={(v) => onUpdate(section.id, { lengthFraction: v })}
+                  >
+                    <SelectTrigger className="h-9 text-sm w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FRACTION_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Width: ft / in / fraction */}
           <div>
             <span className="text-xs text-muted-foreground mb-1 block">Width</span>
-            <div className="grid grid-cols-3 gap-2">
+            <div className={`grid ${showFractions ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
               <NumberField
                 label=""
                 suffix="ft"
@@ -98,21 +101,23 @@ export function SectionEntry({
                 value={section.widthIn}
                 onChange={(v) => onUpdate(section.id, { widthIn: v })}
               />
-              <div>
-                <Select
-                  value={section.widthFraction ?? "0"}
-                  onValueChange={(v) => onUpdate(section.id, { widthFraction: v })}
-                >
-                  <SelectTrigger className="h-9 text-sm w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FRACTION_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
+              {showFractions && (
+                <div>
+                  <Select
+                    value={section.widthFraction ?? "0"}
+                    onValueChange={(v) => onUpdate(section.id, { widthFraction: v })}
+                  >
+                    <SelectTrigger className="h-9 text-sm w-full">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {FRACTION_OPTIONS.map((opt) => (
+                        <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              )}
             </div>
           </div>
 
