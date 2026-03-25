@@ -11,7 +11,6 @@ import { generateId } from "@/lib/utils";
 const MODES: { value: FootingMode; label: string }[] = [
   { value: "footingsOnly", label: "Footings Only" },
   { value: "footingsWalls", label: "Footings + Walls" },
-  { value: "wallsOnly", label: "Walls Only" },
 ];
 
 export function FootingForm() {
