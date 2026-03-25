@@ -7,11 +7,11 @@ import type {
 import { computeArea } from "@/lib/computeArea";
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
-import { Pencil, Trash2, X } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Pencil, Trash2 } from "lucide-react";
 import { Separator } from "@/components/ui/separator";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import { toast } from "@/hooks/use-toast";
+import { InlineNameEditor } from "./InlineNameEditor";
 
 function getRebarLabel(
   elementType: RebarElementType,
@@ -30,9 +30,7 @@ function getRebarLabel(
 
 export function QuantitiesPanel() {
   const { state, dispatch } = useCalculatorState();
-  const [renamingAreaId, setRenamingAreaId] = useState<string | null>(null);
   const [deleteAreaId, setDeleteAreaId] = useState<string | null>(null);
-  const [renameValue, setRenameValue] = useState("");
 
   const [stoneTypeMap, setStoneTypeMap] = useState<Map<string, string>>(new Map());
 
@@ -51,18 +49,6 @@ export function QuantitiesPanel() {
         }
       });
   }, []);
-
-  const confirmRename = () => {
-    const trimmed = renameValue.trim();
-    if (trimmed && renamingAreaId) {
-      dispatch({ type: "RENAME_AREA", id: renamingAreaId, name: trimmed });
-    }
-    setRenamingAreaId(null);
-  };
-
-  const cancelRename = () => {
-    setRenamingAreaId(null);
-  };
 
   // Filter out draft areas — they haven't been validated yet
   const committedAreas = useMemo(
