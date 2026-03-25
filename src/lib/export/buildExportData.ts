@@ -60,11 +60,12 @@ export function buildExportData(
       .slice()
       .sort((a, b) => a.sortOrder - b.sortOrder)
       .map((sec) => {
+        const fracMap: Record<string, number> = { "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 };
         const slabResult = calcSlabSection({
           lengthFt: sec.lengthFt,
-          lengthIn: sec.lengthIn,
+          lengthIn: sec.lengthIn + (fracMap[sec.lengthFraction] ?? 0),
           widthFt: sec.widthFt,
-          widthIn: sec.widthIn,
+          widthIn: sec.widthIn + (fracMap[sec.widthFraction] ?? 0),
           thicknessIn: sec.thicknessIn,
           wastePct: sec.wastePct ?? 0,
         });

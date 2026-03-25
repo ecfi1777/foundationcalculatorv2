@@ -180,14 +180,17 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
     case "slab": {
       if (area.sections.length > 0) {
         const r = calcSlabArea({
-          sections: area.sections.map((s) => ({
-            lengthFt: s.lengthFt,
-            lengthIn: s.lengthIn,
-            widthFt: s.widthFt,
-            widthIn: s.widthIn,
-            thicknessIn: s.thicknessIn,
-            wastePct: s.wastePct ?? 0,
-          })),
+          sections: area.sections.map((s) => {
+            const fracMap: Record<string, number> = { "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 };
+            return {
+              lengthFt: s.lengthFt,
+              lengthIn: s.lengthIn + (fracMap[s.lengthFraction] ?? 0),
+              widthFt: s.widthFt,
+              widthIn: s.widthIn + (fracMap[s.widthFraction] ?? 0),
+              thicknessIn: s.thicknessIn,
+              wastePct: s.wastePct ?? 0,
+            };
+          }),
         });
         totalSqft = r.totalSqft;
         totalVolumeCy = r.totalVolumeCy;
@@ -197,8 +200,9 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
         if (area.stoneEnabled && (area.stoneDepthIn ?? 0) > 0) {
           let totalStone = 0;
           for (const sec of area.sections) {
-            const secLenFt = sec.lengthFt + sec.lengthIn / 12;
-            const secWidFt = sec.widthFt + sec.widthIn / 12;
+            const fracMap: Record<string, number> = { "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 };
+            const secLenFt = sec.lengthFt + (sec.lengthIn + (fracMap[sec.lengthFraction] ?? 0)) / 12;
+            const secWidFt = sec.widthFt + (sec.widthIn + (fracMap[sec.widthFraction] ?? 0)) / 12;
             const secSqft = secLenFt * secWidFt;
             if (secSqft > 0) {
               const sr = calcStoneBase({
