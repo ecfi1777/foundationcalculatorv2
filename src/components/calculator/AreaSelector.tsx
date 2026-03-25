@@ -1,8 +1,7 @@
-import { useState, useRef, useEffect, useCallback } from "react";
+import { useState, useCallback } from "react";
 import { useProject } from "@/hooks/useProject";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
@@ -10,8 +9,9 @@ import {
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import type { CalcArea, CalculatorType } from "@/types/calculator";
 import { CALCULATOR_LABELS, hasRequiredData } from "@/types/calculator";
-import { X, Pencil, Check, Save, Trash2 } from "lucide-react";
+import { Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
+import { InlineNameEditor } from "./InlineNameEditor";
 
 interface AreaSelectorProps {
   areas: CalcArea[];
@@ -28,10 +28,6 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
   const { saveArea, dispatch } = useCalculatorState();
   const typeLabel = CALCULATOR_LABELS[type]?.toLowerCase() ?? type;
   const [confirmOpen, setConfirmOpen] = useState(false);
-  const [editing, setEditing] = useState(false);
-  const [editName, setEditName] = useState("");
-  const inputRef = useRef<HTMLInputElement>(null);
-  const savingRef = useRef(false);
 
   const activeArea = areas.find((a) => a.id === activeAreaId);
 
