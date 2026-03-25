@@ -2,6 +2,7 @@ import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
 import { SectionEntry } from "./SectionEntry";
 import { RebarAddon } from "./RebarAddon";
+import { StoneBaseAddon } from "./StoneBaseAddon";
 import { AreaSelector } from "./AreaSelector";
 import type { CalcSection } from "@/types/calculator";
 import { makeDefaultRebar } from "@/types/calculator";
@@ -78,7 +79,6 @@ export function SlabForm() {
             sections={area.sections}
             sectionPrefix="Slab Section"
             showThickness
-            showStone
             onAdd={addSection}
             onUpdate={(id, patch) => dispatch({ type: "UPDATE_SECTION", areaId: area.id, sectionId: id, patch })}
             onDelete={(id) => dispatch({ type: "DELETE_SECTION", areaId: area.id, sectionId: id })}
@@ -98,6 +98,14 @@ export function SlabForm() {
             onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, elementType: "slab", rebar: patch })}
             mode="slab"
             sectionLabel="Add Rebar Grid"
+          />
+
+          <StoneBaseAddon
+            enabled={area.stoneEnabled ?? false}
+            depthIn={area.stoneDepthIn ?? 4}
+            stoneTypeId={area.stoneTypeId ?? "57stone"}
+            onToggle={(v) => dispatch({ type: "UPDATE_AREA", id: area.id, patch: { stoneEnabled: v } })}
+            onChange={(patch) => dispatch({ type: "UPDATE_AREA", id: area.id, patch })}
           />
         </>
       )}
