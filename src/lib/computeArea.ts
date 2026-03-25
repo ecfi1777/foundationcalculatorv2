@@ -193,28 +193,31 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
         totalVolumeCy = r.totalVolumeCy;
         totalWithWasteCy = r.totalWithWasteCy;
 
-        let totalStone = 0;
-        let stoneActive = false;
-        for (const sec of area.sections) {
-          if (sec.includeStone && sec.stoneDepthIn > 0) {
-            stoneActive = true;
+        // Stone base — area-level config applied to all sections
+        if (area.stoneEnabled && (area.stoneDepthIn ?? 0) > 0) {
+          let totalStone = 0;
+          for (const sec of area.sections) {
             const secLenFt = sec.lengthFt + sec.lengthIn / 12;
             const secWidFt = sec.widthFt + sec.widthIn / 12;
             const secSqft = secLenFt * secWidFt;
-            const sr = calcStoneBase({
-              sqft: secSqft,
-              depthIn: sec.stoneDepthIn,
-              densityTonsPerCy: 1.4,
-              wastePct: area.wastePct,
-            });
-            totalStone += sr.tonsWithWaste;
-            stoneDepthIn = sec.stoneDepthIn;
-            if (sec.stoneTypeId && stoneTypeNames) {
-              stoneTypeName = stoneTypeNames.get(sec.stoneTypeId) ?? null;
+            if (secSqft > 0) {
+              const sr = calcStoneBase({
+                sqft: secSqft,
+                depthIn: area.stoneDepthIn ?? 4,
+                densityTonsPerCy: 1.4,
+                wastePct: area.wastePct,
+              });
+              totalStone += sr.tonsWithWaste;
+            }
+          }
+          if (totalStone > 0) {
+            stoneTons = totalStone;
+            stoneDepthIn = area.stoneDepthIn ?? 4;
+            if (area.stoneTypeId && stoneTypeNames) {
+              stoneTypeName = stoneTypeNames.get(area.stoneTypeId) ?? null;
             }
           }
         }
-        if (stoneActive) stoneTons = totalStone;
       }
       break;
     }
