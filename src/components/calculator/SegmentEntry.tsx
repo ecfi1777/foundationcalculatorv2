@@ -30,7 +30,7 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
   const handleAdd = () => {
     setError("");
     const result = parseSegmentInputStrict(input);
-    if (!result.ok) {
+    if (result.ok === false) {
       setError(ERROR_MESSAGES[result.reason] ?? "Invalid format");
       return;
     }
@@ -41,7 +41,7 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
   const handleEditSave = (id: string) => {
     setEditError("");
     const result = parseSegmentInputStrict(editInput);
-    if (!result.ok) {
+    if (result.ok === false) {
       setEditError(ERROR_MESSAGES[result.reason] ?? "Invalid format");
       return;
     }
