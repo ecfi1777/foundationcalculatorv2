@@ -23,6 +23,7 @@ import { ProjectListPanel } from "@/components/project/ProjectListPanel";
 import { AccountCreationModal } from "@/components/project/AccountCreationModal";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import PaywallModal from "@/components/PaywallModal";
+import { DraftActionButtons } from "./DraftActionButtons";
 import { cn } from "@/lib/utils";
 import { buildExportData } from "@/lib/export/buildExportData";
 import { exportProjectToPDF, exportProjectToCSV } from "@/lib/export/exportService";
