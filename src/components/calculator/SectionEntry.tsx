@@ -6,8 +6,9 @@ import { Trash2, Plus } from "lucide-react";
 
 interface SectionEntryProps {
   sections: CalcSection[];
-  sectionPrefix: string; // "Slab Section" | "Pier Pad Section"
+  sectionPrefix: string;
   showThickness?: boolean;
+  showWaste?: boolean;
   onAdd: () => void;
   onUpdate: (id: string, patch: Partial<CalcSection>) => void;
   onDelete: (id: string) => void;
@@ -17,6 +18,7 @@ export function SectionEntry({
   sections,
   sectionPrefix,
   showThickness = false,
+  showWaste = false,
   onAdd,
   onUpdate,
   onDelete,
@@ -65,11 +67,29 @@ export function SectionEntry({
           </div>
 
           {showThickness && (
+            <div className={showWaste ? "grid grid-cols-2 gap-3" : ""}>
+              <NumberField
+                label="Thickness"
+                suffix="in"
+                value={section.thicknessIn}
+                onChange={(v) => onUpdate(section.id, { thicknessIn: v })}
+              />
+              {showWaste && (
+                <NumberField
+                  label="Waste"
+                  suffix="%"
+                  value={section.wastePct}
+                  onChange={(v) => onUpdate(section.id, { wastePct: v })}
+                />
+              )}
+            </div>
+          )}
+          {!showThickness && showWaste && (
             <NumberField
-              label="Thickness"
-              suffix="in"
-              value={section.thicknessIn}
-              onChange={(v) => onUpdate(section.id, { thicknessIn: v })}
+              label="Waste"
+              suffix="%"
+              value={section.wastePct}
+              onChange={(v) => onUpdate(section.id, { wastePct: v })}
             />
           )}
         </div>
