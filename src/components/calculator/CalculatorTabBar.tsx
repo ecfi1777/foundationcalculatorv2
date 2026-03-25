@@ -17,7 +17,7 @@ const TABS: CalculatorType[] = [
 ];
 
 export function CalculatorTabBar() {
-  const { state, dispatch, activeArea } = useCalculatorState();
+  const { state, dispatch, addArea, activeArea } = useCalculatorState();
   const activeRef = useRef<HTMLButtonElement>(null);
   const [discardOpen, setDiscardOpen] = useState(false);
   const [pendingTab, setPendingTab] = useState<CalculatorType | null>(null);
@@ -26,16 +26,28 @@ export function CalculatorTabBar() {
     activeRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest", inline: "center" });
   }, [state.activeTab]);
 
+  const activateTab = useCallback((tab: CalculatorType) => {
+    dispatch({ type: "SET_TAB", tab });
+    // Auto-create a draft for the new tab
+    addArea(tab);
+  }, [dispatch, addArea]);
+
   const handleTabClick = useCallback((tab: CalculatorType) => {
-    if (tab === state.activeTab) return;
+    // If clicking the same tab with no active area, create a new draft
+    if (tab === state.activeTab) {
+      if (!state.activeAreaId) {
+        addArea(tab);
+      }
+      return;
+    }
     // Guard: unsaved draft with data
     if (activeArea?.isDraft && hasRequiredData(activeArea)) {
       setPendingTab(tab);
       setDiscardOpen(true);
       return;
     }
-    dispatch({ type: "SET_TAB", tab });
-  }, [state.activeTab, activeArea, dispatch]);
+    activateTab(tab);
+  }, [state.activeTab, state.activeAreaId, activeArea, activateTab, addArea]);
 
   const confirmDiscard = () => {
     if (activeArea) {
@@ -43,7 +55,7 @@ export function CalculatorTabBar() {
     }
     setDiscardOpen(false);
     if (pendingTab) {
-      dispatch({ type: "SET_TAB", tab: pendingTab });
+      activateTab(pendingTab);
       setPendingTab(null);
     }
   };
