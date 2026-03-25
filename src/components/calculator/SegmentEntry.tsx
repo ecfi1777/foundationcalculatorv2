@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { parseSegmentInputStrict, formatSegment } from "@/lib/segmentParser";
+import { parseSegmentInputStrict, formatSegment, type ParseResult } from "@/lib/segmentParser";
 import type { Segment } from "@/types/calculator";
 import { Pencil, Trash2, Plus } from "lucide-react";
 
