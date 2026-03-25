@@ -107,8 +107,10 @@ export interface Section {
   sort_order: number;
   length_ft: number;
   length_in: number;
+  length_fraction: string;
   width_ft: number;
   width_in: number;
+  width_fraction: string;
   thickness_in: number;
   include_stone: boolean;
   stone_depth_in: number | null;

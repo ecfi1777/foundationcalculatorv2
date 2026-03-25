@@ -647,6 +647,7 @@ export type Database = {
           created_at: string
           id: string
           include_stone: boolean
+          length_fraction: string
           length_ft: number
           length_in: number
           name: string
@@ -659,6 +660,7 @@ export type Database = {
           thickness_in: number
           updated_at: string
           volume_cy: number
+          width_fraction: string
           width_ft: number
           width_in: number
         }
@@ -667,6 +669,7 @@ export type Database = {
           created_at?: string
           id?: string
           include_stone?: boolean
+          length_fraction?: string
           length_ft: number
           length_in?: number
           name: string
@@ -679,6 +682,7 @@ export type Database = {
           thickness_in: number
           updated_at?: string
           volume_cy?: number
+          width_fraction?: string
           width_ft: number
           width_in?: number
         }
@@ -687,6 +691,7 @@ export type Database = {
           created_at?: string
           id?: string
           include_stone?: boolean
+          length_fraction?: string
           length_ft?: number
           length_in?: number
           name?: string
@@ -699,6 +704,7 @@ export type Database = {
           thickness_in?: number
           updated_at?: string
           volume_cy?: number
+          width_fraction?: string
           width_ft?: number
           width_in?: number
         }

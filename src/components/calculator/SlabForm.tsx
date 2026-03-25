@@ -62,6 +62,7 @@ export function SlabForm() {
             sectionPrefix="Slab Section"
             showThickness
             showWaste
+            showFractions
             onAdd={addSection}
             onUpdate={(id, patch) => dispatch({ type: "UPDATE_SECTION", areaId: area.id, sectionId: id, patch })}
             onDelete={(id) => dispatch({ type: "DELETE_SECTION", areaId: area.id, sectionId: id })}
