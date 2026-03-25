@@ -298,6 +298,28 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
         }
       }
       const num = maxNum + 1;
+      // Auto-create first section for section-based types
+      const initialSections: CalcSection[] = [];
+      if (type === "slab") {
+        initialSections.push({
+          id: crypto.randomUUID(),
+          name: "Slab Section (1)",
+          lengthFt: 0, lengthIn: 0, widthFt: 0, widthIn: 0,
+          thicknessIn: 4,
+          includeStone: false, stoneDepthIn: 4, stoneTypeId: "57stone",
+          sortOrder: 1,
+        });
+      } else if (type === "pierPad") {
+        initialSections.push({
+          id: crypto.randomUUID(),
+          name: "Pier/Pad Section (1)",
+          lengthFt: 0, lengthIn: 0, widthFt: 0, widthIn: 0,
+          thicknessIn: 6,
+          includeStone: false, stoneDepthIn: 4, stoneTypeId: "57stone",
+          sortOrder: 1,
+        });
+      }
+
       const area: CalcArea = {
         id: crypto.randomUUID(),
         name: `${AREA_NAME_PREFIXES[type]} (${num})`,
@@ -308,7 +330,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
         footingMode: type === "footing" ? footingMode ?? "footingsOnly" : undefined,
         dimensions: getDefaultDimensions(type),
         segments: [],
-        sections: [],
+        sections: initialSections,
         rebarEnabled: false,
         rebarConfigs: {},
       };
