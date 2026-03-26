@@ -1,39 +1,23 @@
 
 
-# Fix: Calculator blank state after saving an area
+# Clear form after saving an area
 
-## Problem
-After a user saves an area (clicks "Save Area"), the form goes blank. This happens because `DraftActionButtons.tsx` line 22 dispatches `SET_ACTIVE_AREA` with `id: null` after save. The auto-creation effect in `useCalculatorState` then sees that an area already exists for the active tab, so it does not create a new draft. Result: no active area, blank form.
+## What changes
+After a successful save, set the active area to `null` so the form clears. The auto-draft initialization effect will **not** create a new draft automatically (since saved areas already exist for that tab), leaving the user with a clean dropdown to select existing areas or add a new one.
 
-## Expected behavior
-After saving an area, the just-saved area should remain selected and visible. The user can then:
-- View/edit its measurements
-- Use the area selector dropdown to switch between saved areas
-- Add a new area via the tab or other UI controls
+## File: `src/components/calculator/DraftActionButtons.tsx`
 
-## Fix
-
-### File: `src/components/calculator/DraftActionButtons.tsx`
-**Change**: After a successful save, instead of setting `activeAreaId` to `null`, keep the just-saved area active by removing the `SET_ACTIVE_AREA` dispatch entirely.
+In `handleSave`, after `toast.success("Area saved")`, add back the dispatch to clear the active area:
 
 ```tsx
-// Before (line 21-23):
 } else {
   toast.success("Area saved");
   dispatch({ type: "SET_ACTIVE_AREA", id: null });
 }
-
-// After:
-} else {
-  toast.success("Area saved");
-}
 ```
 
-This way the `SAVE_AREA` reducer marks `isDraft: false`, the area stays selected, the form remains populated with the saved data, and the `DraftActionButtons` component returns `null` (since `isDraft` is now false) — hiding the Save/Discard buttons naturally.
+This was the original line we removed in the previous fix. The difference now is that the **auto-draft creation guard** in `useCalculatorState` won't re-create a blank draft because saved areas already exist for the active tab — so it won't loop back to a blank form with a draft. The user will see the area selector dropdown with their saved areas listed, and can pick one to view or click "+ Add Area" to start a new one.
 
-### No other files need changes
-- The `SAVE_AREA` reducer already correctly flips `isDraft` to `false`
-- The `AreaSelector` already shows the dropdown for saved areas when one is active
-- The form components already render from `activeArea` state
-- The auto-draft effect continues to work correctly for empty tabs
+## Verification needed
+- The auto-draft effect in `useCalculatorState` must check `hasAreaForActiveTab` before creating a new draft. If it does, setting `activeAreaId` to `null` will simply show the area selector without the form — which is the clean state the user expects.
 
