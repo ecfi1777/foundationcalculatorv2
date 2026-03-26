@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,6 +29,7 @@ interface SegmentEntryProps {
   onAdd: (seg: Omit<Segment, "id" | "sortOrder">) => void;
   onUpdate: (id: string, seg: Partial<Segment>) => void;
   onDelete: (id: string) => void;
+  onPendingChange?: (lengthInchesDecimal: number) => void;
 }
 
 function SegmentInputRow({
@@ -123,7 +124,7 @@ function SegmentInputRow({
   );
 }
 
-export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEntryProps) {
+export function SegmentEntry({ segments, onAdd, onUpdate, onDelete, onPendingChange }: SegmentEntryProps) {
   const [feetInput, setFeetInput] = useState("");
   const [inchesInput, setInchesInput] = useState("");
   const [fractionInput, setFractionInput] = useState("0");
@@ -133,7 +134,14 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
   const [editInches, setEditInches] = useState("");
   const [editFraction, setEditFraction] = useState("0");
 
-  const totalLf = segments.reduce((sum, s) => sum + s.lengthInchesDecimal, 0) / 12;
+  // Report pending (live input row) length upward
+  const pendingLengthIn = computeLength(feetInput, inchesInput, fractionInput);
+  useEffect(() => {
+    onPendingChange?.(pendingLengthIn);
+  }, [pendingLengthIn, onPendingChange]);
+
+  const storedTotalIn = segments.reduce((sum, s) => sum + s.lengthInchesDecimal, 0);
+  const totalLf = (storedTotalIn + pendingLengthIn) / 12;
 
   const handleAdd = () => {
     const feet = parseInt(feetInput) || 0;
@@ -187,7 +195,7 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
         submitIcon={<Plus className="h-3.5 w-3.5" />}
       />
 
-      {segments.length > 0 && (
+      {(segments.length > 0 || pendingLengthIn > 0) && (
         <div className="space-y-1.5">
           {segments.map((seg) => (
             <div key={seg.id}>

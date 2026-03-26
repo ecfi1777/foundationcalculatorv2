@@ -99,7 +99,8 @@ export function computeRebarForElement(
 }
 
 export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>): AreaResult {
-  const totalLinearFt = area.segments.reduce((s, seg) => s + seg.lengthInchesDecimal, 0) / 12;
+  const pendingIn = area.pendingSegmentLengthIn ?? 0;
+  const totalLinearFt = (area.segments.reduce((s, seg) => s + seg.lengthInchesDecimal, 0) + pendingIn) / 12;
 
   let footingVolumeCy = 0;
   let wallVolumeCy: number | null = null;
