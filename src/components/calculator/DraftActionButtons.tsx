@@ -19,7 +19,6 @@ export function DraftActionButtons() {
       toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
     } else {
       toast.success("Area saved");
-      dispatch({ type: "SET_ACTIVE_AREA", id: null });
     }
   };
 
