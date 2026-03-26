@@ -72,6 +72,7 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
               }
               onUpdate={(id, patch) => dispatch({ type: "UPDATE_SEGMENT", areaId: area.id, segmentId: id, patch })}
               onDelete={(id) => dispatch({ type: "DELETE_SEGMENT", areaId: area.id, segmentId: id })}
+              onPendingChange={(v) => dispatch({ type: "UPDATE_AREA", id: area.id, patch: { pendingSegmentLengthIn: v } })}
             />
           </div>
 

@@ -50,15 +50,15 @@ export function QuantitiesPanel() {
       });
   }, []);
 
-  // Filter out draft areas — they haven't been validated yet
-  const committedAreas = useMemo(
-    () => state.areas.filter((a) => !a.isDraft),
+  // Include committed areas + drafts that have a live pending segment
+  const visibleAreas = useMemo(
+    () => state.areas.filter((a) => !a.isDraft || (a.pendingSegmentLengthIn ?? 0) > 0),
     [state.areas]
   );
 
   const results = useMemo(
-    () => committedAreas.map((area) => computeArea(area, stoneTypeMap)),
-    [committedAreas, stoneTypeMap]
+    () => visibleAreas.map((area) => computeArea(area, stoneTypeMap)),
+    [visibleAreas, stoneTypeMap]
   );
 
   const totals: ProjectTotals = useMemo(() => {
