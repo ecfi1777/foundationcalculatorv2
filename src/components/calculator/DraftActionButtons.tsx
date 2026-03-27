@@ -19,8 +19,7 @@ export function DraftActionButtons() {
       toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
     } else {
       toast.success("Area saved");
-      // Create a fresh draft so the user can immediately enter more measurements
-      addArea(activeArea.type);
+      dispatch({ type: "SET_ACTIVE_AREA", id: null });
     }
   };
 
