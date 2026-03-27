@@ -51,9 +51,9 @@ export function QuantitiesPanel() {
       });
   }, []);
 
-  // Include committed areas + drafts that have a live pending segment
+  // Include committed areas + drafts that have sufficient data to calculate
   const visibleAreas = useMemo(
-    () => state.areas.filter((a) => !a.isDraft || (a.pendingSegmentLengthIn ?? 0) > 0),
+    () => state.areas.filter((a) => !a.isDraft || hasRequiredData(a)),
     [state.areas]
   );
 
