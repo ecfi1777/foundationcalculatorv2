@@ -236,8 +236,6 @@ export interface CalcArea {
   stoneDepthIn?: number;
   stoneTypeId?: string;
 
-  /** Transient: live input row length in inches (not persisted to DB) */
-  pendingSegmentLengthIn?: number;
 }
 
 /**
@@ -261,9 +259,7 @@ export function getMissingFields(area: CalcArea): string[] {
     case "wall":
     case "gradeBeam":
     case "curbGutter": {
-      const hasStoredSegment = area.segments.some(s => s.lengthInchesDecimal > 0);
-      const hasPending = (area.pendingSegmentLengthIn ?? 0) > 0;
-      if (!hasStoredSegment && !hasPending)
+      if (!area.segments.some(s => s.lengthInchesDecimal > 0))
         missing.push("At least one segment with length");
       break;
     }

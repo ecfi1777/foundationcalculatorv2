@@ -65,19 +65,11 @@ function resolveOutgoingDraft(areas: CalcArea[], leavingAreaId: string | null): 
 function reducer(state: CalcState, action: Action): CalcState {
   switch (action.type) {
     case "SET_TAB": {
-      let areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
-      // Clear pending segment on the area being left
-      if (state.activeAreaId) {
-        areas = areas.map(a => a.id === state.activeAreaId ? { ...a, pendingSegmentLengthIn: 0 } : a);
-      }
+      const areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
       return { ...state, areas, activeTab: action.tab, activeAreaId: null };
     }
     case "SET_ACTIVE_AREA": {
-      let areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
-      // Clear pending segment on the area being left
-      if (state.activeAreaId && state.activeAreaId !== action.id) {
-        areas = areas.map(a => a.id === state.activeAreaId ? { ...a, pendingSegmentLengthIn: 0 } : a);
-      }
+      const areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
       return { ...state, areas, activeAreaId: action.id };
     }
     case "ADD_AREA": {
@@ -173,7 +165,7 @@ function reducer(state: CalcState, action: Action): CalcState {
     case "SAVE_AREA": {
       const areas = state.areas.map((a) => {
         if (a.id !== action.id || !a.isDraft) return a;
-        return { ...a, isDraft: false, pendingSegmentLengthIn: 0 };
+        return { ...a, isDraft: false };
       });
       return { ...state, areas };
     }
