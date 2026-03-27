@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
 import { SegmentEntry } from "./SegmentEntry";
@@ -6,19 +7,66 @@ import { AreaSelector } from "./AreaSelector";
 import { makeDefaultRebar } from "@/types/calculator";
 import { generateId } from "@/lib/utils";
 
+const CURB_DIM_KEYS = ["curbDepthIn", "curbHeightIn", "gutterWidthIn", "flagThicknessIn"] as const;
+const CURB_DEFAULTS: Record<string, number> = { curbDepthIn: 6, curbHeightIn: 6, gutterWidthIn: 12, flagThicknessIn: 4 };
+
 export function CurbGutterForm() {
-  const { dispatch, addArea, getAreasForType, activeArea } = useCalculatorState();
+  const { dispatch, addArea, getAreasForType, activeArea, registerFlushCallback } = useCalculatorState();
   const areas = getAreasForType("curbGutter");
   const area = activeArea?.type === "curbGutter" ? activeArea : null;
 
-  const handleAdd = (customName?: string) => {
-    const area = addArea("curbGutter");
-    if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
-  };
+  // --- Local state for dimensions & waste ---
+  const [localDims, setLocalDims] = useState<Record<string, number>>(() => {
+    const d: Record<string, number> = {};
+    for (const k of CURB_DIM_KEYS) d[k] = area?.dimensions[k] ?? CURB_DEFAULTS[k];
+    return d;
+  });
+  const [localWaste, setLocalWaste] = useState(area?.wastePct ?? 5);
 
-  const updateDim = (key: string, value: number) => {
+  // Sync local state when active area switches
+  useEffect(() => {
+    const d: Record<string, number> = {};
+    for (const k of CURB_DIM_KEYS) d[k] = area?.dimensions[k] ?? CURB_DEFAULTS[k];
+    setLocalDims(d);
+    setLocalWaste(area?.wastePct ?? 5);
+  }, [area?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Blur-commit helpers
+  const commitDim = useCallback((key: string) => {
     if (!area) return;
-    dispatch({ type: "UPDATE_AREA", id: area.id, patch: { dimensions: { ...area.dimensions, [key]: value } } });
+    dispatch({ type: "UPDATE_AREA", id: area.id, patch: { dimensions: { ...area.dimensions, [key]: localDims[key] } } });
+  }, [area, localDims, dispatch]);
+
+  const commitWaste = useCallback(() => {
+    if (!area) return;
+    dispatch({ type: "UPDATE_AREA", id: area.id, patch: { wastePct: localWaste } });
+  }, [area, localWaste, dispatch]);
+
+  // Register flush callback for save-before-blur safety
+  useEffect(() => {
+    if (!area) {
+      registerFlushCallback(null);
+      return;
+    }
+    const flush = () => {
+      const dimsPatch: Record<string, number> = {};
+      for (const k of CURB_DIM_KEYS) dimsPatch[k] = localDims[k];
+      dispatch({
+        type: "UPDATE_AREA",
+        id: area.id,
+        patch: {
+          dimensions: { ...area.dimensions, ...dimsPatch },
+          wastePct: localWaste,
+        },
+      });
+    };
+    registerFlushCallback(flush);
+    return () => registerFlushCallback(null);
+  }, [area?.id, localDims, localWaste]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleAdd = (customName?: string) => {
+    const a = addArea("curbGutter");
+    if (customName) dispatch({ type: "RENAME_AREA", id: a.id, name: customName });
   };
 
   const rebarConfig = area?.rebarConfigs?.curb ?? makeDefaultRebar("curb");
@@ -39,17 +87,18 @@ export function CurbGutterForm() {
       {area && (
         <>
           <div className="grid grid-cols-2 gap-3">
-            <NumberField label="Curb Depth" suffix="in" value={area.dimensions.curbDepthIn ?? 6} onChange={(v) => updateDim("curbDepthIn", v)} />
-            <NumberField label="Curb Height" suffix="in" value={area.dimensions.curbHeightIn ?? 6} onChange={(v) => updateDim("curbHeightIn", v)} />
-            <NumberField label="Gutter Width" suffix="in" value={area.dimensions.gutterWidthIn ?? 12} onChange={(v) => updateDim("gutterWidthIn", v)} />
-            <NumberField label="Flag Thickness" suffix="in" value={area.dimensions.flagThicknessIn ?? 4} onChange={(v) => updateDim("flagThicknessIn", v)} />
+            <NumberField label="Curb Depth" suffix="in" value={localDims.curbDepthIn ?? 6} onChange={(v) => setLocalDims(d => ({ ...d, curbDepthIn: v }))} onBlur={() => commitDim("curbDepthIn")} />
+            <NumberField label="Curb Height" suffix="in" value={localDims.curbHeightIn ?? 6} onChange={(v) => setLocalDims(d => ({ ...d, curbHeightIn: v }))} onBlur={() => commitDim("curbHeightIn")} />
+            <NumberField label="Gutter Width" suffix="in" value={localDims.gutterWidthIn ?? 12} onChange={(v) => setLocalDims(d => ({ ...d, gutterWidthIn: v }))} onBlur={() => commitDim("gutterWidthIn")} />
+            <NumberField label="Flag Thickness" suffix="in" value={localDims.flagThicknessIn ?? 4} onChange={(v) => setLocalDims(d => ({ ...d, flagThicknessIn: v }))} onBlur={() => commitDim("flagThicknessIn")} />
           </div>
 
           <NumberField
             label="Waste"
             suffix="%"
-            value={area.wastePct}
-            onChange={(v) => dispatch({ type: "UPDATE_AREA", id: area.id, patch: { wastePct: v } })}
+            value={localWaste}
+            onChange={(v) => setLocalWaste(v)}
+            onBlur={commitWaste}
           />
 
           <div>
