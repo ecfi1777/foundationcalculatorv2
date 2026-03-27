@@ -8,12 +8,13 @@ import { useState } from "react";
 
 /** Duplicate Save / Discard buttons rendered below the calculator form for mobile usability. */
 export function DraftActionButtons() {
-  const { activeArea, saveArea, dispatch } = useCalculatorState();
+  const { activeArea, saveArea, dispatch, flushBeforeSave } = useCalculatorState();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!activeArea?.isDraft) return null;
 
   const handleSave = () => {
+    flushBeforeSave();
     const result = saveArea(activeArea.id);
     if (!result.valid) {
       toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);

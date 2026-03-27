@@ -193,6 +193,8 @@ interface CalcCtx {
   isDirty: boolean;
   markClean: () => void;
   saveArea: (id: string) => { valid: boolean; missingFields: string[] };
+  registerFlushCallback: (cb: (() => void) | null) => void;
+  flushBeforeSave: () => void;
 }
 
 const CalculatorContext = createContext<CalcCtx | null>(null);
@@ -237,6 +239,15 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
   const [isDirty, setIsDirty] = React.useState(false);
   const stateRef = useRef(state);
   useEffect(() => { stateRef.current = state; }, [state]);
+
+  // Flush callback registry — one ref, one owner at a time
+  const flushRef = useRef<(() => void) | null>(null);
+  const registerFlushCallback = useCallback((cb: (() => void) | null) => {
+    flushRef.current = cb;
+  }, []);
+  const flushBeforeSave = useCallback(() => {
+    flushRef.current?.();
+  }, []);
 
   // Wrap dispatch to track dirty state
   const dispatch: React.Dispatch<Action> = useCallback((action: Action) => {
@@ -372,7 +383,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     : null;
 
   return (
-    <CalculatorContext.Provider value={{ state, dispatch, addArea, getAreasForType, activeArea, isDirty, markClean, saveArea }}>
+    <CalculatorContext.Provider value={{ state, dispatch, addArea, getAreasForType, activeArea, isDirty, markClean, saveArea, registerFlushCallback, flushBeforeSave }}>
       {children}
     </CalculatorContext.Provider>
   );

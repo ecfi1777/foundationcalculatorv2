@@ -5,6 +5,7 @@ interface NumberFieldProps {
   label: string;
   value: number;
   onChange: (v: number) => void;
+  onBlur?: () => void;
   min?: number;
   max?: number;
   step?: number;
@@ -16,6 +17,7 @@ export function NumberField({
   label,
   value,
   onChange,
+  onBlur,
   min = 0,
   max,
   step = 1,
@@ -35,6 +37,7 @@ export function NumberField({
         step={step}
         value={value || ""}
         onChange={(e) => onChange(parseFloat(e.target.value) || 0)}
+        onBlur={onBlur}
         className="mt-1 h-9"
       />
     </div>

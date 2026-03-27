@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
 import { SegmentEntry } from "./SegmentEntry";
@@ -14,7 +15,7 @@ const MODES: { value: FootingMode; label: string }[] = [
 ];
 
 export function FootingForm() {
-  const { state, dispatch, addArea, getAreasForType, activeArea } = useCalculatorState();
+  const { state, dispatch, addArea, getAreasForType, activeArea, registerFlushCallback } = useCalculatorState();
   const areas = getAreasForType("footing");
 
   const handleAdd = (customName?: string) => {
@@ -25,9 +26,48 @@ export function FootingForm() {
   const area = activeArea?.type === "footing" ? activeArea : null;
   const mode = area?.footingMode ?? "footingsOnly";
 
-  const updateDim = (key: string, value: number) => {
+  // --- Local state for dimensions & waste (blur-commit pattern) ---
+  const [localDims, setLocalDims] = useState<Record<string, number>>({});
+  const [localWaste, setLocalWaste] = useState(0);
+
+  // Sync local state from area on area switch
+  useEffect(() => {
+    if (area) {
+      setLocalDims({ ...area.dimensions });
+      setLocalWaste(area.wastePct);
+    }
+  }, [area?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Register flush callback so Save Area can commit un-blurred values
+  useEffect(() => {
+    if (!area) {
+      registerFlushCallback(null);
+      return;
+    }
+    const flush = () => {
+      dispatch({
+        type: "UPDATE_AREA",
+        id: area.id,
+        patch: { dimensions: { ...localDims }, wastePct: localWaste },
+      });
+    };
+    registerFlushCallback(flush);
+    return () => registerFlushCallback(null);
+  }, [area?.id, localDims, localWaste, dispatch, registerFlushCallback]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Commit a single dimension on blur
+  const commitDim = (key: string) => {
     if (!area) return;
-    dispatch({ type: "UPDATE_AREA", id: area.id, patch: { dimensions: { ...area.dimensions, [key]: value } } });
+    dispatch({
+      type: "UPDATE_AREA",
+      id: area.id,
+      patch: { dimensions: { ...area.dimensions, [key]: localDims[key] ?? 0 } },
+    });
+  };
+
+  const commitWaste = () => {
+    if (!area) return;
+    dispatch({ type: "UPDATE_AREA", id: area.id, patch: { wastePct: localWaste } });
   };
 
   const setMode = (m: FootingMode) => {
@@ -76,24 +116,49 @@ export function FootingForm() {
           {/* Footing fields */}
           {showFooting && (
             <div className="grid grid-cols-2 gap-3">
-              <NumberField label="Footing Width" suffix="in" value={area.dimensions.widthIn ?? 12} onChange={(v) => updateDim("widthIn", v)} />
-              <NumberField label="Footing Depth" suffix="in" value={area.dimensions.depthIn ?? 8} onChange={(v) => updateDim("depthIn", v)} />
+              <NumberField
+                label="Footing Width"
+                suffix="in"
+                value={localDims.widthIn ?? 12}
+                onChange={(v) => setLocalDims((prev) => ({ ...prev, widthIn: v }))}
+                onBlur={() => commitDim("widthIn")}
+              />
+              <NumberField
+                label="Footing Depth"
+                suffix="in"
+                value={localDims.depthIn ?? 8}
+                onChange={(v) => setLocalDims((prev) => ({ ...prev, depthIn: v }))}
+                onBlur={() => commitDim("depthIn")}
+              />
             </div>
           )}
 
           {/* Wall fields */}
           {showWall && (
             <div className="grid grid-cols-2 gap-3">
-              <NumberField label="Wall Height" suffix="in" value={area.dimensions.wallHeightIn ?? 48} onChange={(v) => updateDim("wallHeightIn", v)} />
-              <NumberField label="Wall Thickness" suffix="in" value={area.dimensions.wallThicknessIn ?? 8} onChange={(v) => updateDim("wallThicknessIn", v)} />
+              <NumberField
+                label="Wall Height"
+                suffix="in"
+                value={localDims.wallHeightIn ?? 48}
+                onChange={(v) => setLocalDims((prev) => ({ ...prev, wallHeightIn: v }))}
+                onBlur={() => commitDim("wallHeightIn")}
+              />
+              <NumberField
+                label="Wall Thickness"
+                suffix="in"
+                value={localDims.wallThicknessIn ?? 8}
+                onChange={(v) => setLocalDims((prev) => ({ ...prev, wallThicknessIn: v }))}
+                onBlur={() => commitDim("wallThicknessIn")}
+              />
             </div>
           )}
 
           <NumberField
             label="Waste"
             suffix="%"
-            value={area.wastePct}
-            onChange={(v) => dispatch({ type: "UPDATE_AREA", id: area.id, patch: { wastePct: v } })}
+            value={localWaste}
+            onChange={(v) => setLocalWaste(v)}
+            onBlur={commitWaste}
           />
 
           {/* Segments */}
@@ -110,7 +175,6 @@ export function FootingForm() {
               }
               onUpdate={(id, patch) => dispatch({ type: "UPDATE_SEGMENT", areaId: area.id, segmentId: id, patch })}
               onDelete={(id) => dispatch({ type: "DELETE_SEGMENT", areaId: area.id, segmentId: id })}
-              
             />
           </div>
 
