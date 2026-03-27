@@ -4,6 +4,7 @@ import type {
   AreaResult, ProjectTotals,
   RebarResult, RebarElementType,
 } from "@/types/calculator";
+import { hasRequiredData } from "@/types/calculator";
 import { computeArea } from "@/lib/computeArea";
 import { supabase } from "@/lib/supabase/client";
 import { Button } from "@/components/ui/button";
