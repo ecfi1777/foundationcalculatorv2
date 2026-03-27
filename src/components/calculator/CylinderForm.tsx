@@ -1,18 +1,10 @@
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
+import { MeasurementRow } from "./MeasurementRow";
 import { AreaSelector } from "./AreaSelector";
-import { Input } from "@/components/ui/input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
-const FRACTION_OPTIONS = [
-  { label: "0", value: "0", num: 0 },
-  { label: "1/4", value: "1/4", num: 0.25 },
-  { label: "1/2", value: "1/2", num: 0.5 },
-  { label: "3/4", value: "3/4", num: 0.75 },
-] as const;
-
-const NUM_TO_FRAC: Record<number, string> = { 0: "0", 0.25: "1/4", 0.5: "1/2", 0.75: "3/4" };
 const FRAC_TO_NUM: Record<string, number> = { "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 };
+const NUM_TO_FRAC: Record<number, string> = { 0: "0", 0.25: "1/4", 0.5: "1/2", 0.75: "3/4" };
 
 function getFracStr(val: number | undefined): string {
   if (val === undefined) return "0";
@@ -48,73 +40,25 @@ export function CylinderForm() {
 
       {area && (
         <>
-          {/* Diameter: ft / in / fraction */}
-          <div>
-            <span className="text-xs text-muted-foreground mb-1 block">Diameter</span>
-            <div className="grid grid-cols-3 gap-2">
-              <NumberField
-                label=""
-                suffix="ft"
-                value={area.dimensions.diameterFt ?? 0}
-                onChange={(v) => updateDim("diameterFt", v)}
-              />
-              <NumberField
-                label=""
-                suffix="in"
-                value={area.dimensions.diameterIn ?? 12}
-                onChange={(v) => updateDim("diameterIn", v)}
-              />
-              <div>
-                <Select
-                  value={getFracStr(area.dimensions.diameterFrac)}
-                  onValueChange={(v) => updateDim("diameterFrac", FRAC_TO_NUM[v] ?? 0)}
-                >
-                  <SelectTrigger className="h-9 text-sm w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FRACTION_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+          <MeasurementRow
+            label="Diameter"
+            feetValue={area.dimensions.diameterFt ?? 0}
+            inchesValue={area.dimensions.diameterIn ?? 12}
+            fractionValue={getFracStr(area.dimensions.diameterFrac)}
+            onFeetChange={(v) => updateDim("diameterFt", v)}
+            onInchesChange={(v) => updateDim("diameterIn", v)}
+            onFractionChange={(v) => updateDim("diameterFrac", FRAC_TO_NUM[v] ?? 0)}
+          />
 
-          {/* Height: ft / in / fraction */}
-          <div>
-            <span className="text-xs text-muted-foreground mb-1 block">Height</span>
-            <div className="grid grid-cols-3 gap-2">
-              <NumberField
-                label=""
-                suffix="ft"
-                value={area.dimensions.heightFt ?? 4}
-                onChange={(v) => updateDim("heightFt", v)}
-              />
-              <NumberField
-                label=""
-                suffix="in"
-                value={area.dimensions.heightIn ?? 0}
-                onChange={(v) => updateDim("heightIn", v)}
-              />
-              <div>
-                <Select
-                  value={getFracStr(area.dimensions.heightFrac)}
-                  onValueChange={(v) => updateDim("heightFrac", FRAC_TO_NUM[v] ?? 0)}
-                >
-                  <SelectTrigger className="h-9 text-sm w-full">
-                    <SelectValue />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {FRACTION_OPTIONS.map((opt) => (
-                      <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            </div>
-          </div>
+          <MeasurementRow
+            label="Height"
+            feetValue={area.dimensions.heightFt ?? 4}
+            inchesValue={area.dimensions.heightIn ?? 0}
+            fractionValue={getFracStr(area.dimensions.heightFrac)}
+            onFeetChange={(v) => updateDim("heightFt", v)}
+            onInchesChange={(v) => updateDim("heightIn", v)}
+            onFractionChange={(v) => updateDim("heightFrac", FRAC_TO_NUM[v] ?? 0)}
+          />
 
           <NumberField label="Quantity" value={area.dimensions.quantity ?? 1} onChange={(v) => updateDim("quantity", v)} min={1} />
 

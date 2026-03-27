@@ -1,15 +1,8 @@
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import type { CalcSection } from "@/types/calculator";
 import { NumberField } from "./NumberField";
+import { MeasurementRow } from "./MeasurementRow";
 import { Trash2, Plus } from "lucide-react";
-
-const FRACTION_OPTIONS = [
-  { label: "0", value: "0" },
-  { label: "1/4", value: "1/4" },
-  { label: "1/2", value: "1/2" },
-  { label: "3/4", value: "3/4" },
-] as const;
 
 interface SectionEntryProps {
   sections: CalcSection[];
@@ -48,78 +41,47 @@ export function SectionEntry({
             </Button>
           </div>
 
-          {/* Length: ft / in / fraction */}
-          {/* Length: ft / in / fraction */}
-          <div>
-            <span className="text-xs text-muted-foreground mb-1 block">Length</span>
-            <div className={`grid ${showFractions ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
-              <NumberField
-                label=""
-                suffix="ft"
-                value={section.lengthFt}
-                onChange={(v) => onUpdate(section.id, { lengthFt: v })}
-              />
-              <NumberField
-                label=""
-                suffix="in"
-                value={section.lengthIn}
-                onChange={(v) => onUpdate(section.id, { lengthIn: v })}
-              />
-              {showFractions && (
-                <div>
-                  <Select
-                    value={section.lengthFraction ?? "0"}
-                    onValueChange={(v) => onUpdate(section.id, { lengthFraction: v })}
-                  >
-                    <SelectTrigger className="h-9 text-sm w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FRACTION_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+          {/* Length */}
+          {showFractions ? (
+            <MeasurementRow
+              label="Length"
+              feetValue={section.lengthFt}
+              inchesValue={section.lengthIn}
+              fractionValue={section.lengthFraction ?? "0"}
+              onFeetChange={(v) => onUpdate(section.id, { lengthFt: v })}
+              onInchesChange={(v) => onUpdate(section.id, { lengthIn: v })}
+              onFractionChange={(v) => onUpdate(section.id, { lengthFraction: v })}
+            />
+          ) : (
+            <div>
+              <span className="text-xs font-medium text-muted-foreground mb-1 block">Length</span>
+              <div className="grid grid-cols-2 gap-2">
+                <NumberField label="" suffix="ft" value={section.lengthFt} onChange={(v) => onUpdate(section.id, { lengthFt: v })} />
+                <NumberField label="" suffix="in" value={section.lengthIn} onChange={(v) => onUpdate(section.id, { lengthIn: v })} />
+              </div>
             </div>
-          </div>
+          )}
 
-          {/* Width: ft / in / fraction */}
-          <div>
-            <span className="text-xs text-muted-foreground mb-1 block">Width</span>
-            <div className={`grid ${showFractions ? 'grid-cols-3' : 'grid-cols-2'} gap-2`}>
-              <NumberField
-                label=""
-                suffix="ft"
-                value={section.widthFt}
-                onChange={(v) => onUpdate(section.id, { widthFt: v })}
-              />
-              <NumberField
-                label=""
-                suffix="in"
-                value={section.widthIn}
-                onChange={(v) => onUpdate(section.id, { widthIn: v })}
-              />
-              {showFractions && (
-                <div>
-                  <Select
-                    value={section.widthFraction ?? "0"}
-                    onValueChange={(v) => onUpdate(section.id, { widthFraction: v })}
-                  >
-                    <SelectTrigger className="h-9 text-sm w-full">
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {FRACTION_OPTIONS.map((opt) => (
-                        <SelectItem key={opt.value} value={opt.value}>{opt.label}"</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-              )}
+          {/* Width */}
+          {showFractions ? (
+            <MeasurementRow
+              label="Width"
+              feetValue={section.widthFt}
+              inchesValue={section.widthIn}
+              fractionValue={section.widthFraction ?? "0"}
+              onFeetChange={(v) => onUpdate(section.id, { widthFt: v })}
+              onInchesChange={(v) => onUpdate(section.id, { widthIn: v })}
+              onFractionChange={(v) => onUpdate(section.id, { widthFraction: v })}
+            />
+          ) : (
+            <div>
+              <span className="text-xs font-medium text-muted-foreground mb-1 block">Width</span>
+              <div className="grid grid-cols-2 gap-2">
+                <NumberField label="" suffix="ft" value={section.widthFt} onChange={(v) => onUpdate(section.id, { widthFt: v })} />
+                <NumberField label="" suffix="in" value={section.widthIn} onChange={(v) => onUpdate(section.id, { widthIn: v })} />
+              </div>
             </div>
-          </div>
+          )}
 
           {showThickness && (
             <div className={showWaste ? "grid grid-cols-2 gap-3" : ""}>
