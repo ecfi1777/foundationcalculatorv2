@@ -4,7 +4,9 @@ import {
   Select, SelectContent, SelectItem,
   SelectTrigger, SelectValue,
 } from "@/components/ui/select";
+import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
+import { Plus } from "lucide-react";
 import type { CalcArea, CalculatorType } from "@/types/calculator";
 import { CALCULATOR_LABELS, hasRequiredData } from "@/types/calculator";
 import { InlineNameEditor } from "./InlineNameEditor";
@@ -26,6 +28,7 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
 
   const activeArea = areas.find((a) => a.id === activeAreaId);
   const savedAreas = areas.filter((a) => !a.isDraft);
+  const isDraftActive = !!activeArea?.isDraft;
 
   const handleSelect = (id: string) => {
     if (id === activeAreaId) return;
@@ -48,7 +51,7 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
   return (
     <div className="flex flex-col border-b border-border bg-card/50">
       <div className="flex items-center gap-2 px-3 py-2">
-        {activeArea?.isDraft ? (
+        {isDraftActive ? (
           <div className="flex-1 min-w-0">
             <InlineNameEditor
               name={activeArea.name}
@@ -56,22 +59,33 @@ export function AreaSelector({ areas, activeAreaId, onSelect, onAdd, onDiscard, 
             />
           </div>
         ) : savedAreas.length > 0 ? (
-          <Select value={activeAreaId ?? ""} onValueChange={handleSelect}>
-            <SelectTrigger className="h-9 flex-1 bg-secondary/50">
-              <SelectValue placeholder="Select area…" />
-            </SelectTrigger>
-            <SelectContent>
-              {savedAreas.map((a) => (
-                <SelectItem key={a.id} value={a.id}>
-                  {a.name}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <>
+            <Select value={activeAreaId ?? ""} onValueChange={handleSelect}>
+              <SelectTrigger className="h-9 flex-1 bg-secondary/50">
+                <SelectValue placeholder="Select area…" />
+              </SelectTrigger>
+              <SelectContent>
+                {savedAreas.map((a) => (
+                  <SelectItem key={a.id} value={a.id}>
+                    {a.name}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button variant="outline" size="sm" className="h-9 shrink-0" onClick={() => onAdd()}>
+              <Plus className="w-4 h-4 mr-1" />
+              New
+            </Button>
+          </>
         ) : (
-          <span className="flex-1 text-sm text-muted-foreground">No {typeLabel} areas</span>
+          <div className="flex-1 flex flex-col items-center gap-2 py-4">
+            <span className="text-sm text-muted-foreground">No {typeLabel} areas yet</span>
+            <Button variant="outline" size="sm" onClick={() => onAdd()}>
+              <Plus className="w-4 h-4 mr-1" />
+              New {CALCULATOR_LABELS[type]} Area
+            </Button>
+          </div>
         )}
-
       </div>
 
       <ConfirmDialog
