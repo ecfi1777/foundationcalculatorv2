@@ -1,65 +1,40 @@
 
 
-# Live Default Segment — Implementation
+# Fix: Remove auto-draft after Save Area
 
-## Summary
-Make the first segment input row "live" so calculations update immediately as the user types, without requiring "+ Add". The pending value is tracked transiently on each area and included in all calculation outputs.
+## Problem
+Line 23 in `DraftActionButtons.tsx` calls `addArea(activeArea.type)` immediately after a successful save, auto-creating a new draft area. This causes the "double save" / "why is there another area?" confusion.
 
-## Changes
+## Change
 
-### 1. `src/types/calculator.ts`
-- Add `pendingSegmentLengthIn?: number` to `CalcArea` interface
-- Update `getMissingFields` for linear types: also treat an area as valid if `pendingSegmentLengthIn > 0` (so the user can save with just the live segment)
+**File: `src/components/calculator/DraftActionButtons.tsx`**
 
-### 2. `src/components/calculator/SegmentEntry.tsx`
-- Add `onPendingChange?: (lengthInchesDecimal: number) => void` prop
-- Add a `useEffect` watching `feetInput`, `inchesInput`, `fractionInput` that calls `onPendingChange(computeLength(...))` on every change
-- Update the "Total" display (line 136/240) to accept and include an optional `pendingLengthIn` prop — show the total row whenever segments exist OR pending > 0
-- No changes to `handleAdd` — after it clears inputs, the `useEffect` naturally fires `onPendingChange(0)`, preventing double-counting
+Replace the success branch (lines 20-24) so it:
+1. Shows the success toast (preserved)
+2. Sets active area to `null` via `dispatch({ type: "SET_ACTIVE_AREA", id: null })`
+3. Does **not** call `addArea()`
 
-### 3. `src/lib/computeArea.ts` (line 102)
-Include pending segment in total:
-```ts
-const pendingIn = area.pendingSegmentLengthIn ?? 0;
-const totalLinearFt = (area.segments.reduce((s, seg) => s + seg.lengthInchesDecimal, 0) + pendingIn) / 12;
-```
-This flows through all downstream calcs (concrete volume, rebar, etc.) automatically.
-
-### 4. `src/components/calculator/FootingForm.tsx`
-Wire `onPendingChange` on `SegmentEntry`:
 ```tsx
-onPendingChange={(v) => dispatch({ type: "UPDATE_AREA", id: area.id, patch: { pendingSegmentLengthIn: v } })}
+const handleSave = () => {
+  const result = saveArea(activeArea.id);
+  if (!result.valid) {
+    toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
+  } else {
+    toast.success("Area saved");
+    dispatch({ type: "SET_ACTIVE_AREA", id: null });
+  }
+};
 ```
 
-### 5. `src/components/calculator/LinearForm.tsx`
-Same `onPendingChange` wiring.
+Also remove `addArea` from the destructured context on line 11 (cleanup).
 
-### 6. `src/components/calculator/CurbGutterForm.tsx`
-Same `onPendingChange` wiring.
+## Post-save behavior
+- Area is committed once — no duplication
+- Active area becomes `null` — user sees the area selector / empty calculator state
+- No new draft is created automatically
+- User must explicitly click "+ Add Area" or select an existing area
+- Validation, toast, discard flow all unchanged
 
-### 7. `src/hooks/useCalculatorState.tsx`
-- In `SAVE_AREA` reducer: clear `pendingSegmentLengthIn` to 0 on the saved area
-- In `SET_ACTIVE_AREA` reducer: clear `pendingSegmentLengthIn` to 0 on the area being left (prevents stale values)
-- In `SET_TAB` reducer: same cleanup on the area being left
-
-### 8. `src/components/calculator/QuantitiesPanel.tsx`
-- Change the filter (line 54-56) to include draft areas that have meaningful data: either stored segments/sections, or `pendingSegmentLengthIn > 0`, or valid dimensions (cylinder/steps)
-- This ensures the active draft with a live pending segment shows up in quantities in real-time
-
-## Double-counting prevention
-When "+ Add" is clicked:
-1. Segment is committed to stored segments array
-2. Input fields clear (setState to "")
-3. `useEffect` fires → `onPendingChange(0)` → `pendingSegmentLengthIn` becomes 0
-4. Value moves from pending → stored atomically — no frame where both are counted
-
-## Area/tab switching cleanup
-- Reducer clears `pendingSegmentLengthIn` when switching away
-- `SegmentEntry` unmounts/remounts with fresh local state for new area (React component lifecycle)
-
-## No changes to
-- DB schema or persistence (pending is transient, stripped on load via `migrateLoadedState` defaulting)
-- Export logic (exports only use committed saved areas)
-- Existing segment CRUD behavior
-- UI layout or design language
+## Files changed
+1. `src/components/calculator/DraftActionButtons.tsx` — remove `addArea` call, set active area to null after save
 
