@@ -8,7 +8,7 @@ import { useState } from "react";
 
 /** Duplicate Save / Discard buttons rendered below the calculator form for mobile usability. */
 export function DraftActionButtons() {
-  const { activeArea, saveArea, addArea, dispatch } = useCalculatorState();
+  const { activeArea, saveArea, dispatch } = useCalculatorState();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!activeArea?.isDraft) return null;
