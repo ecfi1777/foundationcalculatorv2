@@ -34,6 +34,7 @@ type Action =
   | { type: "DELETE_SECTION"; areaId: string; sectionId: string }
   | { type: "UPDATE_REBAR"; areaId: string; elementType: RebarElementType; rebar: Partial<RebarConfig> }
   | { type: "SAVE_AREA"; id: string }
+  | { type: "EDIT_AREA"; tab: CalculatorType; id: string }
   | { type: "LOAD"; state: CalcState }
   | { type: "RESET" };
 
@@ -71,6 +72,10 @@ function reducer(state: CalcState, action: Action): CalcState {
     case "SET_ACTIVE_AREA": {
       const areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
       return { ...state, areas, activeAreaId: action.id };
+    }
+    case "EDIT_AREA": {
+      const areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
+      return { ...state, areas, activeTab: action.tab, activeAreaId: action.id };
     }
     case "ADD_AREA": {
       // Resolve any existing draft before adding new one
