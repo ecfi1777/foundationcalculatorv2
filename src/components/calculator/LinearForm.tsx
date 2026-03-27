@@ -1,3 +1,4 @@
+import { useState, useEffect, useCallback } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
 import { SegmentEntry } from "./SegmentEntry";
@@ -9,25 +10,67 @@ import { generateId } from "@/lib/utils";
 
 /** Shared form for both Wall (standalone) and Grade Beam calculators */
 export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
-  const { state, dispatch, addArea, getAreasForType, activeArea } = useCalculatorState();
+  const { dispatch, addArea, getAreasForType, activeArea, registerFlushCallback } = useCalculatorState();
   const areas = getAreasForType(calcType);
   const area = activeArea?.type === calcType ? activeArea : null;
-
-  const handleAdd = (customName?: string) => {
-    const area = addArea(calcType);
-    if (customName) dispatch({ type: "RENAME_AREA", id: area.id, name: customName });
-  };
-
-  const updateDim = (key: string, value: number) => {
-    if (!area) return;
-    dispatch({ type: "UPDATE_AREA", id: area.id, patch: { dimensions: { ...area.dimensions, [key]: value } } });
-  };
 
   const isWall = calcType === "wall";
   const dim1Label = isWall ? "Wall Height" : "Beam Width";
   const dim1Key = isWall ? "heightIn" : "widthIn";
   const dim2Label = isWall ? "Wall Thickness" : "Beam Depth";
   const dim2Key = isWall ? "thicknessIn" : "depthIn";
+
+  // --- Local state for dimensions & waste ---
+  const [localDims, setLocalDims] = useState<Record<string, number>>({
+    [dim1Key]: area?.dimensions[dim1Key] ?? 0,
+    [dim2Key]: area?.dimensions[dim2Key] ?? 0,
+  });
+  const [localWaste, setLocalWaste] = useState(area?.wastePct ?? 5);
+
+  // Sync local state when active area switches
+  useEffect(() => {
+    setLocalDims({
+      [dim1Key]: area?.dimensions[dim1Key] ?? 0,
+      [dim2Key]: area?.dimensions[dim2Key] ?? 0,
+    });
+    setLocalWaste(area?.wastePct ?? 5);
+  }, [area?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Blur-commit helpers
+  const commitDim = useCallback((key: string) => {
+    if (!area) return;
+    dispatch({ type: "UPDATE_AREA", id: area.id, patch: { dimensions: { ...area.dimensions, [key]: localDims[key] } } });
+  }, [area, localDims, dispatch]);
+
+  const commitWaste = useCallback(() => {
+    if (!area) return;
+    dispatch({ type: "UPDATE_AREA", id: area.id, patch: { wastePct: localWaste } });
+  }, [area, localWaste, dispatch]);
+
+  // Register flush callback for save-before-blur safety
+  useEffect(() => {
+    if (!area) {
+      registerFlushCallback(null);
+      return;
+    }
+    const flush = () => {
+      dispatch({
+        type: "UPDATE_AREA",
+        id: area.id,
+        patch: {
+          dimensions: { ...area.dimensions, [dim1Key]: localDims[dim1Key], [dim2Key]: localDims[dim2Key] },
+          wastePct: localWaste,
+        },
+      });
+    };
+    registerFlushCallback(flush);
+    return () => registerFlushCallback(null);
+  }, [area?.id, localDims, localWaste]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  const handleAdd = (customName?: string) => {
+    const a = addArea(calcType);
+    if (customName) dispatch({ type: "RENAME_AREA", id: a.id, name: customName });
+  };
 
   const elementType: RebarElementType = calcTypeToElementType(calcType);
   const rebarConfig = area?.rebarConfigs?.[elementType] ?? makeDefaultRebar(elementType);
@@ -48,15 +91,16 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
       {area && (
         <>
           <div className="grid grid-cols-2 gap-3">
-            <NumberField label={dim1Label} suffix="in" value={area.dimensions[dim1Key] ?? 0} onChange={(v) => updateDim(dim1Key, v)} />
-            <NumberField label={dim2Label} suffix="in" value={area.dimensions[dim2Key] ?? 0} onChange={(v) => updateDim(dim2Key, v)} />
+            <NumberField label={dim1Label} suffix="in" value={localDims[dim1Key] ?? 0} onChange={(v) => setLocalDims(d => ({ ...d, [dim1Key]: v }))} onBlur={() => commitDim(dim1Key)} />
+            <NumberField label={dim2Label} suffix="in" value={localDims[dim2Key] ?? 0} onChange={(v) => setLocalDims(d => ({ ...d, [dim2Key]: v }))} onBlur={() => commitDim(dim2Key)} />
           </div>
 
           <NumberField
             label="Waste"
             suffix="%"
-            value={area.wastePct}
-            onChange={(v) => dispatch({ type: "UPDATE_AREA", id: area.id, patch: { wastePct: v } })}
+            value={localWaste}
+            onChange={(v) => setLocalWaste(v)}
+            onBlur={commitWaste}
           />
 
           <div>
