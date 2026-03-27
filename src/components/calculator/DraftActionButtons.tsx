@@ -8,7 +8,7 @@ import { useState } from "react";
 
 /** Duplicate Save / Discard buttons rendered below the calculator form for mobile usability. */
 export function DraftActionButtons() {
-  const { activeArea, saveArea, addArea, dispatch } = useCalculatorState();
+  const { activeArea, saveArea, dispatch } = useCalculatorState();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!activeArea?.isDraft) return null;
@@ -19,8 +19,7 @@ export function DraftActionButtons() {
       toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
     } else {
       toast.success("Area saved");
-      // Create a fresh draft so the user can immediately enter more measurements
-      addArea(activeArea.type);
+      dispatch({ type: "SET_ACTIVE_AREA", id: null });
     }
   };
 
