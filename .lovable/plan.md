@@ -1,40 +1,51 @@
 
 
-# Fix: Remove auto-draft after Save Area
+# Refactor FootingForm: Local State for Dimensions/Waste
 
-## Problem
-Line 23 in `DraftActionButtons.tsx` calls `addArea(activeArea.type)` immediately after a successful save, auto-creating a new draft area. This causes the "double save" / "why is there another area?" confusion.
+## Flush Callback Safety — Confirmed
 
-## Change
+The flush callback uses a single `useRef` on the context provider. This guarantees safety:
 
-**File: `src/components/calculator/DraftActionButtons.tsx`**
+1. **Only the active form owns it**: `registerFlushCallback` accepts one callback. Each form calls `registerFlushCallback(myFlush)` on mount/area-change and `registerFlushCallback(null)` on unmount. Only one callback exists at a time — no array, no stacking.
 
-Replace the success branch (lines 20-24) so it:
-1. Shows the success toast (preserved)
-2. Sets active area to `null` via `dispatch({ type: "SET_ACTIVE_AREA", id: null })`
-3. Does **not** call `addArea()`
+2. **Reliable replacement/clearing**:
+   - **Area switch**: FootingForm unmounts (or `area?.id` changes), cleanup runs `registerFlushCallback(null)`, new form registers its own callback.
+   - **Tab/type switch**: FootingForm unmounts entirely, `useEffect` cleanup fires `registerFlushCallback(null)`.
+   - **Unmount**: Same cleanup path — React guarantees `useEffect` cleanup runs before the next effect or on unmount.
 
+3. **No stale callbacks**: `flushBeforeSave()` reads `ref.current` at call time. If no form is mounted, `ref.current` is `null` and the call is a no-op. There is no closure capture of an old callback — it's always a direct ref read.
+
+**Concrete implementation in `useCalculatorState.tsx`:**
 ```tsx
-const handleSave = () => {
-  const result = saveArea(activeArea.id);
-  if (!result.valid) {
-    toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
-  } else {
-    toast.success("Area saved");
-    dispatch({ type: "SET_ACTIVE_AREA", id: null });
-  }
-};
+const flushRef = useRef<(() => void) | null>(null);
+const registerFlushCallback = useCallback((cb: (() => void) | null) => {
+  flushRef.current = cb;
+}, []);
+const flushBeforeSave = useCallback(() => {
+  flushRef.current?.();
+}, []);
 ```
 
-Also remove `addArea` from the destructured context on line 11 (cleanup).
+**Concrete implementation in `FootingForm.tsx`:**
+```tsx
+useEffect(() => {
+  const flush = () => {
+    // dispatch UPDATE_AREA with current localDims + localWaste
+  };
+  registerFlushCallback(flush);
+  return () => registerFlushCallback(null);
+}, [area?.id, localDims, localWaste]);
+```
 
-## Post-save behavior
-- Area is committed once — no duplication
-- Active area becomes `null` — user sees the area selector / empty calculator state
-- No new draft is created automatically
-- User must explicitly click "+ Add Area" or select an existing area
-- Validation, toast, discard flow all unchanged
+The `localDims` and `localWaste` dependencies ensure the registered closure always captures fresh values. Cleanup nulls the ref before any new registration.
+
+## Scope
+- Dimensions and waste only (pending segment already local from prior work)
+- Rebar, mode toggle, segment CRUD remain immediate dispatches
 
 ## Files changed
-1. `src/components/calculator/DraftActionButtons.tsx` — remove `addArea` call, set active area to null after save
+1. `src/components/calculator/NumberField.tsx` — add `onBlur` prop
+2. `src/components/calculator/FootingForm.tsx` — local state, blur-dispatch, register flush callback
+3. `src/hooks/useCalculatorState.tsx` — add `registerFlushCallback` / `flushBeforeSave` to context
+4. `src/components/calculator/DraftActionButtons.tsx` — call `flushBeforeSave()` before `saveArea()`
 
