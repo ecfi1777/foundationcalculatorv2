@@ -351,18 +351,16 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     [state.areas, dispatch]
   );
 
-  // Keep an active draft available for the current tab when that tab has no areas.
-  // This is state-driven (not mount-only), so it also covers runtime RESET/discard/delete flows.
-  // Use a ref for addArea to avoid effect re-triggering when addArea's identity changes
+  // Auto-provision a new draft whenever the active tab has no active area.
+  // Covers: first visit, post-save, post-discard, tab switch with no areas.
   const addAreaRef = useRef(addArea);
   useEffect(() => { addAreaRef.current = addArea; }, [addArea]);
 
   useEffect(() => {
-    const hasAreaForActiveTab = state.areas.some((a) => a.type === state.activeTab);
-    if (!hasAreaForActiveTab && !state.activeAreaId) {
+    if (!state.activeAreaId) {
       addAreaRef.current(state.activeTab);
     }
-  }, [state.activeAreaId, state.activeTab, state.areas]);
+  }, [state.activeAreaId, state.activeTab]);
 
   const saveArea = useCallback(
     (id: string): { valid: boolean; missingFields: string[] } => {
