@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -29,7 +29,6 @@ interface SegmentEntryProps {
   onAdd: (seg: Omit<Segment, "id" | "sortOrder">) => void;
   onUpdate: (id: string, seg: Partial<Segment>) => void;
   onDelete: (id: string) => void;
-  onPendingChange?: (lengthInchesDecimal: number) => void;
 }
 
 function SegmentInputRow({
@@ -124,7 +123,7 @@ function SegmentInputRow({
   );
 }
 
-export function SegmentEntry({ segments, onAdd, onUpdate, onDelete, onPendingChange }: SegmentEntryProps) {
+export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEntryProps) {
   const [feetInput, setFeetInput] = useState("");
   const [inchesInput, setInchesInput] = useState("");
   const [fractionInput, setFractionInput] = useState("0");
@@ -134,12 +133,7 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete, onPendingCha
   const [editInches, setEditInches] = useState("");
   const [editFraction, setEditFraction] = useState("0");
 
-  // Report pending (live input row) length upward
   const pendingLengthIn = computeLength(feetInput, inchesInput, fractionInput);
-  useEffect(() => {
-    onPendingChange?.(pendingLengthIn);
-  }, [pendingLengthIn, onPendingChange]);
-
   const storedTotalIn = segments.reduce((sum, s) => sum + s.lengthInchesDecimal, 0);
   const totalLf = (storedTotalIn + pendingLengthIn) / 12;
 
