@@ -108,6 +108,12 @@ export default function ResetPassword() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <SEO
+        title="Reset Password"
+        description="Reset your Total Foundation Calculator password."
+        canonical="https://foundationcalculator.com/reset-password"
+        noIndex={true}
+      />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-xl font-bold text-foreground">Set New Password</CardTitle>
