@@ -3,6 +3,7 @@ import { supabase } from "@/lib/supabase/client";
 import { startCheckout } from "@/lib/billing";
 import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { SEO } from "@/components/SEO";
 
 export default function UpgradeRedirect() {
   const [error, setError] = useState<string | null>(null);
