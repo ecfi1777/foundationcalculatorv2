@@ -50,6 +50,12 @@ export default function Admin() {
 
   return (
     <div className="flex min-h-screen bg-background">
+      <SEO
+        title="Admin Dashboard"
+        description="Admin dashboard."
+        canonical="https://foundationcalculator.com/admin"
+        noIndex={true}
+      />
       {/* Sidebar */}
       <aside className="w-56 shrink-0 border-r border-border bg-card p-4 flex flex-col gap-1">
         <h1 className="text-lg font-bold text-foreground mb-4">Admin</h1>

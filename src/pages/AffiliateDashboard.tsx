@@ -250,6 +250,12 @@ export default function AffiliateDashboard() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Affiliate Dashboard"
+        description="Your affiliate dashboard."
+        canonical="https://foundationcalculator.com/affiliate"
+        noIndex={true}
+      />
       {/* Header */}
       <div className="border-b border-border">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-4">

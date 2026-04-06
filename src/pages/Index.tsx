@@ -32,7 +32,8 @@ const Index = () => {
       <ProjectProvider>
         <CalculatorLayout />
       </ProjectProvider>
-    </CalculatorProvider>
+      </CalculatorProvider>
+    </>
   );
 };
 

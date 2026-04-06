@@ -144,6 +144,12 @@ export default function Auth() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <SEO
+        title="Sign In"
+        description="Sign in to your Total Foundation Calculator account."
+        canonical="https://foundationcalculator.com/auth"
+        noIndex={true}
+      />
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <CardTitle className="text-2xl font-bold text-foreground">

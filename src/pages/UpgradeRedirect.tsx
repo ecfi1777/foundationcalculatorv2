@@ -28,6 +28,11 @@ export default function UpgradeRedirect() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-background flex-col gap-4">
+      <SEO
+        title="Upgrade to Pro"
+        description="Upgrade to Total Foundation Calculator Pro for unlimited projects and team features."
+        canonical="https://foundationcalculator.com/upgrade"
+      />
       {error ? (
         <>
           <p className="text-sm text-destructive">{error}</p>

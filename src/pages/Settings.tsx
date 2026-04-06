@@ -296,6 +296,12 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Account Settings"
+        description="Manage your account, organization, and calculator preferences."
+        canonical="https://foundationcalculator.com/settings"
+        noIndex={true}
+      />
       {/* Header */}
       <div className="border-b border-border">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-4">
