@@ -1,14 +1,11 @@
 
 
-# Create robots.txt and sitemap.xml in /public
+# Add JSON-LD Structured Data to index.html
 
-## Changes
+## Change
 
-### 1. Create `/public/robots.txt`
-Replace the existing file with the specified content: allow all crawlers on `/`, disallow `/admin`, `/settings`, `/affiliate`, and point to the sitemap.
+### `index.html`
+Insert the specified `<script type="application/ld+json">` block inside `<head>`, after the existing meta/link tags and before the theme script. Contains the SoftwareApplication schema with all specified fields (name, category, description, URL, offers, featureList).
 
-### 2. Create `/public/sitemap.xml`
-New file with 5 URLs: `/`, `/how-it-works`, `/upgrade`, `/privacy`, `/terms` with appropriate changefreq and priority values.
-
-No other files modified.
+Single insertion, no other files or tags modified.
 
