@@ -10,6 +10,7 @@ import { AffiliatesSection } from "@/components/admin/AffiliatesSection";
 import { Button } from "@/components/ui/button";
 import { Users, Building2, Tag, BarChart3, Handshake } from "lucide-react";
 import { toast } from "sonner";
+import { SEO } from "@/components/SEO";
 
 type AdminTab = "users" | "organizations" | "promos" | "stats" | "affiliates";
 
