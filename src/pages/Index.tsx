@@ -22,7 +22,13 @@ const Index = () => {
   }
 
   return (
-    <CalculatorProvider>
+    <>
+      <SEO
+        title="Free Concrete Foundation Calculator"
+        description="Instantly calculate concrete yardage for footings, slabs, walls, grade beams, pier pads, and more. Free tool built for concrete contractors."
+        canonical="https://foundationcalculator.com/"
+      />
+      <CalculatorProvider>
       <ProjectProvider>
         <CalculatorLayout />
       </ProjectProvider>
