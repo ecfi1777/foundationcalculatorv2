@@ -12,6 +12,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
+import { SEO } from "@/components/SEO";
 
 const CALCULATOR_TYPES = [
   { key: "footings", label: "Footings" },
@@ -295,6 +296,12 @@ export default function Settings() {
 
   return (
     <div className="min-h-screen bg-background">
+      <SEO
+        title="Account Settings"
+        description="Manage your account, organization, and calculator preferences."
+        canonical="https://foundationcalculator.com/settings"
+        noIndex={true}
+      />
       {/* Header */}
       <div className="border-b border-border">
         <div className="mx-auto flex max-w-2xl items-center gap-3 px-4 py-4">

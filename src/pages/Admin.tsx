@@ -10,6 +10,7 @@ import { AffiliatesSection } from "@/components/admin/AffiliatesSection";
 import { Button } from "@/components/ui/button";
 import { Users, Building2, Tag, BarChart3, Handshake } from "lucide-react";
 import { toast } from "sonner";
+import { SEO } from "@/components/SEO";
 
 type AdminTab = "users" | "organizations" | "promos" | "stats" | "affiliates";
 
@@ -49,6 +50,12 @@ export default function Admin() {
 
   return (
     <div className="flex min-h-screen bg-background">
+      <SEO
+        title="Admin Dashboard"
+        description="Admin dashboard."
+        canonical="https://foundationcalculator.com/admin"
+        noIndex={true}
+      />
       {/* Sidebar */}
       <aside className="w-56 shrink-0 border-r border-border bg-card p-4 flex flex-col gap-1">
         <h1 className="text-lg font-bold text-foreground mb-4">Admin</h1>
