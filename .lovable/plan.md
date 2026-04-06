@@ -1,46 +1,34 @@
 
 
-# Wire Up Per-Page SEO Meta Tags
-
-## Current State
-- `react-helmet-async` already installed (v3.0.0) and `HelmetProvider` already wraps the app in `App.tsx` (line 23). Steps 1 and 2 are done.
-- `HowItWorks.tsx` already uses `<Helmet>` directly with its own SEO logic — this will be left as-is since it has dynamic slug-based title/description handling.
-- No `/privacy` or `/terms` pages or routes exist yet. Those pages would need to be created to add SEO to them, but that's outside the stated scope ("Do not modify any routing logic"). I will skip those two for now.
+# Update `index.html` Base-Level SEO
 
 ## Changes
 
-### 1. Create `src/components/SEO.tsx`
-New file with the specified interface. Renders `<Helmet>` with title suffix, description, canonical, and robots meta.
+### `index.html` — Two edits
 
-### 2. Add `<SEO>` to each existing page (7 files)
+**Edit 1**: Replace the `<title>` tag (currently "Lovable App") with:
+```html
+<title>Free Concrete Foundation Calculator | Instant Takeoff for Contractors</title>
+```
 
-| Page | File | noIndex |
-|------|------|---------|
-| `/` | `Index.tsx` | no |
-| `/auth` | `Auth.tsx` | yes |
-| `/settings` | `Settings.tsx` | yes |
-| `/admin` | `Admin.tsx` | yes |
-| `/affiliate` | `AffiliateDashboard.tsx` | yes |
-| `/upgrade` | `UpgradeRedirect.tsx` | no |
-| `/reset-password` | `ResetPassword.tsx` | yes (not in spec but should be noIndex) |
+**Edit 2**: Insert the specified meta/link tags immediately after the `<meta name="viewport">` line (before the theme script), and update the existing OG/Twitter tags already in the file:
 
-### Not touched
-- **`HowItWorks.tsx`** — already has its own `<Helmet>` with dynamic SEO; adding the `<SEO>` component would conflict with its existing logic.
-- **`/privacy`, `/terms`** — pages and routes don't exist yet. Creating them would require adding routes, which violates the "do not modify routing logic" rule. These can be added when the pages are created.
-- **`NotFound.tsx`** — will add `noIndex={true}` SEO tag.
+New tags to add after viewport meta:
+- `<meta name="description" ...>`
+- `<meta name="robots" content="index, follow" />`
+- `<meta property="og:title" ...>`
+- `<meta property="og:description" ...>`
+- `<meta property="og:type" content="website" />`
+- `<meta property="og:url" content="https://foundationcalculator.com" />`
+- `<meta property="og:site_name" content="Total Foundation Calculator" />`
+- `<meta name="twitter:card" content="summary" />`
+- `<meta name="twitter:title" ...>`
+- `<meta name="twitter:description" ...>`
+- `<link rel="canonical" href="https://foundationcalculator.com" />`
 
-### Files modified
-| File | Change |
-|------|--------|
-| `src/components/SEO.tsx` | New file |
-| `src/pages/Index.tsx` | Add `<SEO>` import + tag |
-| `src/pages/Auth.tsx` | Add `<SEO>` import + tag |
-| `src/pages/Settings.tsx` | Add `<SEO>` import + tag |
-| `src/pages/Admin.tsx` | Add `<SEO>` import + tag |
-| `src/pages/AffiliateDashboard.tsx` | Add `<SEO>` import + tag |
-| `src/pages/UpgradeRedirect.tsx` | Add `<SEO>` import + tag |
-| `src/pages/ResetPassword.tsx` | Add `<SEO>` import + tag |
-| `src/pages/NotFound.tsx` | Add `<SEO>` import + tag |
+The existing duplicate/outdated OG and Twitter tags at the bottom of `<head>` (og:title, og:description, og:type, og:image, twitter:card, twitter:site, twitter:title, twitter:description, twitter:image, and the old `<meta name="description">` and `<meta name="author">`) will be removed to avoid conflicts.
 
-No routing, calculation, layout, or provider changes.
+### No other files modified
+
+Single file change: `index.html`.
 
