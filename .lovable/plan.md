@@ -1,13 +1,21 @@
 
 
-# Fix: Persist Effect Race Condition in useProject.tsx
+# Fix: Tab bar disappears on Android Chrome
 
 ## Problem
-The persist `useEffect` and restore `useEffect` both run on mount. The persist effect runs first (declared first), sees `currentProject` as `null`, and calls `localStorage.removeItem(PROJECT_KEY)` — deleting the saved project before the restore effect can read it.
+The mobile wrapper uses `h-screen` (100vh), which on Android Chrome includes the browser address bar height, pushing the fixed tab bar below the visible viewport.
 
-## Change — `src/hooks/useProject.tsx`
+## Change — `src/components/calculator/CalculatorLayout.tsx`
 
-**Single block replacement** (~lines 177–185): Remove the `else { localStorage.removeItem(PROJECT_KEY) }` branch from the persist effect. Deletion is already handled explicitly in `resetToBlankInternal` and `clearAllState`.
+**Line 259**: Change `h-screen` to `h-[100dvh]` on the mobile wrapper div only. The desktop wrapper (line 313) remains unchanged.
+
+```tsx
+// Before
+<div className="flex flex-col h-screen bg-background">
+
+// After
+<div className="flex flex-col h-[100dvh] bg-background">
+```
 
 No other files modified.
 
