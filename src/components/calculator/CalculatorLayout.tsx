@@ -256,7 +256,7 @@ export function CalculatorLayout() {
   // ── MOBILE ──
   if (isMobile) {
     return (
-      <div className="flex flex-col h-screen bg-background">
+      <div className="flex flex-col h-[100dvh] bg-background">
         <AppHeader {...headerProps} />
 
         {isProjectLocked && (
