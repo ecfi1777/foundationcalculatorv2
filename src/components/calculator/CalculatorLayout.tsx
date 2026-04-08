@@ -293,6 +293,7 @@ export function CalculatorLayout() {
 
         <div
           className="flex-1 overflow-y-auto px-3"
+          style={{ touchAction: 'pan-y' }}
           onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
           onTouchEnd={(e) => {
             if (touchStartX.current === null) return;

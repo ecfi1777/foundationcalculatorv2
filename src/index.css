@@ -69,7 +69,25 @@
 
 @layer base {
   * { @apply border-border; }
-  body { @apply bg-background text-foreground; }
+
+  html {
+    overflow-x: hidden;
+    max-width: 100vw;
+    position: relative;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    overflow-x: hidden;
+    max-width: 100vw;
+    position: relative;
+  }
+
+  #root {
+    overflow-x: hidden;
+    max-width: 100vw;
+    position: relative;
+  }
 }
 
 @layer utilities {
