@@ -100,59 +100,63 @@ export function AppHeader({
           </Button>
         )}
 
-        {/* Export PDF */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span tabIndex={exportDisabled ? 0 : undefined}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  disabled={exportDisabled}
-                  onClick={onExportPDF}
-                >
-                  {isExporting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Download className="h-4 w-4" />
-                  )}
-                  <span className="hidden sm:inline">Export PDF</span>
-                </Button>
-              </span>
-            </TooltipTrigger>
-            {!canExport && (
-              <TooltipContent>Save project to export</TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
+        {/* Export PDF — desktop only */}
+        <div className="hidden sm:flex">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={exportDisabled ? 0 : undefined}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    disabled={exportDisabled}
+                    onClick={onExportPDF}
+                  >
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    <span className="hidden sm:inline">Export PDF</span>
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {!canExport && (
+                <TooltipContent>Save project to export</TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </div>
 
-        {/* Export CSV */}
-        <TooltipProvider>
-          <Tooltip>
-            <TooltipTrigger asChild>
-              <span tabIndex={exportDisabled ? 0 : undefined}>
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="gap-1.5"
-                  disabled={exportDisabled}
-                  onClick={onExportCSV}
-                >
-                  {isExporting ? (
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                  ) : (
-                    <Download className="h-4 w-4" />
-                  )}
-                  <span className="hidden sm:inline">Export CSV</span>
-                </Button>
-              </span>
-            </TooltipTrigger>
-            {!canExport && (
-              <TooltipContent>Save project to export</TooltipContent>
-            )}
-          </Tooltip>
-        </TooltipProvider>
+        {/* Export CSV — desktop only */}
+        <div className="hidden sm:flex">
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <span tabIndex={exportDisabled ? 0 : undefined}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    className="gap-1.5"
+                    disabled={exportDisabled}
+                    onClick={onExportCSV}
+                  >
+                    {isExporting ? (
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                    ) : (
+                      <Download className="h-4 w-4" />
+                    )}
+                    <span className="hidden sm:inline">Export CSV</span>
+                  </Button>
+                </span>
+              </TooltipTrigger>
+              {!canExport && (
+                <TooltipContent>Save project to export</TooltipContent>
+              )}
+            </Tooltip>
+          </TooltipProvider>
+        </div>
 
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -168,6 +172,13 @@ export function AppHeader({
             </DropdownMenuItem>
             <DropdownMenuItem onClick={onOpenProjects}>
               <FolderOpen className="h-4 w-4 mr-2" /> Open Project
+            </DropdownMenuItem>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem onClick={onExportPDF} disabled={exportDisabled}>
+              <Download className="h-4 w-4 mr-2" /> Export PDF
+            </DropdownMenuItem>
+            <DropdownMenuItem onClick={onExportCSV} disabled={exportDisabled}>
+              <Download className="h-4 w-4 mr-2" /> Export CSV
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
