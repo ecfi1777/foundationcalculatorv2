@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import { useProject, type Project } from "@/hooks/useProject";
+import { useCalculatorState } from "@/hooks/useCalculatorState";
+import { hasRequiredData } from "@/types/calculator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
@@ -17,6 +19,11 @@ export function ProjectListPanel({ open, onClose }: Props) {
     deleteProject, isDirty, isLoading,
   } = useProject();
 
+  const { state } = useCalculatorState();
+  const hasSubstantiveData =
+    !!currentProject ||
+    state.areas.some((area) => hasRequiredData(area));
+
   const [search, setSearch] = useState("");
   const [deleteTarget, setDeleteTarget] = useState<Project | null>(null);
   const [discardTarget, setDiscardTarget] = useState<string | null>(null);
@@ -32,7 +39,7 @@ export function ProjectListPanel({ open, onClose }: Props) {
   const handleSelect = (id: string) => {
     if (isLoading) return;
 
-    if (isDirty) {
+    if (isDirty && hasSubstantiveData) {
       setDiscardTarget(id);
     } else {
       loadProject(id);
