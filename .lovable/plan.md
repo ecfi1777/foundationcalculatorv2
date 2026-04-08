@@ -1,10 +1,13 @@
 
 
-# Fix: Discard All Drafts on Load
+# Fix: Persist Effect Race Condition in useProject.tsx
 
-## Change — `src/hooks/useCalculatorState.tsx`
+## Problem
+The persist `useEffect` and restore `useEffect` both run on mount. The persist effect runs first (declared first), sees `currentProject` as `null`, and calls `localStorage.removeItem(PROJECT_KEY)` — deleting the saved project before the restore effect can read it.
 
-**Single block replacement** (~lines 232–238): Change `if (a.isDraft && !hasRequiredData(a))` to `if (a.isDraft)` with updated comments explaining why unconditional discard is correct (steps/cylinder pre-fill defaults making `hasRequiredData` unreliable).
+## Change — `src/hooks/useProject.tsx`
+
+**Single block replacement** (~lines 177–185): Remove the `else { localStorage.removeItem(PROJECT_KEY) }` branch from the persist effect. Deletion is already handled explicitly in `resetToBlankInternal` and `clearAllState`.
 
 No other files modified.
 
