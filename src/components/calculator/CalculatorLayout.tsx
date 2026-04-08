@@ -28,6 +28,7 @@ import { cn } from "@/lib/utils";
 import { buildExportData } from "@/lib/export/buildExportData";
 import { exportProjectToPDF, exportProjectToCSV } from "@/lib/export/exportService";
 import { toast } from "sonner";
+import { hasRequiredData } from "@/types/calculator";
 
 function ActiveForm() {
   const { state } = useCalculatorState();
@@ -82,6 +83,9 @@ export function CalculatorLayout() {
 
   const hasAreas = state.areas.length > 0;
   const canExport = !!currentProject;
+  const hasSubstantiveData =
+    !!currentProject ||
+    state.areas.some((area) => hasRequiredData(area));
 
   // Load projects on mount when authenticated
   useEffect(() => {
@@ -138,7 +142,7 @@ export function CalculatorLayout() {
       setShowPaywall(true);
       return;
     }
-    if (isDirty) {
+    if (isDirty && hasSubstantiveData) {
       setShowNewProjectConfirm(true);
       return;
     }
@@ -246,6 +250,7 @@ export function CalculatorLayout() {
     isProjectLocked,
     hasProject: !!currentProject,
     isDirty,
+    hasSubstantiveData,
     onResetToBlank: resetToBlank,
     onExportPDF: () => handleExport("pdf"),
     onExportCSV: () => handleExport("csv"),

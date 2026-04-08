@@ -28,6 +28,7 @@ interface AppHeaderProps {
   isProjectLocked: boolean;
   hasProject: boolean;
   isDirty: boolean;
+  hasSubstantiveData: boolean;
   onResetToBlank: () => void;
   onExportPDF?: () => void;
   onExportCSV?: () => void;
@@ -40,7 +41,7 @@ export function AppHeader({
   projectName, onProjectNameChange, onSave,
   onOpenProjects, onNewProject, onEditProject,
   isSaving, isProjectLocked, hasProject,
-  isDirty, onResetToBlank,
+  isDirty, hasSubstantiveData, onResetToBlank,
   onExportPDF, onExportCSV, isExporting, canExport,
   onSignOut,
 }: AppHeaderProps) {
@@ -56,7 +57,7 @@ export function AppHeader({
       <button
         className="flex items-center gap-3 mr-2 cursor-pointer"
         onClick={() => {
-          if (!isDirty) {
+          if (!isDirty || !hasSubstantiveData) {
             onResetToBlank();
           } else {
             if (window.confirm("You have unsaved changes. Discard and start fresh?")) {
