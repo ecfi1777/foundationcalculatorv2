@@ -43,7 +43,7 @@ export function CalculatorTabBar() {
       return;
     }
     // Guard: unsaved draft with data
-    if (activeArea?.isDraft && hasRequiredData(activeArea)) {
+    if (activeArea?.isDraft && hasRequiredData(activeArea) && activeArea.hasUserModifiedDimensions) {
       setPendingTab(tab);
       setDiscardOpen(true);
       return;
