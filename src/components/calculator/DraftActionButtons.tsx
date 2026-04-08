@@ -8,13 +8,21 @@ import { useState } from "react";
 
 /** Duplicate Save / Discard buttons rendered below the calculator form for mobile usability. */
 export function DraftActionButtons() {
-  const { activeArea, saveArea, dispatch, flushBeforeSave } = useCalculatorState();
+  const { activeArea, saveArea, dispatch, flushBeforeSave, flushPendingSegment } = useCalculatorState();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!activeArea?.isDraft) return null;
 
   const handleSave = () => {
     flushBeforeSave();
+    const segmentFlushed = flushPendingSegment();
+    if (segmentFlushed) {
+      // ADD_SEGMENT auto-committed the area in the reducer (Prompt 1).
+      // Calling saveArea here would read stale state and fail — skip it.
+      toast.success("Area saved");
+      dispatch({ type: "SET_ACTIVE_AREA", id: null });
+      return;
+    }
     const result = saveArea(activeArea.id);
     if (!result.valid) {
       toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);

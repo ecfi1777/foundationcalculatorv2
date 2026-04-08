@@ -1,7 +1,7 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
-import { SegmentEntry } from "./SegmentEntry";
+import { SegmentEntry, type SegmentEntryHandle } from "./SegmentEntry";
 import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
 import { Button } from "@/components/ui/button";
@@ -15,7 +15,8 @@ const MODES: { value: FootingMode; label: string }[] = [
 ];
 
 export function FootingForm() {
-  const { state, dispatch, addArea, getAreasForType, activeArea, registerFlushCallback } = useCalculatorState();
+  const { state, dispatch, addArea, getAreasForType, activeArea, registerFlushCallback, registerSegmentFlush } = useCalculatorState();
+  const segmentEntryRef = useRef<SegmentEntryHandle>(null);
   const areas = getAreasForType("footing");
 
   const handleAdd = (customName?: string) => {
@@ -36,6 +37,16 @@ export function FootingForm() {
       setLocalDims({ ...area.dimensions });
       setLocalWaste(area.wastePct);
     }
+  }, [area?.id]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Register segment flush callback
+  useEffect(() => {
+    if (!area) {
+      registerSegmentFlush(null);
+      return;
+    }
+    registerSegmentFlush(() => segmentEntryRef.current?.flushPending() ?? false);
+    return () => registerSegmentFlush(null);
   }, [area?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Register flush callback so Save Area can commit un-blurred values
@@ -165,6 +176,7 @@ export function FootingForm() {
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">Segments</p>
             <SegmentEntry
+              ref={segmentEntryRef}
               segments={area.segments}
               onAdd={(s) =>
                 dispatch({

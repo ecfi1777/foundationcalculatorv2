@@ -206,6 +206,8 @@ interface CalcCtx {
   saveArea: (id: string) => { valid: boolean; missingFields: string[] };
   registerFlushCallback: (cb: (() => void) | null) => void;
   flushBeforeSave: () => void;
+  registerSegmentFlush: (cb: (() => boolean) | null) => void;
+  flushPendingSegment: () => boolean;
 }
 
 const CalculatorContext = createContext<CalcCtx | null>(null);
@@ -286,6 +288,14 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
   }, []);
   const flushBeforeSave = useCallback(() => {
     flushRef.current?.();
+  }, []);
+
+  const segmentFlushRef = useRef<(() => boolean) | null>(null);
+  const registerSegmentFlush = useCallback((cb: (() => boolean) | null) => {
+    segmentFlushRef.current = cb;
+  }, []);
+  const flushPendingSegment = useCallback((): boolean => {
+    return segmentFlushRef.current?.() ?? false;
   }, []);
 
   // Wrap dispatch to track dirty state
@@ -422,7 +432,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
     : null;
 
   return (
-    <CalculatorContext.Provider value={{ state, dispatch, addArea, getAreasForType, activeArea, isDirty, markClean, saveArea, registerFlushCallback, flushBeforeSave }}>
+    <CalculatorContext.Provider value={{ state, dispatch, addArea, getAreasForType, activeArea, isDirty, markClean, saveArea, registerFlushCallback, flushBeforeSave, registerSegmentFlush, flushPendingSegment }}>
       {children}
     </CalculatorContext.Provider>
   );
