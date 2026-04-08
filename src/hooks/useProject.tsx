@@ -157,6 +157,8 @@ async function getSubscriptionTier(userId: string): Promise<string> {
 
 // ── Provider ──────────────────────────────────────────
 
+const PROJECT_KEY = "tfc_current_project";
+
 export function ProjectProvider({ children }: { children: ReactNode }) {
   const { user } = useAuth();
   const { state, dispatch, isDirty, markClean } = useCalculatorState();
@@ -171,6 +173,33 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const isProjectLocked = currentProject?.is_locked ?? false;
 
   const clearPendingAction = useCallback(() => setPendingAction(null), []);
+
+  // Persist currentProject to localStorage whenever it changes.
+  // This survives navigation away from "/" (which unmounts ProjectProvider).
+  useEffect(() => {
+    if (currentProject) {
+      localStorage.setItem(PROJECT_KEY, JSON.stringify(currentProject));
+    } else {
+      localStorage.removeItem(PROJECT_KEY);
+    }
+  }, [currentProject]);
+
+  // Restore currentProject from localStorage when the user is confirmed signed in.
+  // Only runs when user transitions to non-null — prevents restoring for signed-out users.
+  useEffect(() => {
+    if (!user) return;
+    if (currentProject) return; // already set — don't overwrite
+    const raw = localStorage.getItem(PROJECT_KEY);
+    if (!raw) return;
+    try {
+      const project = JSON.parse(raw);
+      if (project?.id && project?.name) {
+        setCurrentProject(project);
+      }
+    } catch {
+      localStorage.removeItem(PROJECT_KEY);
+    }
+  }, [user]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Load projects list ──
   const loadProjects = useCallback(async () => {
@@ -500,6 +529,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const resetToBlankInternal = useCallback(() => {
     dispatch({ type: "RESET" });
     setCurrentProject(null);
+    localStorage.removeItem(PROJECT_KEY);
   }, [dispatch]);
 
   const resetToBlank = resetToBlankInternal;
@@ -510,6 +540,7 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
     setProjects([]);
     setSubscriptionTier("free");
     setPendingAction(null);
+    localStorage.removeItem(PROJECT_KEY);
   }, [dispatch]);
 
   // Clear all in-memory state reactively when user signs out

@@ -205,27 +205,52 @@ interface CalcCtx {
 const CalculatorContext = createContext<CalcCtx | null>(null);
 
 function migrateLoadedState(raw: any): CalcState {
-  // Migrate old single-rebar areas to rebarConfigs map
   if (raw?.areas) {
-    raw.areas = raw.areas.map((a: any) => {
-      // Clear isDraft on loaded areas (they were persisted = they had data)
-      if (a.isDraft) a.isDraft = false;
+    const processedAreas: any[] = [];
 
-      if (a.rebarConfigs) return a; // already migrated
-      // Old format had `rebar: RebarConfig` field
-      const oldRebar = a.rebar;
-      const elementType = a.type === "slab" ? "slab"
-        : a.type === "wall" ? "wall"
-        : a.type === "gradeBeam" ? "grade_beam"
-        : a.type === "curbGutter" ? "curb"
-        : "footing";
-      const rebarConfigs: RebarConfigsMap = {};
-      if (oldRebar) {
-        rebarConfigs[elementType as RebarElementType] = { ...oldRebar, element_type: elementType as RebarElementType };
+    for (let a of raw.areas) {
+      // Migrate old single-rebar format to rebarConfigs map
+      if (!a.rebarConfigs) {
+        const oldRebar = a.rebar;
+        const elementType =
+          a.type === "slab" ? "slab"
+          : a.type === "wall" ? "wall"
+          : a.type === "gradeBeam" ? "grade_beam"
+          : a.type === "curbGutter" ? "curb"
+          : "footing";
+        const rebarConfigs: RebarConfigsMap = {};
+        if (oldRebar) {
+          rebarConfigs[elementType as RebarElementType] = {
+            ...oldRebar,
+            element_type: elementType as RebarElementType,
+          };
+        }
+        const { rebar: _removed, ...rest } = a;
+        a = { ...rest, rebarConfigs };
       }
-      const { rebar: _removed, ...rest } = a;
-      return { ...rest, rebarConfigs };
-    });
+
+      // Discard empty draft areas. These are auto-provisioned placeholders
+      // that were persisted to localStorage before the user entered any data.
+      // Converting them to non-drafts (the old behavior) caused them to
+      // accumulate as phantom zero-valued areas in the quantities panel.
+      if (a.isDraft && !hasRequiredData(a)) {
+        continue; // drop — will be re-provisioned by the auto-provision effect
+      }
+
+      // Non-empty drafts and committed areas are kept as-is.
+      processedAreas.push(a);
+    }
+
+    raw.areas = processedAreas;
+
+    // If activeAreaId pointed to a dropped area, reset it so the
+    // auto-provision effect creates a fresh draft for the current tab.
+    if (
+      raw.activeAreaId &&
+      !processedAreas.find((a: any) => a.id === raw.activeAreaId)
+    ) {
+      raw.activeAreaId = null;
+    }
   }
   return raw;
 }
