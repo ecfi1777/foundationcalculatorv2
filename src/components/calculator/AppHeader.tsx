@@ -74,8 +74,11 @@ export function AppHeader({
         </span>
       </button>
 
-      {/* Project name breadcrumb */}
-      <div className="flex items-center gap-1 flex-1 min-w-0">
+      {/* Spacer — mobile only, pushes icons to the right */}
+      <div className="flex-1 sm:hidden" />
+
+      {/* Project name breadcrumb — desktop only */}
+      <div className="hidden sm:flex items-center gap-1 flex-1 min-w-0">
         <span className="text-muted-foreground">/</span>
         <button
           onClick={onEditProject}

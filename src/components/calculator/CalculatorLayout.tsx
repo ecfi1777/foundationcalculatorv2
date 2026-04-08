@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import { Pencil } from "lucide-react";
 import type { CalculatorType } from "@/types/calculator";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -274,6 +275,20 @@ export function CalculatorLayout() {
         {isProjectLocked && (
           <div className="px-3 pt-2"><LockedBanner /></div>
         )}
+
+        {/* Mobile project name row */}
+        <div className="flex items-center gap-2 px-3 pt-2">
+          <span className="text-muted-foreground text-sm">/</span>
+          <button
+            onClick={() => currentProject && setShowEditModal(true)}
+            disabled={!currentProject}
+            className="flex items-center gap-1.5 text-sm font-medium text-foreground truncate min-w-0 disabled:opacity-50 disabled:cursor-default"
+          >
+            <span className="truncate">{currentProject?.name ?? "New Foundation Project"}</span>
+            {currentProject && <Pencil className="h-3 w-3 text-muted-foreground shrink-0" />}
+          </button>
+        </div>
+
         <div className="px-3 pt-2">
           <SaveBanner hasAreas={hasAreas} />
         </div>
