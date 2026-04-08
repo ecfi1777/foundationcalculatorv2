@@ -29,7 +29,11 @@ function getRebarLabel(
   }
 }
 
-export function QuantitiesPanel() {
+interface QuantitiesPanelProps {
+  onEditArea?: (areaId: string, tab: string) => void;
+}
+
+export function QuantitiesPanel({ onEditArea }: QuantitiesPanelProps) {
   const { state, dispatch } = useCalculatorState();
   const [deleteAreaId, setDeleteAreaId] = useState<string | null>(null);
 
@@ -118,7 +122,11 @@ export function QuantitiesPanel() {
                       variant="ghost"
                       className="h-6 w-6"
                       onClick={() => {
-                        dispatch({ type: "EDIT_AREA", tab: r.type, id: r.areaId });
+                        if (onEditArea) {
+                          onEditArea(r.areaId, r.type);
+                        } else {
+                          dispatch({ type: "EDIT_AREA", tab: r.type, id: r.areaId });
+                        }
                       }}
                     >
                       <Pencil className="h-3 w-3" />
