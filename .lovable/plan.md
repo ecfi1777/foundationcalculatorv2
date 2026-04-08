@@ -1,19 +1,35 @@
 
 
-# Fix: Mobile Tab Bar Positioning
+# Fix: Unsaved-changes warning fires on empty state
 
 ## Problem
-The tab bar uses `fixed` positioning inside a `h-[100dvh]` flex container, causing overlap with content (requiring `pb-16` compensation) and an outer-scroll bug in Firefox.
+`isDirty` becomes true on `ADD_AREA` dispatch (before any measurements are entered), triggering the "unsaved changes" warning when the user hasn't entered anything worth preserving.
 
-## Changes — `src/components/calculator/CalculatorLayout.tsx`
+## Changes
 
-**Change 1 (line 284):** Remove `pb-16` from the scrollable content div.
-- Before: `className="flex-1 overflow-y-auto px-3 pb-16"`
-- After: `className="flex-1 overflow-y-auto px-3"`
+### File 1 — `src/components/calculator/CalculatorLayout.tsx`
 
-**Change 2 (lines 310–311):** Make the tab bar a natural flex child with `shrink-0` instead of `fixed` positioning.
-- Before: `className="fixed bottom-0 left-0 right-0 border-t-2 border-border bg-card flex"`
-- After: `className="border-t-2 border-border bg-card flex shrink-0"`
+1. **Add import** (after line 30): `import { hasRequiredData } from "@/types/calculator";`
+   - Note: contrary to the prompt, there is no existing import from `@/types/calculator` in this file, so a new import line is needed.
 
-No other files modified. Desktop branch unchanged.
+2. **Compute `hasSubstantiveData`** (after line 84, alongside `hasAreas`/`canExport`):
+   ```ts
+   const hasSubstantiveData =
+     !!currentProject ||
+     state.areas.some((area) => hasRequiredData(area));
+   ```
+
+3. **Update `handleNewProject` guard** (line 141): Change `if (isDirty)` → `if (isDirty && hasSubstantiveData)`
+
+4. **Add to `headerProps`** (around line 248): Add `hasSubstantiveData,` to the object
+
+### File 2 — `src/components/calculator/AppHeader.tsx`
+
+1. **Add to interface** (after line 30): `hasSubstantiveData: boolean;`
+
+2. **Destructure** (line 43): Add `hasSubstantiveData` alongside `isDirty`
+
+3. **Update logo onClick** (line 59): Change `if (!isDirty)` → `if (!isDirty || !hasSubstantiveData)`
+
+No other files modified.
 
