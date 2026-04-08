@@ -1,15 +1,37 @@
 
 
-# Auto-commit draft area on first valid segment add
+# Flush pending segment input when Save Area is clicked
 
 ## Problem
-Adding a segment keeps the area in `isDraft: true`, requiring a separate "Save Area" click before it appears in quantities.
+After auto-commit was added, if a user types measurements in the segment input fields but clicks "Save Area" instead of "Add", the pending input is lost — it only exists in SegmentEntry's local React state. This causes a false "Missing required fields" error.
 
-## Changes — `src/hooks/useCalculatorState.tsx`
+## Changes — 6 files
 
-**Change 1 (~line 100):** Update `ADD_SEGMENT` reducer case to auto-commit draft areas when the new segment makes them valid via `getMissingFields`.
+### 1. `src/hooks/useCalculatorState.tsx`
+- Add `registerSegmentFlush` and `flushPendingSegment` to the `CalcCtx` interface (after `flushBeforeSave`)
+- Add `segmentFlushRef`, `registerSegmentFlush` callback, and `flushPendingSegment` callback in `CalculatorProvider` (after `flushBeforeSave` declaration, ~line 289)
+- Add both to the context Provider value object (line 425)
 
-**Change 2 (~line 297):** Update the dispatch wrapper's anon-data flag to treat `ADD_SEGMENT` the same as `SAVE_AREA` (always set `tfc_anon_has_data`), since `ADD_SEGMENT` may now auto-commit and stateRef would still show the old draft state.
+### 2. `src/components/calculator/SegmentEntry.tsx`
+- Change React import to include `forwardRef` and `useImperativeHandle`
+- Export new `SegmentEntryHandle` interface with `flushPending: () => boolean`
+- Convert `SegmentEntry` from named function to `forwardRef<SegmentEntryHandle, SegmentEntryProps>`
+- Add `useImperativeHandle` exposing `flushPending()` that validates inputs, calls `handleAdd()` if valid, returns `true`/`false`
 
-No other files modified. No new imports needed (`getMissingFields` already imported).
+### 3. `src/components/calculator/FootingForm.tsx`
+- Add `useRef` to React import; add `SegmentEntryHandle` to SegmentEntry import
+- Declare `segmentEntryRef = useRef<SegmentEntryHandle>(null)`
+- Destructure `registerSegmentFlush` from `useCalculatorState()`
+- Add `useEffect` to register/unregister the segment flush callback (keyed on `area?.id`)
+- Pass `ref={segmentEntryRef}` to `<SegmentEntry>`
+
+### 4. `src/components/calculator/LinearForm.tsx`
+- Same four additions as FootingForm
+
+### 5. `src/components/calculator/CurbGutterForm.tsx`
+- Same four additions as FootingForm
+
+### 6. `src/components/calculator/DraftActionButtons.tsx`
+- Destructure `flushPendingSegment` from `useCalculatorState()`
+- Update `handleSave`: call `flushPendingSegment()` after `flushBeforeSave()`. If it returns `true`, skip `saveArea()` (auto-commit already handled it in the reducer) and just show success toast + deactivate area. Only call `saveArea()` when no segment was flushed.
 
