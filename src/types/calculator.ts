@@ -214,6 +214,8 @@ export interface CalcArea {
 
   /** True when newly created and not yet validated with required measurements */
   isDraft?: boolean;
+  /** True once the user has changed at least one dimension on this draft area */
+  hasUserModifiedDimensions?: boolean;
 
   // Footing mode
   footingMode?: FootingMode;

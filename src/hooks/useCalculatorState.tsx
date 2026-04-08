@@ -89,7 +89,14 @@ function reducer(state: CalcState, action: Action): CalcState {
         activeAreaId: state.activeAreaId === action.id ? null : state.activeAreaId,
       };
     case "UPDATE_AREA": {
-      const areas = state.areas.map((a) => (a.id === action.id ? { ...a, ...action.patch } : a));
+      const areas = state.areas.map((a) => {
+        if (a.id !== action.id) return a;
+        const updated = { ...a, ...action.patch };
+        if (a.isDraft && !a.hasUserModifiedDimensions) {
+          updated.hasUserModifiedDimensions = true;
+        }
+        return updated;
+      });
       return { ...state, areas };
     }
     case "RENAME_AREA":
@@ -389,6 +396,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
         sortOrder: num,
         wastePct: 0,
         isDraft: true,
+        hasUserModifiedDimensions: false,
         footingMode: type === "footing" ? footingMode ?? "footingsOnly" : undefined,
         dimensions: getDefaultDimensions(type),
         segments: [],
