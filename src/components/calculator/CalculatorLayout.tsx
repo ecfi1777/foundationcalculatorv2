@@ -47,7 +47,7 @@ function ActiveForm() {
 
 export function CalculatorLayout() {
   const isMobile = useIsMobile();
-  const { state } = useCalculatorState();
+  const { state, dispatch } = useCalculatorState();
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const {
@@ -72,6 +72,11 @@ export function CalculatorLayout() {
   }, [clearAllState, signOut, navigate]);
 
   const [mobileTab, setMobileTab] = useState<"calculator" | "quantities">("calculator");
+
+  const handleMobileEditArea = useCallback((areaId: string, tab: string) => {
+    dispatch({ type: "EDIT_AREA", tab, id: areaId });
+    setMobileTab("calculator");
+  }, [dispatch]);
   const touchStartX = useRef<number | null>(null);
   const [showNameModal, setShowNameModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
@@ -308,7 +313,7 @@ export function CalculatorLayout() {
               </div>
             </div>
           ) : (
-            <QuantitiesPanel />
+            <QuantitiesPanel onEditArea={handleMobileEditArea} />
           )}
         </div>
 
