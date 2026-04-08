@@ -1,15 +1,12 @@
 
 
-# Confirmation: `exportDisabled` is already correct
+# Fix Slab Export Volume Calculation
 
-Line 51 of `AppHeader.tsx`:
-```ts
-const exportDisabled = !canExport || isExporting;
-```
+## Problem
+Line 81 in `buildExportData.ts` double-applies waste by multiplying `volumeCy` (pre-waste) by `area.wastePct`. The correct value `volumeWithWasteCy` (already waste-adjusted by `calcSlabSection`) is available but unused.
 
-This covers both conditions:
-- `!canExport` → disabled when no project is saved
-- `isExporting` → disabled while an export is in progress
+## Change — `src/lib/export/buildExportData.ts`
+**Line 81**: Replace `slabResult.volumeCy * (1 + area.wastePct / 100)` with `slabResult.volumeWithWasteCy`
 
-The plan to move the export buttons out of the dropdown will reuse this same `exportDisabled` variable on the new standalone buttons. No adjustment needed.
+Single line change. No other files modified.
 
