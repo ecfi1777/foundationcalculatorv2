@@ -53,7 +53,7 @@ export function QuantitiesPanel() {
 
   // Include committed areas + drafts that have sufficient data to calculate
   const visibleAreas = useMemo(
-    () => state.areas.filter((a) => !a.isDraft || hasRequiredData(a)),
+    () => state.areas.filter((a) => !a.isDraft || (hasRequiredData(a) && a.hasUserModifiedDimensions)),
     [state.areas]
   );
 
