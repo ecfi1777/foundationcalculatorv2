@@ -281,7 +281,7 @@ export function CalculatorLayout() {
         </div>
 
         <div
-          className="flex-1 overflow-y-auto px-3 pb-16"
+          className="flex-1 overflow-y-auto px-3"
           onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
           onTouchEnd={(e) => {
             if (touchStartX.current === null) return;
@@ -308,7 +308,7 @@ export function CalculatorLayout() {
         </div>
 
         <div
-          className="fixed bottom-0 left-0 right-0 border-t-2 border-border bg-card flex"
+          className="border-t-2 border-border bg-card flex shrink-0"
           style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
           role="tablist"
         >
