@@ -4,6 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatSegment } from "@/lib/segmentParser";
 import type { Segment } from "@/types/calculator";
+import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import { Pencil, Trash2, Plus } from "lucide-react";
 
 const FRACTION_OPTIONS = [
@@ -138,6 +139,8 @@ export const SegmentEntry = forwardRef<SegmentEntryHandle, SegmentEntryProps>(
   const [editInches, setEditInches] = useState("");
   const [editFraction, setEditFraction] = useState("0");
 
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
   const pendingLengthIn = computeLength(feetInput, inchesInput, fractionInput);
   const storedTotalIn = segments.reduce((sum, s) => sum + s.lengthInchesDecimal, 0);
   const totalLf = (storedTotalIn + pendingLengthIn) / 12;
@@ -243,7 +246,7 @@ export const SegmentEntry = forwardRef<SegmentEntryHandle, SegmentEntryProps>(
                         size="icon"
                         variant="ghost"
                         className="h-6 w-6 text-destructive"
-                        onClick={() => onDelete(seg.id)}
+                        onClick={() => setPendingDeleteId(seg.id)}
                       >
                         <Trash2 className="h-3 w-3" />
                       </Button>
@@ -258,6 +261,22 @@ export const SegmentEntry = forwardRef<SegmentEntryHandle, SegmentEntryProps>(
           </div>
         </div>
       )}
+      <ConfirmDialog
+        open={pendingDeleteId !== null}
+        onClose={() => setPendingDeleteId(null)}
+        onConfirm={() => {
+          if (pendingDeleteId) onDelete(pendingDeleteId);
+          setPendingDeleteId(null);
+        }}
+        title="Delete segment?"
+        description={
+          segments.length === 1
+            ? "This is the only segment. Deleting it will remove the area from quantities entirely."
+            : "Are you sure you want to delete this segment?"
+        }
+        confirmLabel="Delete"
+        variant="destructive"
+      />
     </div>
   );
 });
