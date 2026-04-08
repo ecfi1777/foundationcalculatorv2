@@ -1,35 +1,15 @@
 
 
-# Fix: Unsaved-changes warning fires on empty state
+# Auto-commit draft area on first valid segment add
 
 ## Problem
-`isDirty` becomes true on `ADD_AREA` dispatch (before any measurements are entered), triggering the "unsaved changes" warning when the user hasn't entered anything worth preserving.
+Adding a segment keeps the area in `isDraft: true`, requiring a separate "Save Area" click before it appears in quantities.
 
-## Changes
+## Changes — `src/hooks/useCalculatorState.tsx`
 
-### File 1 — `src/components/calculator/CalculatorLayout.tsx`
+**Change 1 (~line 100):** Update `ADD_SEGMENT` reducer case to auto-commit draft areas when the new segment makes them valid via `getMissingFields`.
 
-1. **Add import** (after line 30): `import { hasRequiredData } from "@/types/calculator";`
-   - Note: contrary to the prompt, there is no existing import from `@/types/calculator` in this file, so a new import line is needed.
+**Change 2 (~line 297):** Update the dispatch wrapper's anon-data flag to treat `ADD_SEGMENT` the same as `SAVE_AREA` (always set `tfc_anon_has_data`), since `ADD_SEGMENT` may now auto-commit and stateRef would still show the old draft state.
 
-2. **Compute `hasSubstantiveData`** (after line 84, alongside `hasAreas`/`canExport`):
-   ```ts
-   const hasSubstantiveData =
-     !!currentProject ||
-     state.areas.some((area) => hasRequiredData(area));
-   ```
-
-3. **Update `handleNewProject` guard** (line 141): Change `if (isDirty)` → `if (isDirty && hasSubstantiveData)`
-
-4. **Add to `headerProps`** (around line 248): Add `hasSubstantiveData,` to the object
-
-### File 2 — `src/components/calculator/AppHeader.tsx`
-
-1. **Add to interface** (after line 30): `hasSubstantiveData: boolean;`
-
-2. **Destructure** (line 43): Add `hasSubstantiveData` alongside `isDirty`
-
-3. **Update logo onClick** (line 59): Change `if (!isDirty)` → `if (!isDirty || !hasSubstantiveData)`
-
-No other files modified.
+No other files modified. No new imports needed (`getMissingFields` already imported).
 
