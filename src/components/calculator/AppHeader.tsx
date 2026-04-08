@@ -99,6 +99,60 @@ export function AppHeader({
           </Button>
         )}
 
+        {/* Export PDF */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={exportDisabled ? 0 : undefined}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  disabled={exportDisabled}
+                  onClick={onExportPDF}
+                >
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">Export PDF</span>
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {!canExport && (
+              <TooltipContent>Save project to export</TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+
+        {/* Export CSV */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <span tabIndex={exportDisabled ? 0 : undefined}>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="gap-1.5"
+                  disabled={exportDisabled}
+                  onClick={onExportCSV}
+                >
+                  {isExporting ? (
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                  ) : (
+                    <Download className="h-4 w-4" />
+                  )}
+                  <span className="hidden sm:inline">Export CSV</span>
+                </Button>
+              </span>
+            </TooltipTrigger>
+            {!canExport && (
+              <TooltipContent>Save project to export</TooltipContent>
+            )}
+          </Tooltip>
+        </TooltipProvider>
+
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" size="sm" className="gap-1.5">
@@ -114,49 +168,6 @@ export function AppHeader({
             <DropdownMenuItem onClick={onOpenProjects}>
               <FolderOpen className="h-4 w-4 mr-2" /> Open Project
             </DropdownMenuItem>
-            <DropdownMenuSeparator />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <DropdownMenuItem
-                      disabled={exportDisabled}
-                      onClick={onExportPDF}
-                    >
-                      {isExporting ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Download className="h-4 w-4 mr-2" />
-                      )}
-                      Export PDF
-                    </DropdownMenuItem>
-                  </div>
-                </TooltipTrigger>
-                {!canExport && (
-                  <TooltipContent>Save project to export</TooltipContent>
-                )}
-              </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <div>
-                    <DropdownMenuItem
-                      disabled={exportDisabled}
-                      onClick={onExportCSV}
-                    >
-                      {isExporting ? (
-                        <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                      ) : (
-                        <Download className="h-4 w-4 mr-2" />
-                      )}
-                      Export CSV
-                    </DropdownMenuItem>
-                  </div>
-                </TooltipTrigger>
-                {!canExport && (
-                  <TooltipContent>Save project to export</TooltipContent>
-                )}
-              </Tooltip>
-            </TooltipProvider>
           </DropdownMenuContent>
         </DropdownMenu>
 
