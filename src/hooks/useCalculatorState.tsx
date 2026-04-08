@@ -98,9 +98,15 @@ function reducer(state: CalcState, action: Action): CalcState {
         areas: state.areas.map((a) => (a.id === action.id ? { ...a, name: action.name } : a)),
       };
     case "ADD_SEGMENT": {
-      const areas = state.areas.map((a) =>
-        a.id === action.areaId ? { ...a, segments: [...a.segments, action.segment] } : a
-      );
+      const areas = state.areas.map((a) => {
+        if (a.id !== action.areaId) return a;
+        const updated = { ...a, segments: [...a.segments, action.segment] };
+        // Auto-commit draft if adding this segment makes the area valid
+        if (a.isDraft && getMissingFields(updated).length === 0) {
+          return { ...updated, isDraft: false };
+        }
+        return updated;
+      });
       return { ...state, areas };
     }
     case "UPDATE_SEGMENT": {
@@ -294,7 +300,9 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
       setIsDirty(true);
 
       // Only flag anon data for committed work
-      if (action.type === "SAVE_AREA") {
+      if (action.type === "SAVE_AREA" || action.type === "ADD_SEGMENT") {
+        // SAVE_AREA = explicit commit; ADD_SEGMENT = may auto-commit in reducer.
+        // Either way the user has segment data worth preserving.
         localStorage.setItem("tfc_anon_has_data", "true");
       } else if (action.type !== "ADD_AREA") {
         const currentState = stateRef.current;
