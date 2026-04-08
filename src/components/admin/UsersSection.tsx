@@ -142,6 +142,30 @@ export function UsersSection({ adminCall, onError }: Props) {
                       Revert to Free
                     </Button>
                   )}
+                  {u.org_id && (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        const input = window.prompt("Extend trial by how many days? (1–365)");
+                        if (input === null) return;
+                        const days = parseInt(input, 10);
+                        if (isNaN(days) || days < 1 || days > 365) {
+                          toast.error("Enter a number between 1 and 365");
+                          return;
+                        }
+                        try {
+                          await adminCall("admin-extend-trial", { orgId: u.org_id, days });
+                          toast.success(`Trial extended by ${days} days`);
+                          fetchUsers();
+                        } catch (e) {
+                          toast.error(e instanceof Error ? e.message : String(e));
+                        }
+                      }}
+                    >
+                      Extend Trial
+                    </Button>
+                  )}
                 </TableCell>
               </TableRow>
             ))}
