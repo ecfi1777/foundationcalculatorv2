@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
-import { SegmentEntry } from "./SegmentEntry";
+import { SegmentEntry, type SegmentEntryHandle } from "./SegmentEntry";
 import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
 import { makeDefaultRebar } from "@/types/calculator";
@@ -11,7 +11,8 @@ const CURB_DIM_KEYS = ["curbDepthIn", "curbHeightIn", "gutterWidthIn", "flagThic
 const CURB_DEFAULTS: Record<string, number> = { curbDepthIn: 6, curbHeightIn: 6, gutterWidthIn: 12, flagThicknessIn: 4 };
 
 export function CurbGutterForm() {
-  const { dispatch, addArea, getAreasForType, activeArea, registerFlushCallback } = useCalculatorState();
+  const { dispatch, addArea, getAreasForType, activeArea, registerFlushCallback, registerSegmentFlush } = useCalculatorState();
+  const segmentEntryRef = useRef<SegmentEntryHandle>(null);
   const areas = getAreasForType("curbGutter");
   const area = activeArea?.type === "curbGutter" ? activeArea : null;
 
@@ -41,6 +42,16 @@ export function CurbGutterForm() {
     if (!area) return;
     dispatch({ type: "UPDATE_AREA", id: area.id, patch: { wastePct: localWaste } });
   }, [area, localWaste, dispatch]);
+
+  // Register segment flush callback
+  useEffect(() => {
+    if (!area) {
+      registerSegmentFlush(null);
+      return;
+    }
+    registerSegmentFlush(() => segmentEntryRef.current?.flushPending() ?? false);
+    return () => registerSegmentFlush(null);
+  }, [area?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Register flush callback for save-before-blur safety
   useEffect(() => {
@@ -104,6 +115,7 @@ export function CurbGutterForm() {
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">Segments</p>
             <SegmentEntry
+              ref={segmentEntryRef}
               segments={area.segments}
               onAdd={(s) =>
                 dispatch({

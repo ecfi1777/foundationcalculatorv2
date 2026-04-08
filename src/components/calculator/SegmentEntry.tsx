@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, forwardRef, useImperativeHandle } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
@@ -22,6 +22,10 @@ function computeLength(feet: string, inches: string, fraction: string) {
   const i = parseInt(inches) || 0;
   const frac = FRACTION_MAP[fraction] ?? 0;
   return f * 12 + i + frac;
+}
+
+export interface SegmentEntryHandle {
+  flushPending: () => boolean;
 }
 
 interface SegmentEntryProps {
@@ -123,7 +127,8 @@ function SegmentInputRow({
   );
 }
 
-export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEntryProps) {
+export const SegmentEntry = forwardRef<SegmentEntryHandle, SegmentEntryProps>(
+  function SegmentEntry({ segments, onAdd, onUpdate, onDelete }, ref) {
   const [feetInput, setFeetInput] = useState("");
   const [inchesInput, setInchesInput] = useState("");
   const [fractionInput, setFractionInput] = useState("0");
@@ -150,6 +155,16 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
     setFractionInput("0");
   };
 
+  useImperativeHandle(ref, () => ({
+    flushPending: () => {
+      const length = computeLength(feetInput, inchesInput, fractionInput);
+      const inchesNum = parseInt(inchesInput) || 0;
+      if (length <= 0 || inchesNum > 11) return false;
+      handleAdd();
+      return true;
+    },
+  }));
+
   const handleEditSave = (id: string) => {
     const feet = parseInt(editFeet) || 0;
     const inches = parseInt(editInches) || 0;
@@ -165,7 +180,6 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
     setEditingId(seg.id);
     setEditFeet(seg.feet > 0 ? String(seg.feet) : "");
     setEditInches(seg.inches > 0 ? String(seg.inches) : "");
-    // Map old fine-grained fractions to nearest 1/4
     const frac = seg.fraction;
     const valid = FRACTION_OPTIONS.some(o => o.value === frac);
     setEditFraction(valid ? frac : "0");
@@ -246,4 +260,4 @@ export function SegmentEntry({ segments, onAdd, onUpdate, onDelete }: SegmentEnt
       )}
     </div>
   );
-}
+});

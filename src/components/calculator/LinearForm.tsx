@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
-import { SegmentEntry } from "./SegmentEntry";
+import { SegmentEntry, type SegmentEntryHandle } from "./SegmentEntry";
 import { RebarAddon } from "./RebarAddon";
 import { AreaSelector } from "./AreaSelector";
 import { calcTypeToElementType, makeDefaultRebar } from "@/types/calculator";
@@ -10,7 +10,8 @@ import { generateId } from "@/lib/utils";
 
 /** Shared form for both Wall (standalone) and Grade Beam calculators */
 export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
-  const { dispatch, addArea, getAreasForType, activeArea, registerFlushCallback } = useCalculatorState();
+  const { dispatch, addArea, getAreasForType, activeArea, registerFlushCallback, registerSegmentFlush } = useCalculatorState();
+  const segmentEntryRef = useRef<SegmentEntryHandle>(null);
   const areas = getAreasForType(calcType);
   const area = activeArea?.type === calcType ? activeArea : null;
 
@@ -46,6 +47,16 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
     if (!area) return;
     dispatch({ type: "UPDATE_AREA", id: area.id, patch: { wastePct: localWaste } });
   }, [area, localWaste, dispatch]);
+
+  // Register segment flush callback
+  useEffect(() => {
+    if (!area) {
+      registerSegmentFlush(null);
+      return;
+    }
+    registerSegmentFlush(() => segmentEntryRef.current?.flushPending() ?? false);
+    return () => registerSegmentFlush(null);
+  }, [area?.id]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Register flush callback for save-before-blur safety
   useEffect(() => {
@@ -106,6 +117,7 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
           <div>
             <p className="text-xs font-medium text-muted-foreground mb-2">Segments</p>
             <SegmentEntry
+              ref={segmentEntryRef}
               segments={area.segments}
               onAdd={(s) =>
                 dispatch({
