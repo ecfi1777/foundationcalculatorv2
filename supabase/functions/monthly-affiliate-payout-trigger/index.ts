@@ -12,11 +12,17 @@ serve(async (req) => {
     });
   }
 
-  // Validate cron secret
+  // Auth: accept EITHER x-cron-secret header OR Authorization Bearer matching service role key
   const cronSecret = req.headers.get("x-cron-secret");
-  const expectedSecret = Deno.env.get("CRON_SECRET");
+  const expectedCronSecret = Deno.env.get("CRON_SECRET");
 
-  if (!expectedSecret || !cronSecret || cronSecret !== expectedSecret) {
+  const authHeader = req.headers.get("Authorization");
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
+
+  const cronSecretValid = expectedCronSecret && cronSecret && cronSecret === expectedCronSecret;
+  const serviceRoleValid = serviceRoleKey && authHeader === `Bearer ${serviceRoleKey}`;
+
+  if (!cronSecretValid && !serviceRoleValid) {
     return new Response(JSON.stringify({ error: "Unauthorized" }), {
       status: 401,
       headers: { "Content-Type": "application/json" },
