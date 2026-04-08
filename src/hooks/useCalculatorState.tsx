@@ -129,15 +129,25 @@ function reducer(state: CalcState, action: Action): CalcState {
       );
       return { ...state, areas };
     }
-    case "DELETE_SEGMENT":
+    case "DELETE_SEGMENT": {
+      const updatedAreas = state.areas.map((a) =>
+        a.id === action.areaId
+          ? { ...a, segments: a.segments.filter((s) => s.id !== action.segmentId) }
+          : a
+      );
+      // If a committed area now has no segments, remove it entirely
+      const finalAreas = updatedAreas.filter((a) =>
+        a.id !== action.areaId || a.isDraft || a.segments.length > 0
+      );
+      const removedArea = finalAreas.length < updatedAreas.length;
       return {
         ...state,
-        areas: state.areas.map((a) =>
-          a.id === action.areaId
-            ? { ...a, segments: a.segments.filter((s) => s.id !== action.segmentId) }
-            : a
-        ),
+        areas: finalAreas,
+        activeAreaId: removedArea && state.activeAreaId === action.areaId
+          ? null
+          : state.activeAreaId,
       };
+    }
     case "ADD_SECTION": {
       const areas = state.areas.map((a) =>
         a.id === action.areaId ? { ...a, sections: [...a.sections, action.section] } : a
