@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
+import type { CalculatorType } from "@/types/calculator";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
@@ -74,7 +75,7 @@ export function CalculatorLayout() {
   const [mobileTab, setMobileTab] = useState<"calculator" | "quantities">("calculator");
 
   const handleMobileEditArea = useCallback((areaId: string, tab: string) => {
-    dispatch({ type: "EDIT_AREA", tab, id: areaId });
+    dispatch({ type: "EDIT_AREA", tab: tab as CalculatorType, id: areaId });
     setMobileTab("calculator");
   }, [dispatch]);
   const touchStartX = useRef<number | null>(null);
