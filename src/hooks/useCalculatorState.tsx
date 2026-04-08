@@ -229,11 +229,14 @@ function migrateLoadedState(raw: any): CalcState {
         a = { ...rest, rebarConfigs };
       }
 
-      // Discard empty draft areas. These are auto-provisioned placeholders
-      // that were persisted to localStorage before the user entered any data.
-      // Converting them to non-drafts (the old behavior) caused them to
-      // accumulate as phantom zero-valued areas in the quantities panel.
-      if (a.isDraft && !hasRequiredData(a)) {
+      // Discard ALL draft areas on load. Drafts are uncommitted work-in-progress;
+      // navigating away from "/" unmounts CalculatorProvider, which is equivalent
+      // to discarding any draft. The auto-provision effect creates a fresh draft
+      // for the current tab on remount.
+      // Note: steps and cylinder types pre-fill default dimensions, so
+      // hasRequiredData() cannot distinguish a touched draft from an untouched
+      // one — unconditional discard is the only safe rule.
+      if (a.isDraft) {
         continue; // drop — will be re-provisioned by the auto-provision effect
       }
 
