@@ -175,12 +175,13 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
   const clearPendingAction = useCallback(() => setPendingAction(null), []);
 
   // Persist currentProject to localStorage whenever it changes.
-  // This survives navigation away from "/" (which unmounts ProjectProvider).
+  // WRITE ONLY — never remove from this effect.
+  // Deletion is handled explicitly in resetToBlankInternal and clearAllState.
+  // Removing here would delete the stored project on initial mount (when
+  // currentProject is null) before the restore effect can read it.
   useEffect(() => {
     if (currentProject) {
       localStorage.setItem(PROJECT_KEY, JSON.stringify(currentProject));
-    } else {
-      localStorage.removeItem(PROJECT_KEY);
     }
   }, [currentProject]);
 
