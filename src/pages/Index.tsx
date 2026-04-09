@@ -28,6 +28,7 @@ const Index = () => {
         description="Instantly calculate concrete yardage for footings, slabs, walls, grade beams, pier pads, and more. Free tool built for concrete contractors."
         canonical="https://foundationcalculator.com/"
       />
+      <h1 className="sr-only">Free Concrete Foundation Calculator</h1>
       <CalculatorProvider>
       <ProjectProvider>
         <CalculatorLayout />
