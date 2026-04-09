@@ -11,6 +11,61 @@
     <priority>0.8</priority>
   </url>
   <url>
+    <loc>https://foundationcalculator.com/how-it-works/footings</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/walls</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/slabs</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/slab-rebar</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/wall-rebar</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/l-bars</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/grade-beams</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/pier-pads</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/curbs</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/stone-base</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
+    <loc>https://foundationcalculator.com/how-it-works/concrete-totals</loc>
+    <changefreq>monthly</changefreq>
+    <priority>0.7</priority>
+  </url>
+  <url>
     <loc>https://foundationcalculator.com/upgrade</loc>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
