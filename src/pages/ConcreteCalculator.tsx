@@ -14,22 +14,20 @@ import {
   calcSlabSection,
   calcFooting,
   calcWall,
-  calcRebarSlabGrid,
 } from "@/lib/calculations";
 import type {
   SlabSectionResult,
   FootingResult,
   WallResult,
-  RebarSlabGridResult,
 } from "@/lib/calculations";
 
-type CalcTab = "slab" | "footing" | "wall" | "rebar";
+type CalcTab = "slab" | "footing" | "wall";
 
 const TABS: { id: CalcTab; label: string }[] = [
   { id: "slab",    label: "Slab"    },
   { id: "footing", label: "Footing" },
   { id: "wall",    label: "Wall"    },
-  { id: "rebar",   label: "Rebar"   },
+  
 ];
 
 export default function ConcreteCalculator() {
@@ -67,15 +65,6 @@ export default function ConcreteCalculator() {
     volumeCy: 0, volumeWithWasteCy: 0,
   });
 
-  // ── Rebar state ──
-  const [rebarL,       setRebarL]       = useState("");
-  const [rebarW,       setRebarW]       = useState("");
-  const [rebarSpacing, setRebarSpacing] = useState("12");
-  const [rebarWaste,   setRebarWaste]   = useState("10");
-  const [rebarResult, setRebarResult] = useState<RebarSlabGridResult>({
-    barsLengthwise: 0, barsWidthwise: 0,
-    totalLf: 0, totalWithWasteLf: 0,
-  });
 
   const handleTabChange = (tab: CalcTab) => {
     setActiveTab(tab);
@@ -150,28 +139,6 @@ export default function ConcreteCalculator() {
       }
       setWallResult(r);
 
-    } else if (activeTab === "rebar") {
-      const r = calcRebarSlabGrid({
-        lengthFt:    parseFloat(rebarL)       || 0,
-        widthFt:     parseFloat(rebarW)       || 0,
-        spacingIn:   parseFloat(rebarSpacing) || 12,
-        overlapIn:   6,
-        barLengthFt: 20,
-        wastePct:    parseFloat(rebarWaste)   || 0,
-      });
-      if (r.totalLf > 0) {
-        newEntry = {
-          id: editingId ?? `${Date.now()}-${Math.random()}`,
-          tab: "rebar",
-          label: `${rebarL} × ${rebarW} Rebar Grid, ${rebarSpacing}in OC`,
-          name: "",
-          volumeCy: r.totalLf,
-          withWasteCy: r.totalWithWasteLf,
-          wastePct: parseFloat(rebarWaste) || 0,
-          inputs: { rebarL, rebarW, rebarSpacing, rebarWaste },
-        };
-      }
-      setRebarResult(r);
     }
 
     if (newEntry) {
@@ -219,11 +186,6 @@ export default function ConcreteCalculator() {
       setWallH(entry.inputs.wallH ?? "");
       setWallT(entry.inputs.wallT ?? "8");
       setWallWaste(entry.inputs.wallWaste ?? "10");
-    } else if (entry.tab === "rebar") {
-      setRebarL(entry.inputs.rebarL ?? "");
-      setRebarW(entry.inputs.rebarW ?? "");
-      setRebarSpacing(entry.inputs.rebarSpacing ?? "12");
-      setRebarWaste(entry.inputs.rebarWaste ?? "10");
     }
 
     setEditingId(entry.id);
@@ -249,7 +211,7 @@ export default function ConcreteCalculator() {
     slab:    "Length × Width × (Thickness ÷ 12) ÷ 27 = Cubic Yards",
     footing: "Linear Ft × (Width ÷ 12) × (Depth ÷ 12) ÷ 27 = Cubic Yards",
     wall:    "Linear Ft × (Height ÷ 12) × (Thickness ÷ 12) ÷ 27 = Cubic Yards",
-    rebar:   "Bars = (Dimension ÷ Spacing) + 1 per direction",
+    
   };
 
   return (
@@ -386,35 +348,6 @@ export default function ConcreteCalculator() {
                   </div>
                 )}
 
-                {/* ── Rebar Inputs ── */}
-                {activeTab === "rebar" && (
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-1">
-                      <Label htmlFor="rebarL">Length (ft)</Label>
-                      <Input id="rebarL" type="number" inputMode="decimal" min="0" value={rebarL}
-                        onChange={(e) => setRebarL(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="rebarW">Width (ft)</Label>
-                      <Input id="rebarW" type="number" inputMode="decimal" min="0" value={rebarW}
-                        onChange={(e) => setRebarW(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="rebarSpacing">Spacing (in)</Label>
-                      <Input id="rebarSpacing" type="number" inputMode="decimal" min="0" value={rebarSpacing}
-                        onChange={(e) => setRebarSpacing(e.target.value)}
-                      />
-                    </div>
-                    <div className="space-y-1">
-                      <Label htmlFor="rebarWaste">Waste (%)</Label>
-                      <Input id="rebarWaste" type="number" inputMode="decimal" min="0" value={rebarWaste}
-                        onChange={(e) => setRebarWaste(e.target.value)}
-                      />
-                    </div>
-                  </div>
-                )}
 
                 {/* Formula Strip */}
                 <p className="text-xs text-muted-foreground text-center">
@@ -537,7 +470,7 @@ export default function ConcreteCalculator() {
                   { label: "Slab Calculator",    href: "/concrete-slab-calculator"    },
                   { label: "Footing Calculator", href: "/concrete-footing-calculator" },
                   { label: "Wall Calculator",    href: "/concrete-wall-calculator"    },
-                  { label: "Rebar Calculator",   href: "/rebar-calculator"            },
+                  
                 ].map(({ label, href }) => (
                   <Link key={href} to={href} className="text-sm text-primary underline underline-offset-2 hover:text-primary/80">
                     {label}

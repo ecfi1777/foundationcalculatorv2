@@ -7,7 +7,7 @@ import { Separator } from "@/components/ui/separator";
 
 export interface TakeoffEntry {
   id: string;
-  tab: "slab" | "footing" | "wall" | "rebar";
+  tab: "slab" | "footing" | "wall";
   label: string;
   name: string;
   volumeCy: number;
@@ -26,10 +26,6 @@ export interface TakeoffEntry {
     wallH?: string;
     wallT?: string;
     wallWaste?: string;
-    rebarL?: string;
-    rebarW?: string;
-    rebarSpacing?: string;
-    rebarWaste?: string;
   };
 }
 
@@ -45,11 +41,6 @@ export function TakeoffPanel({ entries, onRemove, onClear, onEdit, onRename }: T
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const totalConcreteCy = entries
-    .filter((e) => e.tab !== "rebar")
-    .reduce((sum, e) => sum + e.withWasteCy, 0);
-
-  const totalRebarLf = entries
-    .filter((e) => e.tab === "rebar")
     .reduce((sum, e) => sum + e.withWasteCy, 0);
 
   return (
@@ -164,13 +155,9 @@ export function TakeoffPanel({ entries, onRemove, onClear, onEdit, onRename }: T
 
                     {/* Row 2: Base quantity */}
                     <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        {entry.tab === "rebar" ? "Rebar Linear Feet:" : "Cubic Yards:"}
-                      </span>
+                      <span className="text-muted-foreground">Cubic Yards:</span>
                       <span className="font-mono text-foreground">
-                        {entry.tab === "rebar"
-                          ? `${entry.volumeCy.toFixed(0)} LF`
-                          : `${entry.volumeCy.toFixed(2)} yd³`}
+                        {entry.volumeCy.toFixed(2)} yd³
                       </span>
                     </div>
 
@@ -182,9 +169,7 @@ export function TakeoffPanel({ entries, onRemove, onClear, onEdit, onRename }: T
                         With {entry.wastePct}% Waste:
                       </span>
                       <span className="font-semibold text-primary font-mono">
-                        {entry.tab === "rebar"
-                          ? `${entry.withWasteCy.toFixed(0)} LF`
-                          : `${entry.withWasteCy.toFixed(2)} yd³`}
+                        {entry.withWasteCy.toFixed(2)} yd³
                       </span>
                     </div>
                   </>
@@ -207,14 +192,6 @@ export function TakeoffPanel({ entries, onRemove, onClear, onEdit, onRename }: T
               {totalConcreteCy.toFixed(2)} yd³
             </span>
           </div>
-          {totalRebarLf > 0 && (
-            <div className="flex justify-between text-sm">
-              <span className="text-foreground">Rebar</span>
-              <span className="font-semibold text-primary font-mono">
-                {Math.round(totalRebarLf).toLocaleString()} LF
-              </span>
-            </div>
-          )}
         </div>
 
         {entries.length > 0 && (
