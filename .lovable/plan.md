@@ -1,42 +1,51 @@
 
 
-# Don't warn on tab-switch for cylinder/steps until user modifies dimensions
+# Fix: Prevent swipe gesture from triggering on Calculator Tab Bar
 
 ## Problem
-Cylinder and Steps areas have non-zero defaults that immediately satisfy `hasRequiredData`, so the tab-switch discard warning fires on freshly created, untouched forms.
+The horizontal swipe gesture that switches between Calculator and Quantities tabs (lines 309-319 in `CalculatorLayout.tsx`) is also triggered when the user swipes horizontally across the `CalculatorTabBar` to scroll between calculator types (Footings, Walls, Grade Beams, etc.). This causes unintended tab switches.
 
-## Changes — 3 files
+## Solution
+Move the `CalculatorTabBar` **outside** of the swipe-detecting container so that swiping on it does not trigger the calculator/quantities tab switch.
 
-### 1. `src/types/calculator.ts` (line ~217)
-Add after `isDraft?: boolean;`:
-```typescript
-/** True once the user has changed at least one dimension on this draft area */
-hasUserModifiedDimensions?: boolean;
+## Scope
+One file only: `src/components/calculator/CalculatorLayout.tsx`
+
+## Change
+
+In the mobile render path, the `CalculatorTabBar` is currently inside the swipe container div (line 323). Move it above that div so swipe events on the tab bar are not captured.
+
+**Current structure (lines 309-335):**
+```
+<div style={{ touchAction: 'pan-y' }} onTouchStart={...} onTouchEnd={...}>  ← swipe container
+  {mobileTab === "calculator" ? (
+    <div>
+      <CalculatorTabBar />        ← inside swipe zone
+      <ActiveForm />
+    </div>
+  ) : (
+    <QuantitiesPanel />
+  )}
+</div>
 ```
 
-### 2. `src/hooks/useCalculatorState.tsx`
-**Part A (~line 391):** In `addArea`, add `hasUserModifiedDimensions: false,` after `isDraft: true,`
-
-**Part B (~line 91):** Replace `UPDATE_AREA` reducer case to set `hasUserModifiedDimensions: true` on first edit of a draft area:
-```typescript
-case "UPDATE_AREA": {
-  const areas = state.areas.map((a) => {
-    if (a.id !== action.id) return a;
-    const updated = { ...a, ...action.patch };
-    if (a.isDraft && !a.hasUserModifiedDimensions) {
-      updated.hasUserModifiedDimensions = true;
-    }
-    return updated;
-  });
-  return { ...state, areas };
-}
+**New structure:**
+```
+{mobileTab === "calculator" && (
+  <div className="px-3 pt-3">
+    <CalculatorTabBar />          ← outside swipe zone
+  </div>
+)}
+<div style={{ touchAction: 'pan-y' }} onTouchStart={...} onTouchEnd={...}>  ← swipe container
+  {mobileTab === "calculator" ? (
+    <div>
+      <ActiveForm />
+    </div>
+  ) : (
+    <QuantitiesPanel />
+  )}
+</div>
 ```
 
-### 3. `src/components/calculator/CalculatorTabBar.tsx` (line ~46)
-Add `&& activeArea.hasUserModifiedDimensions` to the guard:
-```typescript
-if (activeArea?.isDraft && hasRequiredData(activeArea) && activeArea.hasUserModifiedDimensions) {
-```
-
-No other files modified.
+This keeps the tab bar fixed above the swipeable area. Horizontal swiping on the calculator type tabs will only scroll through the tab options, not switch between Calculator and Quantities views.
 
