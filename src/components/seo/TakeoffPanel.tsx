@@ -1,24 +1,49 @@
+import { useState } from "react";
 import { Link } from "react-router-dom";
-import { Trash2 } from "lucide-react";
+import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { Separator } from "@/components/ui/separator";
 
 export interface TakeoffEntry {
   id: string;
   tab: "slab" | "footing" | "wall" | "rebar";
   label: string;
+  name: string;
   volumeCy: number;
   withWasteCy: number;
   wastePct: number;
+  inputs: {
+    slabL?: string;
+    slabW?: string;
+    slabT?: string;
+    slabWaste?: string;
+    footLf?: string;
+    footW?: string;
+    footD?: string;
+    footWaste?: string;
+    wallLf?: string;
+    wallH?: string;
+    wallT?: string;
+    wallWaste?: string;
+    rebarL?: string;
+    rebarW?: string;
+    rebarSpacing?: string;
+    rebarWaste?: string;
+  };
 }
 
 interface TakeoffPanelProps {
   entries: TakeoffEntry[];
   onRemove: (id: string) => void;
   onClear: () => void;
+  onEdit: (entry: TakeoffEntry) => void;
+  onRename: (id: string, name: string) => void;
 }
 
-export function TakeoffPanel({ entries, onRemove, onClear }: TakeoffPanelProps) {
+export function TakeoffPanel({ entries, onRemove, onClear, onEdit, onRename }: TakeoffPanelProps) {
+  const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
+
   const totalConcreteCy = entries
     .filter((e) => e.tab !== "rebar")
     .reduce((sum, e) => sum + e.withWasteCy, 0);
@@ -64,55 +89,109 @@ export function TakeoffPanel({ entries, onRemove, onClear }: TakeoffPanelProps) 
             </p>
           </div>
         ) : (
-          entries.map((entry) => (
-            <div
-              key={entry.id}
-              className="rounded-lg border border-border bg-card p-3 space-y-2"
-            >
-              {/* Row 1: label + remove */}
-              <div className="flex items-center justify-between gap-2">
-                <span className="text-sm font-medium text-foreground truncate">
-                  {entry.label}
-                </span>
-                <Button
-                  size="icon"
-                  variant="ghost"
-                  className="h-6 w-6 text-destructive shrink-0"
-                  onClick={() => onRemove(entry.id)}
-                >
-                  <Trash2 className="h-3 w-3" />
-                </Button>
-              </div>
+          entries.map((entry) => {
+            const isConfirmingDelete = pendingDeleteId === entry.id;
 
-              {/* Row 2: base quantity */}
-              <div className="flex justify-between text-sm">
-                <span className="text-muted-foreground">
-                  {entry.tab === "rebar"
-                    ? "Rebar Linear Feet:"
-                    : "Cubic Yards:"}
-                </span>
-                <span className="font-mono text-foreground">
-                  {entry.tab === "rebar"
-                    ? `${entry.volumeCy.toFixed(0)} LF`
-                    : `${entry.volumeCy.toFixed(2)} yd³`}
-                </span>
-              </div>
+            return (
+              <div
+                key={entry.id}
+                className="rounded-lg border border-border bg-card p-3 space-y-2"
+              >
+                {isConfirmingDelete ? (
+                  <div className="py-2 space-y-3">
+                    <p className="text-sm font-medium text-foreground text-center">
+                      Remove this item?
+                    </p>
+                    <p className="text-xs text-muted-foreground text-center truncate">
+                      {entry.name ? `"${entry.name}"` : entry.label}
+                    </p>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        className="flex-1"
+                        onClick={() => {
+                          onRemove(entry.id);
+                          setPendingDeleteId(null);
+                        }}
+                      >
+                        Remove
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className="flex-1"
+                        onClick={() => setPendingDeleteId(null)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    {/* Row 0: Name input */}
+                    <Input
+                      placeholder="Name this area…"
+                      value={entry.name}
+                      onChange={(e) => onRename(entry.id, e.target.value)}
+                      className="h-7 text-xs px-2 border-border bg-transparent placeholder:text-muted-foreground/50 focus-visible:ring-1"
+                    />
 
-              <Separator />
+                    {/* Row 1: Dimensions label + action buttons */}
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-medium text-foreground truncate">
+                        {entry.label}
+                      </span>
+                      <div className="flex items-center gap-1 shrink-0">
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 text-muted-foreground"
+                          onClick={() => onEdit(entry)}
+                        >
+                          <Pencil className="h-3 w-3" />
+                        </Button>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 text-destructive"
+                          onClick={() => setPendingDeleteId(entry.id)}
+                        >
+                          <Trash2 className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    </div>
 
-              {/* Row 3: with waste */}
-              <div className="flex justify-between text-sm">
-                <span className="font-medium text-foreground">
-                  With {entry.wastePct}% Waste:
-                </span>
-                <span className="font-semibold text-primary font-mono">
-                  {entry.tab === "rebar"
-                    ? `${entry.withWasteCy.toFixed(0)} LF`
-                    : `${entry.withWasteCy.toFixed(2)} yd³`}
-                </span>
+                    {/* Row 2: Base quantity */}
+                    <div className="flex justify-between text-sm">
+                      <span className="text-muted-foreground">
+                        {entry.tab === "rebar" ? "Rebar Linear Feet:" : "Cubic Yards:"}
+                      </span>
+                      <span className="font-mono text-foreground">
+                        {entry.tab === "rebar"
+                          ? `${entry.volumeCy.toFixed(0)} LF`
+                          : `${entry.volumeCy.toFixed(2)} yd³`}
+                      </span>
+                    </div>
+
+                    <Separator />
+
+                    {/* Row 3: With waste */}
+                    <div className="flex justify-between text-sm">
+                      <span className="font-medium text-foreground">
+                        With {entry.wastePct}% Waste:
+                      </span>
+                      <span className="font-semibold text-primary font-mono">
+                        {entry.tab === "rebar"
+                          ? `${entry.withWasteCy.toFixed(0)} LF`
+                          : `${entry.withWasteCy.toFixed(2)} yd³`}
+                      </span>
+                    </div>
+                  </>
+                )}
               </div>
-            </div>
-          ))
+            );
+          })
         )}
       </div>
 
