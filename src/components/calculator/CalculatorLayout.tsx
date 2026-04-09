@@ -306,6 +306,12 @@ export function CalculatorLayout() {
           </button>
         </div>
 
+        {mobileTab === "calculator" && (
+          <div className="px-3 pt-3">
+            <CalculatorTabBar />
+          </div>
+        )}
+
         <div
           className="flex-1 overflow-y-auto px-3"
           style={{ touchAction: 'pan-y' }}
@@ -320,7 +326,6 @@ export function CalculatorLayout() {
         >
           {mobileTab === "calculator" ? (
             <div className="space-y-3 py-3">
-              <CalculatorTabBar />
               <div className={cn(
                 "rounded-lg border border-border bg-card p-4",
                 isProjectLocked && "opacity-60 pointer-events-none"
