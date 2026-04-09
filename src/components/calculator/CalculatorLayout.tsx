@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Pencil } from "lucide-react";
 import type { CalculatorType } from "@/types/calculator";
 import { useNavigate } from "react-router-dom";
@@ -59,7 +59,12 @@ export function CalculatorLayout() {
     subscriptionTier, loadProjects, projectCount, editableProjectCount,
   } = useProject();
 
-  // ── Sign-out handler: reset all state, clear storage, navigate home ──
+  const visibleAreaCount = useMemo(
+    () => state.areas.filter(a => !a.isDraft || (hasRequiredData(a) && a.hasUserModifiedDimensions)).length,
+    [state.areas]
+  );
+
+
   const handleSignOut = useCallback(async () => {
     clearAllState();
     localStorage.removeItem("tfc_calculator_state");
@@ -299,7 +304,7 @@ export function CalculatorLayout() {
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
           >
             {mobileTab === "calculator" ? (
-              <>View Quantities <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg></>
+              <>View Quantities {visibleAreaCount > 0 && <span className="ml-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full px-1.5 py-0.5 leading-none">{visibleAreaCount}</span>} <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg></>
             ) : (
               <><svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg> Back to Calculator</>
             )}
