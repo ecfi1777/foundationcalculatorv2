@@ -1,49 +1,30 @@
 
 
-# Add Naming, Edit, and Delete Confirmation to TakeoffPanel
+# Remove Rebar from SEO Concrete Calculator
 
-## Two files modified, no others touched.
+## Overview
+Strip all rebar-related code from both files. No other files touched.
 
-### File 1: `src/components/seo/TakeoffPanel.tsx`
+## File 1: `src/pages/ConcreteCalculator.tsx`
 
-**Import changes:**
-- Add `import { useState } from "react"`
-- Add `Pencil` to lucide-react import
-- Add `import { Input } from "@/components/ui/input"`
+1. **Line 17**: Remove `calcRebarSlabGrid` from imports
+2. **Line 23**: Remove `RebarSlabGridResult` from type imports
+3. **Line 26**: Change `CalcTab` type to `"slab" | "footing" | "wall"`
+4. **Line 32**: Remove `{ id: "rebar", label: "Rebar" }` from TABS
+5. **Lines 70-78**: Delete all rebar state declarations (rebarL, rebarW, rebarSpacing, rebarWaste, rebarResult)
+6. **Lines 153-174**: Delete rebar branch from `handleCalculate`
+7. **Lines 222-227**: Delete rebar branch from `handleEditEntry`
+8. **Line 252**: Remove `rebar` key from `formulaMap`
+9. **Line 540**: Remove Rebar Calculator from Related Calculators links
+10. **Lines 389-417**: Delete rebar inputs JSX block
 
-**Interface changes:**
-- `TakeoffEntry`: add `name: string`, add `inputs: { slabL?, slabW?, slabT?, slabWaste?, footLf?, footW?, footD?, footWaste?, wallLf?, wallH?, wallT?, wallWaste?, rebarL?, rebarW?, rebarSpacing?, rebarWaste? }`
-- `TakeoffPanelProps`: add `onEdit: (entry: TakeoffEntry) => void` and `onRename: (id: string, name: string) => void`
+## File 2: `src/components/seo/TakeoffPanel.tsx`
 
-**Internal state:**
-- Add `const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null)`
-
-**Entry card replacement (lines 67-115):**
-Each entry card now has three sub-states:
-1. **Delete confirmation** (when `pendingDeleteId === entry.id`): shows "Remove this item?" with entry name/label, Confirm (destructive) and Cancel buttons
-2. **Normal display**: 
-   - Row 0: always-visible name `<Input>` with placeholder "Name this area…"
-   - Row 1: dimensions label + pencil button (calls `onEdit(entry)`) + trash button (sets `pendingDeleteId`)
-   - Rows 2-3: base quantity + separator + with-waste quantity (unchanged logic)
-
-### File 2: `src/pages/ConcreteCalculator.tsx`
-
-**New state:** `const [editingId, setEditingId] = useState<string | null>(null)` (after line 39)
-
-**New handlers** (after `handleClearEntries`):
-- `handleEditEntry(entry)`: switches tab, pre-fills all form inputs from `entry.inputs`, sets `editingId`, scrolls to top on mobile
-- `handleCancelEdit()`: clears `editingId` and `calculated`
-- `handleRenameEntry(id, name)`: updates entry name in-place
-
-**Rewrite `handleCalculate`:**
-- Each branch adds `name: ""` and `inputs: { ... }` to the entry object
-- Uses `editingId` as the id when editing (instead of generating new id)
-- When `editingId` is set: replaces entry in-place preserving existing name, then clears `editingId`
-- When `editingId` is null: appends as before
-
-**JSX changes:**
-- Button text: `editingId ? "Update Entry →" : "Add to Takeoff →"`
-- Add "Cancel edit" button below when `editingId` is set
-- Confirmation flash only shows when `!editingId`
-- Both `<TakeoffPanel>` instances get `onEdit={handleEditEntry}` and `onRename={handleRenameEntry}` props
+1. **Line 10**: Change tab type to `"slab" | "footing" | "wall"`
+2. **Lines 29-32**: Remove rebar keys from inputs (rebarL, rebarW, rebarSpacing, rebarWaste)
+3. **Lines 47-49**: Simplify `totalConcreteCy` — remove `.filter(...)`, just `.reduce(...)`
+4. **Lines 51-53**: Delete `totalRebarLf` calculation
+5. **Lines 167-174**: Replace rebar-conditional base quantity display with unconditional `Cubic Yards:` / `yd³`
+6. **Lines 184-187**: Replace rebar-conditional waste display with unconditional `yd³`
+7. **Lines 210-217**: Delete rebar total row from footer
 
