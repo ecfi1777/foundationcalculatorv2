@@ -1,5 +1,4 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
 import { Pencil, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -35,9 +34,10 @@ interface TakeoffPanelProps {
   onClear: () => void;
   onEdit: (entry: TakeoffEntry) => void;
   onRename: (id: string, name: string) => void;
+  onSave: () => void;
 }
 
-export function TakeoffPanel({ entries, onRemove, onClear, onEdit, onRename }: TakeoffPanelProps) {
+export function TakeoffPanel({ entries, onRemove, onClear, onEdit, onRename, onSave }: TakeoffPanelProps) {
   const [pendingDeleteId, setPendingDeleteId] = useState<string | null>(null);
 
   const totalConcreteCy = entries
@@ -205,12 +205,10 @@ export function TakeoffPanel({ entries, onRemove, onClear, onEdit, onRename }: T
           </Button>
         )}
 
-        <Button asChild className="w-full" size="sm">
-          <Link to="/auth">
-            {entries.length === 0
-              ? "Create Free Account →"
-              : "Save This Takeoff →"}
-          </Link>
+        <Button className="w-full" size="sm" onClick={onSave}>
+          {entries.length === 0
+            ? "Create Free Account →"
+            : "Save This Takeoff →"}
         </Button>
 
         {entries.length > 0 && (
