@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Pencil } from "lucide-react";
 import type { CalculatorType } from "@/types/calculator";
+import { hasRequiredData } from "@/types/calculator";
 import { useNavigate } from "react-router-dom";
 import { useIsMobile } from "@/hooks/use-mobile";
 import { useCalculatorState } from "@/hooks/useCalculatorState";
