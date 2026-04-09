@@ -94,7 +94,10 @@
     "react-snap": "^1.23.0"
   },
   "reactSnap": {
-    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+    "puppeteerArgs": [
+      "--no-sandbox",
+      "--disable-setuid-sandbox"
+    ],
     "include": [
       "/",
       "/concrete-calculator",
@@ -112,6 +115,7 @@
       "/how-it-works/concrete-totals"
     ],
     "skipThirdPartyRequests": true,
-    "minifyHtml": false
+    "minifyHtml": false,
+    "source": "dist"
   }
 }
