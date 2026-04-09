@@ -1,13 +1,18 @@
 
 
-# Remove `postbuild` script from package.json
+# Update vercel.json destination
 
 ## Change
-Remove the `"postbuild": "react-snap"` line from the `"scripts"` section in `package.json`. No other changes.
+Replace the contents of `vercel.json` so the rewrite destination is `/index.html` instead of `/200.html`.
 
-## Verification
-- `postbuild` key removed from scripts
-- `reactSnap` config key preserved
-- `react-snap` remains in devDependencies
-- No other files touched
+## File: `vercel.json`
+```json
+{
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
+```
+
+No other files modified.
 
