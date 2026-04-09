@@ -59,7 +59,12 @@ export function CalculatorLayout() {
     subscriptionTier, loadProjects, projectCount, editableProjectCount,
   } = useProject();
 
-  // ── Sign-out handler: reset all state, clear storage, navigate home ──
+  const visibleAreaCount = useMemo(
+    () => state.areas.filter(a => !a.isDraft || (hasRequiredData(a) && a.hasUserModifiedDimensions)).length,
+    [state.areas]
+  );
+
+
   const handleSignOut = useCallback(async () => {
     clearAllState();
     localStorage.removeItem("tfc_calculator_state");
