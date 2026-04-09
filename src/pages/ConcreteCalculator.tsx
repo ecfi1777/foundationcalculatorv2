@@ -208,6 +208,13 @@ export default function ConcreteCalculator() {
     );
   };
 
+  const handleSave = () => {
+    if (entries.length > 0) {
+      saveSeoTakeoff(entries);
+    }
+    navigate("/auth");
+  };
+
   // ── Formula display per tab ──
   const formulaMap: Record<CalcTab, string> = {
     slab:    "Length × Width × (Thickness ÷ 12) ÷ 27 = Cubic Yards",
@@ -491,6 +498,7 @@ export default function ConcreteCalculator() {
                 onClear={handleClearEntries}
                 onEdit={handleEditEntry}
                 onRename={handleRenameEntry}
+                onSave={handleSave}
               />
             </div>
           ) : (
@@ -501,6 +509,7 @@ export default function ConcreteCalculator() {
                 onClear={handleClearEntries}
                 onEdit={handleEditEntry}
                 onRename={handleRenameEntry}
+                onSave={handleSave}
               />
             </div>
           )}
