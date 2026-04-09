@@ -1,52 +1,32 @@
 
 
-# Add react-snap Prerendering Configuration
+# Create Concrete Calculator SEO Landing Page
 
 ## Scope
-Two files only: `package.json` and `vercel.json`
+- **New file:** `src/pages/ConcreteCalculator.tsx`
+- **Modified:** `src/App.tsx` (add import + route)
+- **Modified:** `package.json` (add `/concrete-calculator` to reactSnap include)
+
+No other files touched. No internal hooks (useAuth, useProject, etc.).
 
 ## Changes
 
-### 1. `package.json` — Three additions
+### 1. Create `src/pages/ConcreteCalculator.tsx`
+Standalone public landing page with:
+- SEO component with concrete calculator-specific title/description/canonical
+- Simple slab calculator using `calcSlabSection` from `@/lib/calculations`
+- Formula display, results with waste factor
+- CTA linking to signup
+- Field notes content section, FAQ section, related calculator links
+- AppFooter at bottom
 
-**1A. Add `postbuild` script** (after line 8, the `"build"` line):
-```
-"postbuild": "react-snap"
-```
+### 2. `src/App.tsx`
+- Add import for `ConcreteCalculator` after the `NotFound` import
+- Add route `<Route path="/concrete-calculator" element={<ConcreteCalculator />} />` after the how-it-works routes, before the catch-all
 
-**1B. Add `react-snap` to `devDependencies`** (after line 92):
-```
-"react-snap": "^1.23.0"
-```
+### 3. `package.json`
+- Add `"/concrete-calculator"` to the `reactSnap.include` array after `"/"`
 
-**1C. Add top-level `reactSnap` config key** (after `devDependencies` closes, before the final `}`):
-```json
-"reactSnap": {
-  "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
-  "include": [
-    "/",
-    "/how-it-works",
-    "/how-it-works/footings",
-    "/how-it-works/walls",
-    "/how-it-works/slabs",
-    "/how-it-works/slab-rebar",
-    "/how-it-works/wall-rebar",
-    "/how-it-works/l-bars",
-    "/how-it-works/grade-beams",
-    "/how-it-works/pier-pads",
-    "/how-it-works/curbs",
-    "/how-it-works/stone-base",
-    "/how-it-works/concrete-totals"
-  ],
-  "skipThirdPartyRequests": true,
-  "minifyHtml": false
-}
-```
-
-### 2. `vercel.json` — Change destination
-
-Replace `"/index.html"` with `"/200.html"` so Vercel serves prerendered HTML for known routes and falls back to `200.html` for SPA routes.
-
-### Post-deploy note
-A fresh Vercel deployment is needed after these changes for `postbuild` to run and generate the static HTML files.
+## Note
+The user's message was truncated at Change 3 — the route to add to reactSnap is inferred as `"/concrete-calculator"` based on context. The JSX in the user's message lost its tags (likely a formatting issue); I will reconstruct the component faithfully using the provided structure: heading, description, calculator card with inputs/button/formula/results/CTA, field notes section, FAQ section, and related calculators section.
 
