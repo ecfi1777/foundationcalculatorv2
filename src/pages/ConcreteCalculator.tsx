@@ -37,6 +37,7 @@ export default function ConcreteCalculator() {
   const [activeTab, setActiveTab] = useState<CalcTab>("slab");
   const [calculated, setCalculated] = useState(false);
   const [entries, setEntries] = useState<TakeoffEntry[]>([]);
+  const [editingId, setEditingId] = useState<string | null>(null);
 
   // ── Slab state ──
   const [slabL,     setSlabL]     = useState("");
@@ -95,12 +96,14 @@ export default function ConcreteCalculator() {
       });
       if (r.volumeCy > 0) {
         newEntry = {
-          id: `${Date.now()}-${Math.random()}`,
+          id: editingId ?? `${Date.now()}-${Math.random()}`,
           tab: "slab",
           label: `${slabL} × ${slabW} Slab, ${slabT}in`,
+          name: "",
           volumeCy: r.volumeCy,
           withWasteCy: r.volumeWithWasteCy,
           wastePct: parseFloat(slabWaste) || 0,
+          inputs: { slabL, slabW, slabT, slabWaste },
         };
       }
       setSlabResult(r);
@@ -114,12 +117,14 @@ export default function ConcreteCalculator() {
       });
       if (r.totalVolumeCy > 0) {
         newEntry = {
-          id: `${Date.now()}-${Math.random()}`,
+          id: editingId ?? `${Date.now()}-${Math.random()}`,
           tab: "footing",
           label: `${footLf} LF Footing, ${footW}×${footD}in`,
+          name: "",
           volumeCy: r.totalVolumeCy,
           withWasteCy: r.totalWithWasteCy,
           wastePct: parseFloat(footWaste) || 0,
+          inputs: { footLf, footW, footD, footWaste },
         };
       }
       setFootResult(r);
@@ -133,12 +138,14 @@ export default function ConcreteCalculator() {
       });
       if (r.volumeCy > 0) {
         newEntry = {
-          id: `${Date.now()}-${Math.random()}`,
+          id: editingId ?? `${Date.now()}-${Math.random()}`,
           tab: "wall",
           label: `${wallLf} LF Wall, ${wallH}×${wallT}in`,
+          name: "",
           volumeCy: r.volumeCy,
           withWasteCy: r.volumeWithWasteCy,
           wastePct: parseFloat(wallWaste) || 0,
+          inputs: { wallLf, wallH, wallT, wallWaste },
         };
       }
       setWallResult(r);
@@ -154,20 +161,34 @@ export default function ConcreteCalculator() {
       });
       if (r.totalLf > 0) {
         newEntry = {
-          id: `${Date.now()}-${Math.random()}`,
+          id: editingId ?? `${Date.now()}-${Math.random()}`,
           tab: "rebar",
           label: `${rebarL} × ${rebarW} Rebar Grid, ${rebarSpacing}in OC`,
+          name: "",
           volumeCy: r.totalLf,
           withWasteCy: r.totalWithWasteLf,
           wastePct: parseFloat(rebarWaste) || 0,
+          inputs: { rebarL, rebarW, rebarSpacing, rebarWaste },
         };
       }
       setRebarResult(r);
     }
 
     if (newEntry) {
-      setEntries(prev => [...prev, newEntry!]);
+      if (editingId) {
+        setEntries(prev =>
+          prev.map(e =>
+            e.id === editingId
+              ? { ...newEntry!, name: e.name }
+              : e
+          )
+        );
+        setEditingId(null);
+      } else {
+        setEntries(prev => [...prev, newEntry!]);
+      }
     }
+
     setCalculated(true);
   };
 
@@ -177,6 +198,50 @@ export default function ConcreteCalculator() {
 
   const handleClearEntries = () => {
     setEntries([]);
+  };
+
+  const handleEditEntry = (entry: TakeoffEntry) => {
+    setActiveTab(entry.tab);
+    setCalculated(false);
+
+    if (entry.tab === "slab") {
+      setSlabL(entry.inputs.slabL ?? "");
+      setSlabW(entry.inputs.slabW ?? "");
+      setSlabT(entry.inputs.slabT ?? "4");
+      setSlabWaste(entry.inputs.slabWaste ?? "10");
+    } else if (entry.tab === "footing") {
+      setFootLf(entry.inputs.footLf ?? "");
+      setFootW(entry.inputs.footW ?? "24");
+      setFootD(entry.inputs.footD ?? "12");
+      setFootWaste(entry.inputs.footWaste ?? "10");
+    } else if (entry.tab === "wall") {
+      setWallLf(entry.inputs.wallLf ?? "");
+      setWallH(entry.inputs.wallH ?? "");
+      setWallT(entry.inputs.wallT ?? "8");
+      setWallWaste(entry.inputs.wallWaste ?? "10");
+    } else if (entry.tab === "rebar") {
+      setRebarL(entry.inputs.rebarL ?? "");
+      setRebarW(entry.inputs.rebarW ?? "");
+      setRebarSpacing(entry.inputs.rebarSpacing ?? "12");
+      setRebarWaste(entry.inputs.rebarWaste ?? "10");
+    }
+
+    setEditingId(entry.id);
+
+    if (typeof window !== "undefined") {
+      window.scrollTo({ top: 0, behavior: "smooth" });
+    }
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setCalculated(false);
+  };
+
+  const handleRenameEntry = (id: string, name: string) => {
+    setEntries(prev =>
+      prev.map(e => e.id === id ? { ...e, name } : e)
+    );
   };
 
   // ── Formula display per tab ──
@@ -358,11 +423,21 @@ export default function ConcreteCalculator() {
 
                 {/* Calculate Button */}
                 <Button className="w-full" size="lg" onClick={handleCalculate}>
-                  Add to Takeoff →
+                  {editingId ? "Update Entry →" : "Add to Takeoff →"}
                 </Button>
 
+                {editingId && (
+                  <button
+                    type="button"
+                    className="w-full text-sm text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                    onClick={handleCancelEdit}
+                  >
+                    Cancel edit
+                  </button>
+                )}
+
                 {/* Confirmation flash */}
-                {calculated && (
+                {calculated && !editingId && (
                   <p className="text-sm text-center text-primary font-medium">
                     ✓ Added to your takeoff
                     {isMobile && entries.length > 0 && (
@@ -479,6 +554,8 @@ export default function ConcreteCalculator() {
                 entries={entries}
                 onRemove={handleRemoveEntry}
                 onClear={handleClearEntries}
+                onEdit={handleEditEntry}
+                onRename={handleRenameEntry}
               />
             </div>
           ) : (
@@ -487,6 +564,8 @@ export default function ConcreteCalculator() {
                 entries={entries}
                 onRemove={handleRemoveEntry}
                 onClear={handleClearEntries}
+                onEdit={handleEditEntry}
+                onRename={handleRenameEntry}
               />
             </div>
           )}
