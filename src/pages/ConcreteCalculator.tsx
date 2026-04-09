@@ -1,5 +1,6 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { saveSeoTakeoff } from "@/lib/localStorage";
 import { SEO } from "@/components/SEO";
 import { AppFooter } from "@/components/calculator/AppFooter";
 import { Button } from "@/components/ui/button";
@@ -32,6 +33,7 @@ const TABS: { id: CalcTab; label: string }[] = [
 
 export default function ConcreteCalculator() {
   const isMobile = useIsMobile();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState<CalcTab>("slab");
   const [calculated, setCalculated] = useState(false);
   const [entries, setEntries] = useState<TakeoffEntry[]>([]);
@@ -204,6 +206,13 @@ export default function ConcreteCalculator() {
     setEntries(prev =>
       prev.map(e => e.id === id ? { ...e, name } : e)
     );
+  };
+
+  const handleSave = () => {
+    if (entries.length > 0) {
+      saveSeoTakeoff(entries);
+    }
+    navigate("/auth");
   };
 
   // ── Formula display per tab ──
@@ -489,6 +498,7 @@ export default function ConcreteCalculator() {
                 onClear={handleClearEntries}
                 onEdit={handleEditEntry}
                 onRename={handleRenameEntry}
+                onSave={handleSave}
               />
             </div>
           ) : (
@@ -499,6 +509,7 @@ export default function ConcreteCalculator() {
                 onClear={handleClearEntries}
                 onEdit={handleEditEntry}
                 onRename={handleRenameEntry}
+                onSave={handleSave}
               />
             </div>
           )}
