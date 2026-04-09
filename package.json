@@ -6,6 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "postbuild": "react-snap",
     "build:dev": "vite build --mode development",
     "lint": "eslint .",
     "preview": "vite preview",
@@ -89,6 +90,27 @@
     "typescript": "^5.8.3",
     "typescript-eslint": "^8.38.0",
     "vite": "^5.4.19",
-    "vitest": "^3.2.4"
+    "vitest": "^3.2.4",
+    "react-snap": "^1.23.0"
+  },
+  "reactSnap": {
+    "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+    "include": [
+      "/",
+      "/how-it-works",
+      "/how-it-works/footings",
+      "/how-it-works/walls",
+      "/how-it-works/slabs",
+      "/how-it-works/slab-rebar",
+      "/how-it-works/wall-rebar",
+      "/how-it-works/l-bars",
+      "/how-it-works/grade-beams",
+      "/how-it-works/pier-pads",
+      "/how-it-works/curbs",
+      "/how-it-works/stone-base",
+      "/how-it-works/concrete-totals"
+    ],
+    "skipThirdPartyRequests": true,
+    "minifyHtml": false
   }
 }
