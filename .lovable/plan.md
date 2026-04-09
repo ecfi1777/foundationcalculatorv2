@@ -1,15 +1,52 @@
 
 
-# Add Semantic `<main>` to Content Areas
+# Add react-snap Prerendering Configuration
 
 ## Scope
-One file: `src/components/calculator/CalculatorLayout.tsx`
+Two files only: `package.json` and `vercel.json`
 
 ## Changes
 
-1. **Mobile (line 320):** Change the swipeable content `<div>` to `<main>`, and its closing `</div>` on line 345 to `</main>`
+### 1. `package.json` — Three additions
 
-2. **Desktop (line 405):** Change `<div className="flex flex-1 overflow-hidden">` to `<main className="flex flex-1 overflow-hidden">`, and its closing `</div>` on line 421 to `</main>`
+**1A. Add `postbuild` script** (after line 8, the `"build"` line):
+```
+"postbuild": "react-snap"
+```
 
-All classes, attributes, and children remain unchanged — only the element tag changes from `div` to `main`.
+**1B. Add `react-snap` to `devDependencies`** (after line 92):
+```
+"react-snap": "^1.23.0"
+```
+
+**1C. Add top-level `reactSnap` config key** (after `devDependencies` closes, before the final `}`):
+```json
+"reactSnap": {
+  "puppeteerArgs": ["--no-sandbox", "--disable-setuid-sandbox"],
+  "include": [
+    "/",
+    "/how-it-works",
+    "/how-it-works/footings",
+    "/how-it-works/walls",
+    "/how-it-works/slabs",
+    "/how-it-works/slab-rebar",
+    "/how-it-works/wall-rebar",
+    "/how-it-works/l-bars",
+    "/how-it-works/grade-beams",
+    "/how-it-works/pier-pads",
+    "/how-it-works/curbs",
+    "/how-it-works/stone-base",
+    "/how-it-works/concrete-totals"
+  ],
+  "skipThirdPartyRequests": true,
+  "minifyHtml": false
+}
+```
+
+### 2. `vercel.json` — Change destination
+
+Replace `"/index.html"` with `"/200.html"` so Vercel serves prerendered HTML for known routes and falls back to `200.html` for SPA routes.
+
+### Post-deploy note
+A fresh Vercel deployment is needed after these changes for `postbuild` to run and generate the static HTML files.
 
