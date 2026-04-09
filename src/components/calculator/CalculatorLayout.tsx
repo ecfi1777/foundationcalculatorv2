@@ -317,7 +317,7 @@ export function CalculatorLayout() {
           </div>
         )}
 
-        <div
+        <main
           className="flex-1 overflow-y-auto px-3"
           style={{ touchAction: 'pan-y' }}
           onTouchStart={(e) => { touchStartX.current = e.touches[0].clientX; }}
@@ -342,7 +342,7 @@ export function CalculatorLayout() {
           ) : (
             <QuantitiesPanel onEditArea={handleMobileEditArea} />
           )}
-        </div>
+        </main>
 
         <div
           className="border-t-2 border-border bg-card flex shrink-0"
@@ -402,7 +402,7 @@ export function CalculatorLayout() {
       <div className="px-4 pt-2">
         <SaveBanner hasAreas={hasAreas} />
       </div>
-      <div className="flex flex-1 overflow-hidden">
+      <main className="flex flex-1 overflow-hidden">
         <div className={cn(
           "flex-1 flex flex-col border-r border-border overflow-hidden",
           isProjectLocked && "opacity-60 pointer-events-none"
@@ -418,7 +418,7 @@ export function CalculatorLayout() {
         <div className="w-[400px] flex flex-col overflow-hidden h-full">
           <QuantitiesPanel />
         </div>
-      </div>
+      </main>
       {modals}
     </div>
   );
