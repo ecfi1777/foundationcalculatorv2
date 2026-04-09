@@ -1,12 +1,15 @@
 
 
-# Add Per-Route OG Tags to SEO Component
+# Add Semantic `<main>` to Content Areas
 
 ## Scope
-One file: `src/components/SEO.tsx`
+One file: `src/components/calculator/CalculatorLayout.tsx`
 
-## Change
-Replace the entire file with the user-provided version that adds Open Graph meta tags (`og:title`, `og:description`, `og:url`, `og:image`, `og:type`, `og:site_name`) to the existing `<Helmet>` block. These tags override the static values in `index.html` on a per-route basis, ensuring social crawlers and Googlebot see correct metadata for each page.
+## Changes
 
-Constants `SITE_NAME`, `SITE_URL`, and `OG_IMAGE` are extracted to the top of the file. The `canonicalUrl` includes an SSR-safe fallback (`typeof window !== "undefined"` check).
+1. **Mobile (line 320):** Change the swipeable content `<div>` to `<main>`, and its closing `</div>` on line 345 to `</main>`
+
+2. **Desktop (line 405):** Change `<div className="flex flex-1 overflow-hidden">` to `<main className="flex flex-1 overflow-hidden">`, and its closing `</div>` on line 421 to `</main>`
+
+All classes, attributes, and children remain unchanged — only the element tag changes from `div` to `main`.
 
