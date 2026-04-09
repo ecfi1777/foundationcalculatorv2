@@ -1,5 +1,6 @@
 import { supabase } from "@/lib/supabase/client";
 import type { TakeoffEntry } from "@/components/seo/TakeoffPanel";
+import type { Json } from "@/integrations/supabase/types";
 
 const SEO_TAKEOFF_KEY = "tfc_seo_takeoff";
 
@@ -63,7 +64,7 @@ export async function migrateSeoTakeoff(userId: string): Promise<void> {
 
     // ── Build the area inputs payload ──────────────────────
     let calculatorType: string;
-    let inputsPayload: Record<string, unknown>;
+    let inputsPayload: Json;
 
     if (entry.tab === "slab") {
       calculatorType = "slab";
