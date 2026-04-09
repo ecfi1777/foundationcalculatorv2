@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useRef } from "react";
+import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { Pencil } from "lucide-react";
 import type { CalculatorType } from "@/types/calculator";
 import { useNavigate } from "react-router-dom";
