@@ -78,6 +78,9 @@ export default function Auth() {
         if (hasAnonData()) {
           await migrateAnonData(user.id);
         }
+        if (hasSeoTakeoff()) {
+          await migrateSeoTakeoff(user.id);
+        }
         navigate("/");
       };
       postLogin();
