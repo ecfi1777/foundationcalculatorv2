@@ -17,6 +17,7 @@ import AffiliateDashboard from "./pages/AffiliateDashboard";
 import HowItWorks from "./pages/HowItWorks";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
+import ConcreteCalculator from "./pages/ConcreteCalculator";
 
 const queryClient = new QueryClient();
 
@@ -35,6 +36,7 @@ const App = () => (
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/how-it-works/:sectionSlug" element={<HowItWorks />} />
+                <Route path="/concrete-calculator" element={<ConcreteCalculator />} />
                 <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/upgrade" element={<ProtectedRoute><UpgradeRedirect /></ProtectedRoute>} />
