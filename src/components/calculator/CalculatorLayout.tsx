@@ -304,7 +304,7 @@ export function CalculatorLayout() {
             className="flex items-center gap-1 text-xs text-muted-foreground hover:text-primary transition-colors"
           >
             {mobileTab === "calculator" ? (
-              <>View Quantities {visibleAreaCount > 0 && <span className="ml-1 bg-primary text-primary-foreground text-[10px] font-bold rounded-full px-1.5 py-0.5 leading-none">{visibleAreaCount}</span>} <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg></>
+              <>View Quantities <svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="9 18 15 12 9 6"/></svg></>
             ) : (
               <><svg xmlns="http://www.w3.org/2000/svg" className="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"/></svg> Back to Calculator</>
             )}
@@ -370,12 +370,17 @@ export function CalculatorLayout() {
             aria-selected={mobileTab === "quantities"}
             onClick={() => setMobileTab("quantities")}
             className={cn(
-              "flex-1 flex flex-col items-center justify-center gap-0.5 py-3 text-xs font-semibold transition-all",
+              "flex-1 flex flex-col items-center justify-center gap-0.5 py-3 text-xs font-semibold transition-all relative",
               mobileTab === "quantities"
                 ? "text-primary border-t-2 border-primary -mt-[2px] bg-primary/5"
                 : "text-muted-foreground border-t-2 border-transparent -mt-[2px]"
             )}
           >
+            {visibleAreaCount > 0 && (
+              <span className="absolute top-1 right-1/4 bg-primary text-primary-foreground text-[10px] font-bold rounded-full min-w-[16px] h-4 flex items-center justify-center px-1 leading-none">
+                {visibleAreaCount}
+              </span>
+            )}
             <svg xmlns="http://www.w3.org/2000/svg" className="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/>
             </svg>
