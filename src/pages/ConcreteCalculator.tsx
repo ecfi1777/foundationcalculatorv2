@@ -70,11 +70,11 @@ export default function ConcreteCalculator() {
       </Helmet>
 
       {/* ── The real TFC calculator — full viewport height ── */}
-      <ProjectProvider>
-        <CalculatorProvider>
+      <CalculatorProvider>
+        <ProjectProvider>
           <CalculatorLayout />
-        </CalculatorProvider>
-      </ProjectProvider>
+        </ProjectProvider>
+      </CalculatorProvider>
 
       {/* ── SEO content — below the fold, indexed by Google ── */}
       <div className="bg-background text-foreground">
