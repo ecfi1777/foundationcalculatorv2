@@ -3,7 +3,7 @@ const ANON_HAS_DATA_KEY = "tfc_anon_has_data";
 const CALC_STATE_KEY = "tfc_calculator_state";
 const REF_CODE_KEY = "tfc_ref_code";
 const PROMO_CODE_KEY = "tfc_promo_code";
-const SEO_TAKEOFF_KEY = "tfc_seo_takeoff";
+
 
 // --- Ref / Promo ---
 
@@ -49,17 +49,3 @@ export function clearAnonData() {
   localStorage.removeItem(PROMO_CODE_KEY);
 }
 
-// --- SEO Takeoff ---
-
-export function saveSeoTakeoff(entries: unknown[]): void {
-  if (entries.length === 0) return;
-  localStorage.setItem(SEO_TAKEOFF_KEY, JSON.stringify(entries));
-}
-
-export function hasSeoTakeoff(): boolean {
-  return localStorage.getItem(SEO_TAKEOFF_KEY) !== null;
-}
-
-export function clearSeoTakeoff(): void {
-  localStorage.removeItem(SEO_TAKEOFF_KEY);
-}
