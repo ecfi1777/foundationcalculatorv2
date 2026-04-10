@@ -4,8 +4,7 @@ import { supabase } from "@/lib/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { migrateAnonData, attachReferralIfNeeded } from "@/lib/migrateAnonData";
-import { hasAnonData, hasSeoTakeoff, captureRefCode } from "@/lib/localStorage";
-import { migrateSeoTakeoff } from "@/lib/migrateSeoTakeoff";
+import { hasAnonData, captureRefCode } from "@/lib/localStorage";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -77,9 +76,6 @@ export default function Auth() {
         await attachReferralIfNeeded(user.id);
         if (hasAnonData()) {
           await migrateAnonData(user.id);
-        }
-        if (hasSeoTakeoff()) {
-          await migrateSeoTakeoff(user.id);
         }
         navigate("/");
       };
