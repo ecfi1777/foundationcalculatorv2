@@ -1,27 +1,9 @@
 
 
-# Fix Provider Nesting Order in ConcreteCalculator.tsx
+# Wrap Calculator in h-screen div
 
 ## Change
-Swap `CalculatorProvider` and `ProjectProvider` nesting in `src/pages/ConcreteCalculator.tsx` to match `Index.tsx`:
+In `src/pages/ConcreteCalculator.tsx`, wrap the `CalculatorProvider`/`ProjectProvider`/`CalculatorLayout` block in `<div className="h-screen">` to match the viewport behavior of Index.tsx.
 
-**Before:**
-```tsx
-<ProjectProvider>
-  <CalculatorProvider>
-    <CalculatorLayout />
-  </CalculatorProvider>
-</ProjectProvider>
-```
-
-**After:**
-```tsx
-<CalculatorProvider>
-  <ProjectProvider>
-    <CalculatorLayout />
-  </ProjectProvider>
-</CalculatorProvider>
-```
-
-Single file, single change.
+Single file, single change — add one wrapping div.
 
