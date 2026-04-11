@@ -415,8 +415,8 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
           isProjectLocked && "opacity-60 pointer-events-none"
         )}>
           <div className="px-4 pt-4"><CalculatorTabBar /></div>
-          <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4">
-            <div className="rounded-lg border border-border bg-card p-5 flex flex-col h-full">
+          <div className="flex-1 overflow-y-auto min-h-0 px-3 py-3">
+            <div className="rounded-lg border border-border bg-card p-4 flex flex-col h-full">
               <ActiveForm />
               <div className="mt-auto">
                 <DraftActionButtons />
@@ -424,7 +424,7 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
             </div>
           </div>
         </div>
-        <div className="w-[400px] flex flex-col h-full overflow-hidden border-l border-border bg-card rounded-r-lg">
+        <div className="w-[340px] flex flex-col h-full overflow-hidden border-l border-border bg-card rounded-r-lg">
           <QuantitiesPanel />
         </div>
       </main>

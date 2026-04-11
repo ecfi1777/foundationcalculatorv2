@@ -74,7 +74,7 @@ export default function ConcreteCalculator() {
 
       {/* ── Intro — product copy, above the calculator ── */}
       {!isExpanded && (
-        <section className="max-w-3xl mx-auto px-4 pt-12 pb-6">
+        <section className="max-w-4xl mx-auto px-4 pt-12 pb-6">
           <h2 className="text-xl font-semibold text-foreground mb-3">
             Concrete Calculator Built for Contractors
           </h2>
@@ -93,7 +93,7 @@ export default function ConcreteCalculator() {
       {/* ── The real TFC calculator ── */}
       <div className={cn(
         "mx-auto transition-all duration-300",
-        isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-6xl px-4"
+        isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-5xl px-4"
       )}>
         <div className={cn(isExpanded ? "" : "min-h-[70vh]")}>
           <CalculatorProvider>
@@ -110,7 +110,7 @@ export default function ConcreteCalculator() {
       {/* ── SEO content — below the fold, indexed by Google ── */}
       {!isExpanded && (
         <div className="bg-background text-foreground">
-          <div className="max-w-5xl mx-auto px-4 py-16 space-y-10">
+          <div className="max-w-4xl mx-auto px-4 py-16 space-y-10">
 
             {/* ── Differentiator ── */}
             <section className="rounded-lg border border-border bg-card p-6 prose prose-sm dark:prose-invert max-w-none">
