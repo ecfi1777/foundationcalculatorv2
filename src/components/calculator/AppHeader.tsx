@@ -9,7 +9,7 @@ import {
 import {
   Save, FolderOpen, Plus, Download, Settings,
   HelpCircle, User, LogOut, ChevronDown, Sun, Moon,
-  Pencil, Loader2,
+  Pencil, Loader2, Maximize2, Minimize2,
 } from "lucide-react";
 import { useAuth } from "@/hooks/useAuth";
 import { useTheme } from "@/hooks/useTheme";
@@ -35,6 +35,8 @@ interface AppHeaderProps {
   isExporting?: boolean;
   canExport?: boolean;
   onSignOut?: () => void;
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
 }
 
 export function AppHeader({
@@ -44,6 +46,8 @@ export function AppHeader({
   isDirty, hasSubstantiveData, onResetToBlank,
   onExportPDF, onExportCSV, isExporting, canExport,
   onSignOut,
+  isExpanded,
+  onToggleExpand,
 }: AppHeaderProps) {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -185,6 +189,19 @@ export function AppHeader({
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
+
+        {/* Workspace toggle — desktop only */}
+        {onToggleExpand && (
+          <div className="hidden sm:flex">
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={onToggleExpand}>
+              {isExpanded ? (
+                <><Minimize2 className="h-4 w-4" /> Exit Workspace</>
+              ) : (
+                <><Maximize2 className="h-4 w-4" /> Open Workspace</>
+              )}
+            </Button>
+          </div>
+        )}
 
         <div className="w-px h-5 bg-border mx-1" />
 

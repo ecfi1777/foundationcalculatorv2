@@ -47,7 +47,12 @@ function ActiveForm() {
   }
 }
 
-export function CalculatorLayout() {
+interface CalculatorLayoutProps {
+  isExpanded?: boolean;
+  onToggleExpand?: () => void;
+}
+
+export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayoutProps) {
   const isMobile = useIsMobile();
   const { state, dispatch } = useCalculatorState();
   const { user, signOut } = useAuth();
@@ -269,6 +274,8 @@ export function CalculatorLayout() {
     isExporting,
     canExport,
     onSignOut: handleSignOut,
+    isExpanded,
+    onToggleExpand,
   };
 
   // ── MOBILE ──

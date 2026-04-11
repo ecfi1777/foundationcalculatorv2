@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Helmet } from "react-helmet-async";
 import { captureRefCode } from "@/lib/localStorage";
 import { CalculatorProvider } from "@/hooks/useCalculatorState";
@@ -6,6 +6,7 @@ import { ProjectProvider } from "@/hooks/useProject";
 import { CalculatorLayout } from "@/components/calculator/CalculatorLayout";
 import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
+import { cn } from "@/lib/utils";
 
 const JSON_LD_SOFTWARE = JSON.stringify({
   "@context": "https://schema.org",
@@ -267,6 +268,7 @@ export default function ConcreteCalculator() {
 
         </div>
       </div>
+      )}
     </>
   );
 }
