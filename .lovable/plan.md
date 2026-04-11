@@ -1,35 +1,41 @@
 
 
-# Align Calculator Panels & Widen SEO Content
+# Center & Card-Wrap the /concrete-calculator Page
 
-## Changes
+## Summary
+Wrap each SEO content section below the calculator in a card container and tighten the page's vertical rhythm so the whole page reads as one centered, modular system.
 
-### 1. `src/components/calculator/CalculatorLayout.tsx` — Panel alignment (desktop block, lines 405–420)
+## Single file change: `src/pages/ConcreteCalculator.tsx`
 
-Make both panels fill the workspace height equally:
+### 1. Page rhythm alignment
+- **Intro** stays `max-w-3xl` (narrower, leading copy)
+- **Calculator** stays `max-w-7xl` (wide workspace)
+- **Content below** stays `max-w-5xl` (medium-wide, visually between the two)
 
-- On `<main>` (line 405): keep `min-h-[500px]`, ensure it has a defined height context
-- Left column (line 407): add `h-full` — becomes `flex-1 flex flex-col h-full overflow-hidden rounded-l-lg`
-- Form scroll area (line 411): add `flex-1` back but only for height-filling within the left column — becomes `flex-1 overflow-y-auto px-4 py-4`
-- Form card (line 412): add `flex flex-col h-full` — becomes `rounded-lg border border-border bg-card p-5 flex flex-col h-full`
-- Keep `ActiveForm` content at top with no artificial spacing; `DraftActionButtons` stays after it via `mt-auto` so it pushes to the bottom of the card when there's extra space
-- Right panel (line 418): already `flex flex-col`, just add `h-full` — no other changes needed
+No width changes needed — the current widths already create a good centered hierarchy.
 
-This ensures both columns stretch to the same height defined by the `<main>` container, and the form card fills its column cleanly.
+### 2. Wrap each content section in a card container
 
-### 2. `src/pages/ConcreteCalculator.tsx` — Widen SEO content (line 101)
+Replace the bare `<section className="prose ...">` wrappers with a card-style container for each of the 5 sections:
 
-Change `max-w-3xl` to `max-w-5xl`:
 ```tsx
-<div className="max-w-5xl mx-auto px-4 py-16 space-y-16">
+<section className="rounded-lg border border-border bg-card p-6 prose prose-sm dark:prose-invert max-w-none">
 ```
 
-This widens the SEO content from 48rem to 64rem, bringing it closer to the calculator's 80rem container width while keeping readable line lengths.
+Apply this to:
+- **Differentiator** (line 104)
+- **Why Contractors Use This** (line 142)
+- **Field Notes** (line 154)
+- **FAQ** (line 187) — not a prose section, so just: `rounded-lg border border-border bg-card p-6`
+- **Related Calculators** (line 251) — same non-prose card style
 
-### Files modified
-- `src/components/calculator/CalculatorLayout.tsx` — panel height alignment
-- `src/pages/ConcreteCalculator.tsx` — 1 class change on line 101
+### 3. Reduce inter-section gap slightly
+Change the outer `space-y-16` (line 101) to `space-y-10` so the cards feel like a cohesive system rather than isolated blocks spaced far apart.
 
-### Unchanged
-- All calculator logic, state, content copy, mobile layout
+### What stays unchanged
+- All text copy, headings, links
+- Calculator logic and workspace layout
+- Mobile behavior (cards naturally stack)
+- JSON-LD schemas
+- Intro section above calculator
 
