@@ -1,24 +1,34 @@
 
 
-# Fix Page Mode Panel Height & Narrow Workspace Width
+# Fix Quantities Panel Height to Match Calculator Panel
 
-## Changes
+## Problem
+The `<main>` container uses `min-h-[600px]` which sets a minimum but doesn't establish an actual height that `h-full` children can reference. The left column grows with content via `flex-1`, but the right column's `h-full` has no concrete height to stretch to.
 
-### 1. `src/pages/ConcreteCalculator.tsx` — Narrow Page Mode width
-- Line 96: Change `max-w-7xl` to `max-w-6xl` for Page Mode
+## Fix: `src/components/calculator/CalculatorLayout.tsx`
 
-### 2. `src/components/calculator/CalculatorLayout.tsx` — Fix panel height alignment
-- Line 412: Change `<main>` to use a fixed/stretch height approach: replace `flex flex-1 min-h-[500px]` with `flex min-h-[600px]` (or similar) so both children share a defined height
-- Line 413: Ensure left column has `h-full` (already present)
-- Line 418: The scroll area `flex-1 overflow-y-auto` needs to work within the column height — already has `flex-1`, confirm `min-h-0` is present so flex shrink works
-- Line 427: Right panel already has `h-full flex flex-col` — confirm `QuantitiesPanel` fills it
+### Make both columns stretch equally via `stretch` (default) + remove `h-full`
+The fix is to use `items-stretch` (flexbox default) on `<main>` and remove explicit `h-full` from both columns, letting them naturally stretch to the tallest sibling's height.
 
-The core issue is `flex-1` on `<main>` makes it grow based on parent, but the parent `flex flex-col bg-background` has no defined height. Fix: give `<main>` a concrete `min-h-[600px]` and ensure both columns stretch via `h-full`. Add `min-h-0` to the left column's scroll area to prevent content from overflowing the flex container.
+**Line 412** — Add `items-stretch` explicitly to `<main>`:
+```
+flex min-h-[600px] overflow-hidden
+```
+→
+```
+flex min-h-[600px] items-stretch overflow-hidden
+```
+
+**Line 427** — The right panel column: remove `h-full` (stretch handles it), keep everything else.
+
+The QuantitiesPanel itself already has `flex flex-col h-full` with `flex-1` on the scrollable area and the totals footer anchored at the bottom — no changes needed there.
 
 ### Files modified
-- `src/pages/ConcreteCalculator.tsx` — 1 class change (max-w-7xl → max-w-6xl)
-- `src/components/calculator/CalculatorLayout.tsx` — height alignment fixes on `<main>` and child containers
+- `src/components/calculator/CalculatorLayout.tsx` — 2 small class tweaks on lines 412 and 427
 
 ### Unchanged
-- Workspace Mode width/behavior
-- Calculator logic, mobile layout, text copy
+- QuantitiesPanel component
+- Workspace Mode
+- Calculator logic, mobile layout
+- All text copy
+
