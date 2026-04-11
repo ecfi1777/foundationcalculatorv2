@@ -1,39 +1,24 @@
 
 
-# Page Mode / Workspace Mode for the Calculator
-
-## Summary
-Add a toggle between **Page Mode** (default, contained) and **Workspace Mode** (expanded, immersive) on the calculator. State lives in `ConcreteCalculator.tsx` and flows down through props.
+# Fix Page Mode Panel Height & Narrow Workspace Width
 
 ## Changes
 
-### 1. `src/pages/ConcreteCalculator.tsx`
-- Add `const [isExpanded, setIsExpanded] = useState(false)`
-- Pass `isExpanded` and `onToggleExpand` to `CalculatorLayout`
-- Wrap calculator in a conditional container:
-  - Page mode: `max-w-7xl mx-auto px-4` (current)
-  - Workspace mode: `max-w-[1600px] mx-auto px-6 min-h-[85vh]`
-  - Add `transition-all duration-300` for smooth width change
-- Conditionally hide intro section and SEO content sections when `isExpanded` is true
+### 1. `src/pages/ConcreteCalculator.tsx` — Narrow Page Mode width
+- Line 96: Change `max-w-7xl` to `max-w-6xl` for Page Mode
 
-### 2. `src/components/calculator/CalculatorLayout.tsx`
-- Accept `isExpanded?: boolean` and `onToggleExpand?: () => void` props
-- Pass both to `AppHeader`
+### 2. `src/components/calculator/CalculatorLayout.tsx` — Fix panel height alignment
+- Line 412: Change `<main>` to use a fixed/stretch height approach: replace `flex flex-1 min-h-[500px]` with `flex min-h-[600px]` (or similar) so both children share a defined height
+- Line 413: Ensure left column has `h-full` (already present)
+- Line 418: The scroll area `flex-1 overflow-y-auto` needs to work within the column height — already has `flex-1`, confirm `min-h-0` is present so flex shrink works
+- Line 427: Right panel already has `h-full flex flex-col` — confirm `QuantitiesPanel` fills it
 
-### 3. `src/components/calculator/AppHeader.tsx`
-- Accept `isExpanded?: boolean` and `onToggleExpand?: () => void` props
-- Render a ghost button on the right side of the header (desktop only):
-  - Page mode: `<Maximize2 size={16} />` + **"Open Workspace"**
-  - Workspace mode: `<Minimize2 size={16} />` + **"Exit Workspace"**
+The core issue is `flex-1` on `<main>` makes it grow based on parent, but the parent `flex flex-col bg-background` has no defined height. Fix: give `<main>` a concrete `min-h-[600px]` and ensure both columns stretch via `h-full`. Add `min-h-0` to the left column's scroll area to prevent content from overflowing the flex container.
 
 ### Files modified
-- `src/pages/ConcreteCalculator.tsx`
-- `src/components/calculator/CalculatorLayout.tsx`
-- `src/components/calculator/AppHeader.tsx`
+- `src/pages/ConcreteCalculator.tsx` — 1 class change (max-w-7xl → max-w-6xl)
+- `src/components/calculator/CalculatorLayout.tsx` — height alignment fixes on `<main>` and child containers
 
 ### Unchanged
-- All calculator logic, forms, calculations
-- Mobile layout (toggle hidden on mobile)
-- SEO content (conditionally hidden, not removed)
-- All text copy
-
+- Workspace Mode width/behavior
+- Calculator logic, mobile layout, text copy
