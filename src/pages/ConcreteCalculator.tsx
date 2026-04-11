@@ -98,10 +98,10 @@ export default function ConcreteCalculator() {
 
       {/* ── SEO content — below the fold, indexed by Google ── */}
       <div className="bg-background text-foreground">
-        <div className="max-w-5xl mx-auto px-4 py-16 space-y-16">
+        <div className="max-w-5xl mx-auto px-4 py-16 space-y-10">
 
           {/* ── Differentiator ── */}
-          <section className="prose prose-sm dark:prose-invert max-w-none">
+          <section className="rounded-lg border border-border bg-card p-6 prose prose-sm dark:prose-invert max-w-none">
             <h2>This Is a Takeoff Tool, Not a Calculator</h2>
             <p>
               Most concrete calculators are built for homeowners estimating a single slab or patio.
@@ -139,7 +139,7 @@ export default function ConcreteCalculator() {
           </section>
 
           {/* ── Why Contractors Use This ── */}
-          <section className="prose prose-sm dark:prose-invert max-w-none">
+          <section className="rounded-lg border border-border bg-card p-6 prose prose-sm dark:prose-invert max-w-none">
             <h3>Why Contractors Use This Instead of Basic Calculators</h3>
             <ul>
               <li>Measure multiple areas in one job (footings, walls, slabs)</li>
@@ -151,7 +151,7 @@ export default function ConcreteCalculator() {
           </section>
 
           {/* ── Field Notes ── */}
-          <section className="prose prose-sm dark:prose-invert max-w-none">
+          <section className="rounded-lg border border-border bg-card p-6 prose prose-sm dark:prose-invert max-w-none">
             <h2 className="text-xl font-semibold text-foreground">
               Field Notes from 20 Years in Foundation Work
             </h2>
@@ -184,7 +184,7 @@ export default function ConcreteCalculator() {
           </section>
 
           {/* ── FAQ ── */}
-          <section className="space-y-6">
+          <section className="rounded-lg border border-border bg-card p-6 space-y-6">
             <h2 className="text-xl font-semibold text-foreground">
               Concrete Calculator — Common Questions
             </h2>
@@ -248,7 +248,7 @@ export default function ConcreteCalculator() {
           </section>
 
           {/* ── Related Calculators ── */}
-          <nav className="space-y-3">
+          <nav className="rounded-lg border border-border bg-card p-6 space-y-3">
             <h2 className="text-lg font-semibold text-foreground">
               More Concrete Calculators
             </h2>
