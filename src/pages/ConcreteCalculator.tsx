@@ -98,7 +98,7 @@ export default function ConcreteCalculator() {
 
       {/* ── SEO content — below the fold, indexed by Google ── */}
       <div className="bg-background text-foreground">
-        <div className="max-w-3xl mx-auto px-4 py-16 space-y-16">
+        <div className="max-w-5xl mx-auto px-4 py-16 space-y-16">
 
           {/* ── Differentiator ── */}
           <section className="prose prose-sm dark:prose-invert max-w-none">
