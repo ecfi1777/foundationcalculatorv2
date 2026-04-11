@@ -225,7 +225,7 @@ export function QuantitiesPanel({ onEditArea }: QuantitiesPanelProps) {
       </div>
 
       {/* PROJECT TOTALS — always pinned */}
-      <div className="border-t border-border bg-card px-4 py-3 space-y-2">
+      <div className="shrink-0 border-t border-border bg-card px-4 py-3 space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
           Project Totals
         </p>

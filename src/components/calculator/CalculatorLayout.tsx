@@ -411,17 +411,15 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
       </div>
       <main className="flex min-h-[600px] items-stretch overflow-hidden">
         <div className={cn(
-          "flex-1 flex flex-col h-full overflow-hidden rounded-l-lg",
+          "flex-1 flex flex-col overflow-hidden rounded-l-lg",
           isProjectLocked && "opacity-60 pointer-events-none"
         )}>
-          <div className="px-4 pt-4"><CalculatorTabBar /></div>
+          <div className="shrink-0 px-4 pt-4"><CalculatorTabBar /></div>
           <div className="flex-1 overflow-y-auto min-h-0 px-3 py-3">
-            <div className="rounded-lg border border-border bg-card p-4 flex flex-col h-full">
-              <ActiveForm />
-              <div className="mt-auto">
-                <DraftActionButtons />
-              </div>
-            </div>
+            <ActiveForm />
+          </div>
+          <div className="shrink-0 border-t border-border bg-card">
+            <DraftActionButtons />
           </div>
         </div>
         <div className="w-[340px] flex flex-col overflow-hidden border-l border-border bg-card rounded-r-lg">

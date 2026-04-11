@@ -42,7 +42,7 @@ export function DraftActionButtons() {
 
   return (
     <>
-      <div className="flex gap-2 mt-4">
+      <div className="flex gap-2 py-3 px-4">
         <Button className="flex-1 gap-1 h-9 text-sm" onClick={handleSave}>
           <Save className="h-4 w-4" />
           Save Area
