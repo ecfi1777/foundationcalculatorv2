@@ -1,41 +1,39 @@
 
 
-# Center & Card-Wrap the /concrete-calculator Page
+# Page Mode / Workspace Mode for the Calculator
 
 ## Summary
-Wrap each SEO content section below the calculator in a card container and tighten the page's vertical rhythm so the whole page reads as one centered, modular system.
+Add a toggle between **Page Mode** (default, contained) and **Workspace Mode** (expanded, immersive) on the calculator. State lives in `ConcreteCalculator.tsx` and flows down through props.
 
-## Single file change: `src/pages/ConcreteCalculator.tsx`
+## Changes
 
-### 1. Page rhythm alignment
-- **Intro** stays `max-w-3xl` (narrower, leading copy)
-- **Calculator** stays `max-w-7xl` (wide workspace)
-- **Content below** stays `max-w-5xl` (medium-wide, visually between the two)
+### 1. `src/pages/ConcreteCalculator.tsx`
+- Add `const [isExpanded, setIsExpanded] = useState(false)`
+- Pass `isExpanded` and `onToggleExpand` to `CalculatorLayout`
+- Wrap calculator in a conditional container:
+  - Page mode: `max-w-7xl mx-auto px-4` (current)
+  - Workspace mode: `max-w-[1600px] mx-auto px-6 min-h-[85vh]`
+  - Add `transition-all duration-300` for smooth width change
+- Conditionally hide intro section and SEO content sections when `isExpanded` is true
 
-No width changes needed — the current widths already create a good centered hierarchy.
+### 2. `src/components/calculator/CalculatorLayout.tsx`
+- Accept `isExpanded?: boolean` and `onToggleExpand?: () => void` props
+- Pass both to `AppHeader`
 
-### 2. Wrap each content section in a card container
+### 3. `src/components/calculator/AppHeader.tsx`
+- Accept `isExpanded?: boolean` and `onToggleExpand?: () => void` props
+- Render a ghost button on the right side of the header (desktop only):
+  - Page mode: `<Maximize2 size={16} />` + **"Open Workspace"**
+  - Workspace mode: `<Minimize2 size={16} />` + **"Exit Workspace"**
 
-Replace the bare `<section className="prose ...">` wrappers with a card-style container for each of the 5 sections:
+### Files modified
+- `src/pages/ConcreteCalculator.tsx`
+- `src/components/calculator/CalculatorLayout.tsx`
+- `src/components/calculator/AppHeader.tsx`
 
-```tsx
-<section className="rounded-lg border border-border bg-card p-6 prose prose-sm dark:prose-invert max-w-none">
-```
-
-Apply this to:
-- **Differentiator** (line 104)
-- **Why Contractors Use This** (line 142)
-- **Field Notes** (line 154)
-- **FAQ** (line 187) — not a prose section, so just: `rounded-lg border border-border bg-card p-6`
-- **Related Calculators** (line 251) — same non-prose card style
-
-### 3. Reduce inter-section gap slightly
-Change the outer `space-y-16` (line 101) to `space-y-10` so the cards feel like a cohesive system rather than isolated blocks spaced far apart.
-
-### What stays unchanged
-- All text copy, headings, links
-- Calculator logic and workspace layout
-- Mobile behavior (cards naturally stack)
-- JSON-LD schemas
-- Intro section above calculator
+### Unchanged
+- All calculator logic, forms, calculations
+- Mobile layout (toggle hidden on mobile)
+- SEO content (conditionally hidden, not removed)
+- All text copy
 
