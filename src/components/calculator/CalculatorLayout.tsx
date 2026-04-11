@@ -411,8 +411,10 @@ export function CalculatorLayout() {
           <div className="flex-1 overflow-y-auto px-4 py-4">
             <div className="rounded-lg border border-border bg-card p-4">
               <ActiveForm />
-              <DraftActionButtons />
             </div>
+          </div>
+          <div className="px-4 pb-3">
+            <DraftActionButtons />
           </div>
         </div>
         <div className="w-[400px] flex flex-col overflow-hidden h-full">
