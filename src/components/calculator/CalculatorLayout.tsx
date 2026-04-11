@@ -404,18 +404,20 @@ export function CalculatorLayout() {
       </div>
       <main className="flex flex-1 min-h-[500px] overflow-hidden">
         <div className={cn(
-          "flex-1 flex flex-col overflow-hidden rounded-l-lg",
+          "flex-1 flex flex-col h-full overflow-hidden rounded-l-lg",
           isProjectLocked && "opacity-60 pointer-events-none"
         )}>
           <div className="px-4 pt-4"><CalculatorTabBar /></div>
-          <div className="overflow-y-auto px-4 py-4">
-            <div className="rounded-lg border border-border bg-card p-5">
+          <div className="flex-1 overflow-y-auto px-4 py-4">
+            <div className="rounded-lg border border-border bg-card p-5 flex flex-col h-full">
               <ActiveForm />
-              <DraftActionButtons />
+              <div className="mt-auto">
+                <DraftActionButtons />
+              </div>
             </div>
           </div>
         </div>
-        <div className="w-[400px] flex flex-col overflow-hidden border-l border-border bg-card rounded-r-lg">
+        <div className="w-[400px] flex flex-col h-full overflow-hidden border-l border-border bg-card rounded-r-lg">
           <QuantitiesPanel />
         </div>
       </main>
