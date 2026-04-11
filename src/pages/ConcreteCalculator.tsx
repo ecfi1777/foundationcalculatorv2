@@ -86,12 +86,14 @@ export default function ConcreteCalculator() {
       </section>
 
       {/* ── The real TFC calculator — full viewport height ── */}
-      <div className="h-screen">
-        <CalculatorProvider>
-          <ProjectProvider>
-            <CalculatorLayout />
-          </ProjectProvider>
-        </CalculatorProvider>
+      <div className="max-w-7xl mx-auto px-4">
+        <div className="h-screen">
+          <CalculatorProvider>
+            <ProjectProvider>
+              <CalculatorLayout />
+            </ProjectProvider>
+          </CalculatorProvider>
+        </div>
       </div>
 
       {/* ── SEO content — below the fold, indexed by Google ── */}
