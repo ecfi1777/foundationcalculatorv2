@@ -65,7 +65,7 @@ function SegmentInputRow({
 
   return (
     <div>
-      <div className="flex flex-wrap gap-1.5 items-end">
+      <div className="flex flex-wrap gap-2 items-end">
         <div className="flex-1 min-w-[60px]">
           {!compact && <label className="text-xs text-muted-foreground mb-0.5 block">Feet</label>}
           <Input

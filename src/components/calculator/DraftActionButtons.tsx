@@ -42,14 +42,14 @@ export function DraftActionButtons() {
 
   return (
     <>
-      <div className="flex gap-2 pt-2">
-        <Button className="flex-1 gap-1" onClick={handleSave}>
+      <div className="flex gap-2 mt-4">
+        <Button className="flex-1 gap-1 h-9 text-sm" onClick={handleSave}>
           <Save className="h-4 w-4" />
           Save Area
         </Button>
         <Button
           variant="outline"
-          className="flex-1 gap-1 text-destructive border-destructive/30 hover:bg-destructive/10"
+          className="flex-1 gap-1 h-9 text-sm text-destructive border-destructive/30 hover:bg-destructive/10"
           onClick={handleDiscard}
         >
           <Trash2 className="h-4 w-4" />
