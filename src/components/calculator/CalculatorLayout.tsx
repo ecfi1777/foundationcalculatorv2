@@ -409,13 +409,13 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
       <div className="px-4 pt-2">
         <SaveBanner hasAreas={hasAreas} />
       </div>
-      <main className="flex flex-1 min-h-[500px] overflow-hidden">
+      <main className="flex min-h-[600px] overflow-hidden">
         <div className={cn(
           "flex-1 flex flex-col h-full overflow-hidden rounded-l-lg",
           isProjectLocked && "opacity-60 pointer-events-none"
         )}>
           <div className="px-4 pt-4"><CalculatorTabBar /></div>
-          <div className="flex-1 overflow-y-auto px-4 py-4">
+          <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4">
             <div className="rounded-lg border border-border bg-card p-5 flex flex-col h-full">
               <ActiveForm />
               <div className="mt-auto">
