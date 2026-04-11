@@ -1,14 +1,26 @@
 
 
-# Update Differentiator Section on /concrete-calculator
+# Constrain Calculator Width on /concrete-calculator
 
-## Single file change: `src/pages/ConcreteCalculator.tsx` (lines 101–125)
+## Single file change: `src/pages/ConcreteCalculator.tsx`
 
-Replace the existing differentiator section content with:
+### Change
+Wrap the calculator's `h-screen` div (lines 88–95) inside a centered max-width container:
 
-1. **Rewritten intro** — three paragraphs with stronger positioning copy
-2. **Updated table** — headers changed to "Generic Calculator" / "Total Foundation Calculator", rows updated to 7 items per spec
-3. **Closing paragraph** added below the table
+```tsx
+{/* ── The real TFC calculator — full viewport height ── */}
+<div className="max-w-7xl mx-auto px-4">
+  <div className="h-screen">
+    <CalculatorProvider>
+      <ProjectProvider>
+        <CalculatorLayout />
+      </ProjectProvider>
+    </CalculatorProvider>
+  </div>
+</div>
+```
 
-The section stays in the same location, same `prose` styling, same `<h2>`. Lines 101–125 get replaced; everything else untouched.
+This adds `max-w-7xl mx-auto px-4` as an outer wrapper around the existing `h-screen` div. The calculator stays full-height but is now width-constrained and centered, visually aligning with the intro (`max-w-3xl`) and SEO content sections below. `max-w-7xl` (80rem / 1280px) keeps enough room for inputs + quantities sidebar while feeling like part of a landing page rather than a full-bleed app.
+
+No other lines or files changed.
 
