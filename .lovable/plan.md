@@ -3,56 +3,33 @@
 # Improve Calculator Workspace Layout & Cohesion
 
 ## Summary
-Refine the desktop calculator layout in `CalculatorLayout.tsx` and the page wrapper in `ConcreteCalculator.tsx` to eliminate dead vertical space, make the two panels feel like one unified workspace, and anchor the draft action buttons to the form card.
+Tighten the desktop calculator workspace by removing forced vertical stretching, repositioning action buttons closer to inputs, and improving panel balance. Save button stays primary.
 
 ## Changes
 
-### 1. `src/pages/ConcreteCalculator.tsx` — Remove forced `h-screen` wrapper (line 90)
+### 1. `src/components/calculator/CalculatorLayout.tsx` (desktop block)
+- Remove `min-h-[75vh]` from outer wrapper (or set `min-h-0`)
+- Add `min-h-[500px]` to the `<main>` flex container
+- Stop flex-stretching the form area — remove `flex-1` from the form scroll container so the card sizes to content
+- Add `rounded-l-lg` to left column, `rounded-r-lg` to right panel for unified framing
 
-Replace:
-```tsx
-<div className="h-screen">
-```
-With:
-```tsx
-<div className="min-h-[70vh]">
-```
-This lets the calculator size naturally to content while still claiming meaningful vertical space. No more dead whitespace below the quantities panel.
+### 2. `src/components/calculator/DraftActionButtons.tsx`
+- Change `pt-2` to `mt-4` for tighter spacing below inputs
+- Add `h-9 text-sm` to both buttons for slightly smaller size
+- **Keep Save as `default` variant** (primary green) — no change to variant
+- Keep Discard as outline/destructive — no change
 
-### 2. `src/components/calculator/CalculatorLayout.tsx` — Desktop section (lines 396–426)
-
-**a) Replace `h-screen` with `min-h-[75vh]`** on the outer flex wrapper (line 397) so the calculator fills space without forcing a full viewport when content is shorter.
-
-**b) Move `DraftActionButtons` inside the form card** (lines 411–418). Currently the buttons sit in a separate `px-4 pb-3` div below the scrollable area, making them feel detached. Move them inside the card alongside `<ActiveForm />`:
-
-```tsx
-<div className="flex-1 overflow-y-auto px-4 py-4">
-  <div className="rounded-lg border border-border bg-card p-5">
-    <ActiveForm />
-    <DraftActionButtons />
-  </div>
-</div>
-```
-Remove the old standalone `<div className="px-4 pb-3"><DraftActionButtons /></div>`.
-
-**c) Increase form card padding** from `p-4` to `p-5` for more breathing room in the form inputs.
-
-**d) Add matching border/background to quantities panel** (line 420) so both sides feel framed:
-```tsx
-<div className="w-[400px] flex flex-col overflow-hidden border-l border-border bg-card">
-```
-Remove the `border-r` from the left column (line 407) since the right panel now has its own `border-l`, avoiding a doubled border.
-
-**e) Add top padding to the tab bar row** — change `pt-3` to `pt-4` (line 410) for consistent spacing.
+### 3. `src/components/calculator/SegmentEntry.tsx`
+- Increase gap between feet/inches/fraction inputs to better use available width
 
 ### Files modified
-- `src/pages/ConcreteCalculator.tsx` — 1 line change
-- `src/components/calculator/CalculatorLayout.tsx` — ~6 lines changed in the desktop return block
+- `src/components/calculator/CalculatorLayout.tsx`
+- `src/components/calculator/DraftActionButtons.tsx`
+- `src/components/calculator/SegmentEntry.tsx`
 
-### What stays unchanged
+### Unchanged
 - All calculator logic, state, reducers
-- Mobile layout (untouched)
-- SEO sections, Field Notes, FAQ
-- QuantitiesPanel internals
-- DraftActionButtons logic
+- Mobile layout
+- SEO content sections
+- Save button variant (stays primary)
 
