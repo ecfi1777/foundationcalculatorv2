@@ -102,26 +102,38 @@ export default function ConcreteCalculator() {
           <section className="prose prose-sm dark:prose-invert max-w-none">
             <h2>This Is a Takeoff Tool, Not a Calculator</h2>
             <p>
-              Most online concrete calculators give you one number for one shape.
-              That works for a single pad pour — not for a foundation job with multiple areas.
+              Most concrete calculators are built for homeowners estimating a single slab or patio.
+              That's not how real foundation work happens.
+            </p>
+            <p>
+              A typical job includes multiple pours — footings, walls, garage slabs, basement floors —
+              all with different dimensions, different waste, and all needing to roll into one total.
+            </p>
+            <p>
+              That's a takeoff. This tool is built to handle that entire workflow in one place.
             </p>
             <table>
               <thead>
                 <tr>
                   <th>Feature</th>
-                  <th>Basic Calculator</th>
-                  <th>This Tool</th>
+                  <th>Generic Calculator</th>
+                  <th>Total Foundation Calculator</th>
                 </tr>
               </thead>
               <tbody>
-                <tr><td>Multiple areas per job</td><td>No</td><td>Yes</td></tr>
-                <tr><td>Running project total</td><td>No</td><td>Yes</td></tr>
-                <tr><td>Per-area waste adjustment</td><td>No</td><td>Yes</td></tr>
-                <tr><td>Saved takeoffs</td><td>No</td><td>Yes</td></tr>
-                <tr><td>PDF export</td><td>No</td><td>Yes</td></tr>
-                <tr><td>Rebar &amp; stone base tracking</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Calculate multiple areas in one project</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Running total across all pours</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Different waste per area</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Multiple pour types in one job (footings, walls, slabs)</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Save and revisit takeoffs</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Export a PDF for job files or estimates</td><td>No</td><td>Yes</td></tr>
+                <tr><td>Rebar and stone tracking included</td><td>No</td><td>Yes</td></tr>
               </tbody>
             </table>
+            <p>
+              Generic calculator sites are built for estimating one section at a time.
+              This tool is built for running a full foundation takeoff — the way contractors actually work.
+            </p>
           </section>
 
           {/* ── Why Contractors Use This ── */}
