@@ -409,9 +409,9 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
       <div className="px-4 pt-2">
         <SaveBanner hasAreas={hasAreas} />
       </div>
-      <main className="flex h-[75vh] min-h-[600px] max-h-[900px] items-stretch overflow-hidden">
+      <main className="flex h-[75vh] min-h-[600px] max-h-[900px] items-stretch overflow-hidden rounded-xl border border-border">
         <div className={cn(
-          "flex-1 flex flex-col overflow-hidden rounded-l-xl border border-border bg-card/60",
+          "flex-1 flex flex-col overflow-hidden bg-card/60",
           isProjectLocked && "opacity-60 pointer-events-none"
         )}>
           <div className="shrink-0 px-4 pt-4"><CalculatorTabBar /></div>
@@ -422,7 +422,7 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
             <DraftActionButtons />
           </div>
         </div>
-        <div className="w-[340px] flex flex-col overflow-hidden border-l border-border bg-card rounded-r-xl">
+        <div className="w-[340px] flex flex-col overflow-hidden border-l border-border bg-card">
           <QuantitiesPanel />
         </div>
       </main>
