@@ -74,19 +74,33 @@ export default function ConcreteCalculator() {
 
       {/* ── Intro — product copy, above the calculator ── */}
       {!isExpanded && (
-        <section className="max-w-4xl mx-auto px-4 pt-12 pb-6">
-          <h2 className="text-xl font-semibold text-foreground mb-3">
+        <section className="max-w-3xl mx-auto px-4 pt-16 pb-10 text-center">
+          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
+            Professional Takeoff Tool
+          </p>
+          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
             Concrete Calculator Built for Contractors
           </h2>
-          <p className="text-sm text-muted-foreground mb-2">
-            Most concrete calculators are designed for single pours like patios or small slabs.
-            Real foundation work is different — it involves multiple areas like footings, walls,
-            garage slabs, and basement floors, all calculated together.
-          </p>
-          <p className="text-sm text-muted-foreground">
-            This tool is designed as a takeoff system. You can measure each area separately
-            and track a running total across the entire job — the same way real estimates are done.
-          </p>
+          <div className="max-w-2xl mx-auto space-y-3">
+            <p className="text-base text-muted-foreground leading-relaxed">
+              Most concrete calculators handle a single pour. Real foundation work involves
+              multiple areas — footings, walls, slabs — all calculated together.
+            </p>
+            <p className="text-base text-muted-foreground leading-relaxed">
+              This tool is a takeoff system. Measure each area separately and track a running
+              total across the entire job — the way real estimates are done.
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
+            {["Multi-area takeoffs", "Running totals", "PDF exports"].map((item) => (
+              <span
+                key={item}
+                className="inline-flex items-center rounded-full border border-border bg-muted/50 px-4 py-1.5 text-xs font-medium text-muted-foreground"
+              >
+                {item}
+              </span>
+            ))}
+          </div>
         </section>
       )}
 
