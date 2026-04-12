@@ -1,60 +1,59 @@
 
 
-# Restyle Intro Section on /concrete-calculator
+# Revamp Comparison Section on /concrete-calculator
 
-## File: `src/pages/ConcreteCalculator.tsx` — lines 76–91
+## File: `src/pages/ConcreteCalculator.tsx`
 
-Replace the current plain intro `<section>` with a modern, polished product intro:
+### Summary
 
-### Structure
+Remove the "Differentiator" section (lines 129–165) and "Why Contractors Use This" section (lines 167–177). Replace with two new sections in a restructured layout.
 
-```
-<section className="max-w-3xl mx-auto px-4 pt-16 pb-10 text-center">
-  {/* Eyebrow / kicker */}
-  <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
-    Professional Takeoff Tool
-  </p>
+### Layout restructuring (lines 124–295)
 
-  {/* Main heading — larger, bolder */}
-  <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-    Concrete Calculator Built for Contractors
-  </h2>
+The current SEO content block wraps everything in one `max-w-4xl` container. We split it:
 
-  {/* Supporting copy — comfortable width, improved spacing */}
-  <div className="max-w-2xl mx-auto space-y-3">
-    <p className="text-base text-muted-foreground leading-relaxed">
-      Most concrete calculators handle a single pour. Real foundation work involves
-      multiple areas — footings, walls, slabs — all calculated together.
-    </p>
-    <p className="text-base text-muted-foreground leading-relaxed">
-      This tool is a takeoff system. Measure each area separately and track a running
-      total across the entire job — the way real estimates are done.
-    </p>
+```text
+{!isExpanded && (
+  <div className="bg-background text-foreground">
+
+    ── 1. COMPARISON SECTION (full-width, outside max-w-4xl) ──
+
+    ── 2. REMAINING SEO CONTENT (max-w-4xl container) ──
+        → "What this looks like on a real job" (NEW, first item)
+        → Field Notes (existing, unchanged)
+        → FAQ (existing, unchanged)
+        → Related Calculators (existing, unchanged)
+
   </div>
-
-  {/* Feature value chips */}
-  <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-    {["Multi-area takeoffs", "Running totals", "PDF exports"].map((item) => (
-      <span key={item}
-        className="inline-flex items-center rounded-full border border-border bg-muted/50
-                   px-4 py-1.5 text-xs font-medium text-muted-foreground">
-        {item}
-      </span>
-    ))}
-  </div>
-</section>
+)}
 ```
 
-### What changes
-- Eyebrow kicker "Professional Takeoff Tool" above heading
-- Heading bumped to `text-3xl sm:text-4xl font-bold`, centered
-- Copy narrowed to `max-w-2xl`, bumped to `text-base`, better `leading-relaxed` spacing
-- Section centered with more vertical padding (`pt-16 pb-10`)
-- Three subtle pill-style feature chips below copy
-- Copy substance unchanged — only minor tightening for flow
+### 1. Comparison section (full-width)
+
+- Wraps in `<section className="bg-muted/40 border-y border-border">` with `max-w-5xl` inner container
+- Eyebrow: "Why this is different"
+- H2: "Not all concrete calculators are built for real jobs"
+- Two lines of supporting text in `max-w-2xl` centered block
+- Comparison table in `bg-card rounded-xl shadow-sm border` card with `overflow-x-auto` and `min-w-[720px]`
+- 8 rows with exact content from the spec
+- Column styling: Feature = `font-medium text-foreground`, Basic = `text-muted-foreground`, TFC = `font-medium text-foreground`
+- Row padding: `py-4 px-4`, separators: `border-b border-border`
+- Closing line: "Built for real foundation takeoffs — not single pours."
+
+### 2. "What this looks like on a real job" section
+
+- Inside `max-w-4xl` container as first item
+- Card style: `rounded-lg border border-border bg-card p-6`
+- No `prose` classes — uses standard utility classes
+- H3, paragraph, 4-item `list-disc` list, closing paragraph
 
 ### What does NOT change
-- `!isExpanded` conditional stays
-- Calculator logic, state, layout, SEO content below fold
-- No new dependencies
+
+- Calculator logic, state, providers, intro section
+- Field Notes, FAQ, Related Calculators (content preserved exactly)
+- No new dependencies or animations
+
+### File modified
+
+- `src/pages/ConcreteCalculator.tsx` — lines 124–295
 
