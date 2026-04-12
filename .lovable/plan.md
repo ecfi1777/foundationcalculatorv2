@@ -1,22 +1,14 @@
 
 
-# Improve Visual Polish of Calculator Panel (Left Side)
+# Fix Inconsistent Divider Between Calculator and Quantities Panels
 
-## File: `src/components/calculator/CalculatorLayout.tsx`
+Yes — this is exactly the plan. Three edits in `src/components/calculator/CalculatorLayout.tsx`:
 
-### Three line-level edits (lines 413–425)
+1. **Line 412 (`<main>`)**: Add `rounded-xl border border-border` to the outer wrapper
+2. **Line 414 (left panel)**: Remove `rounded-l-xl border border-border`, keep only `bg-card/60`
+3. **Line 425 (right panel)**: Remove `rounded-r-xl`, keep `border-l border-border bg-card`
 
-**1. Left panel wrapper (line 414)**
-`rounded-l-lg` → `rounded-l-xl border border-border bg-card/60`
+This eliminates the double-border between panels by moving the outer shell to `<main>` and using a single `border-l` as the internal divider.
 
-**2. Footer (line 421)**
-`bg-card` → `bg-background/50 px-4 py-3`
-
-**3. Right panel (line 425)**
-`rounded-r-lg` → `rounded-r-xl` (keep `border-l border-border bg-card`, no margin added)
-
-### What does NOT change
-- Layout structure, mobile layout, calculator logic
-- No gaps/margins between panels
-- No new dependencies
+No changes to layout structure, calculator logic, mobile layout, or footer styling.
 
