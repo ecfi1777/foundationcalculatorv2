@@ -65,11 +65,14 @@ const comparisonRows = [
 ];
 
 const exampleAreas = [
-  { name: "Basement Footing", hint: "24″ wide × 12″ deep, full perimeter", type: "Footing" },
-  { name: "Foundation Wall", hint: "8″ thick × 8′ tall, perimeter segments", type: "Wall" },
-  { name: "Garage Slab", hint: "24′ × 24′ × 4″ thick", type: "Slab" },
-  { name: "Porch Slab", hint: "12′ × 6′ × 4″ thick", type: "Slab" },
-  { name: "Stoop / Areaway", hint: "4′ × 5′ × 6″ thick", type: "Slab" },
+  { name: "Garage Slab", hint: "24′ × 24′ × 5″ thick", type: "Slab" },
+  { name: "Walkway", hint: "30′ × 4′ × 4″ thick", type: "Slab" },
+  { name: "Patio", hint: "16′ × 12′ × 4″ thick", type: "Slab" },
+  { name: "Sidewalk", hint: "40′ × 4′ × 4″ thick", type: "Slab" },
+  { name: "Main Footing", hint: "24″ wide × 12″ deep, perimeter", type: "Footing" },
+  { name: "Frost Footing", hint: "18″ wide × 10″ deep, garage", type: "Footing" },
+  { name: "Foundation Wall", hint: "8″ thick × 8′ tall, perimeter", type: "Wall" },
+  { name: "Basement Slab", hint: "Varied thickness by section", type: "Slab" },
 ];
 
 const relatedCalculators = [
@@ -106,10 +109,10 @@ export default function ConcreteCalculator() {
             Concrete Calculator
           </h1>
           <p className="mt-3 text-base sm:text-lg text-muted-foreground text-center max-w-2xl mx-auto">
-            Multi-area concrete takeoffs for foundation contractors. Footings, walls, slabs, and more — calculated together the way real jobs are bid.
+            Set up your footings, walls, and slabs as separate areas. Save each one, adjust it when things change, and keep your total right.
           </p>
           <p className="mt-2 text-sm text-muted-foreground text-center">
-            Handles feet, inches, and fractions. Built for multi-area projects, not single pours.
+            Works in feet, inches, and fractions — built for multi-area jobs, not single pours.
           </p>
         </section>
       )}
@@ -141,6 +144,9 @@ export default function ConcreteCalculator() {
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">
                 Why this is different from a typical concrete calculator
               </h2>
+              <p className="text-base text-muted-foreground text-center max-w-2xl mx-auto">
+                Most calculators give you one box for one pour. Real jobs have a 24″ main footing and an 18″ garage footing, a 5″ garage slab and a 4″ basement slab, and walls at different heights. It gets worse when you're running three driveways in one day, each a different size. One input box doesn't cut it.
+              </p>
 
               {/* Desktop table */}
               <div className="hidden md:block">
@@ -191,7 +197,7 @@ export default function ConcreteCalculator() {
               What a real foundation takeoff looks like
             </h2>
             <p className="text-base text-muted-foreground text-center max-w-2xl mx-auto">
-              A typical residential foundation isn't one slab — it's five or six different pours. This tool keeps them together in one project instead of running separate calculations and tracking them on paper.
+              With a typical calculator, you'd run each of these separately — garage slab, walkway, patio, sidewalk, footings, walls — then add the totals by hand or in a spreadsheet. Every time something changes, you redo the math.
             </p>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -213,7 +219,10 @@ export default function ConcreteCalculator() {
             </div>
 
             <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
-              Each area calculates independently. The project total updates automatically. Change one area and the rest stay put.
+              Here's what goes wrong: you update the garage slab from 4 inches to 5 inches but forget to re-add the walkway and patio. Your total is off by 2 yards and you don't catch it until the truck shows up short.
+            </p>
+            <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+              This tool keeps all your areas in one place. Edit one section without touching the rest. The project total always reflects every area — no re-adding, no spreadsheet.
             </p>
           </section>
 
