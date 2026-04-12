@@ -1,59 +1,31 @@
 
 
-# Revamp Comparison Section on /concrete-calculator
+# Add Vertical Spacing Below Calculator Section
 
-## File: `src/pages/ConcreteCalculator.tsx`
+## File: `src/pages/ConcreteCalculator.tsx` — line 108
 
-### Summary
+Add `mb-16` to the calculator wrapper div.
 
-Remove the "Differentiator" section (lines 129–165) and "Why Contractors Use This" section (lines 167–177). Replace with two new sections in a restructured layout.
-
-### Layout restructuring (lines 124–295)
-
-The current SEO content block wraps everything in one `max-w-4xl` container. We split it:
-
-```text
-{!isExpanded && (
-  <div className="bg-background text-foreground">
-
-    ── 1. COMPARISON SECTION (full-width, outside max-w-4xl) ──
-
-    ── 2. REMAINING SEO CONTENT (max-w-4xl container) ──
-        → "What this looks like on a real job" (NEW, first item)
-        → Field Notes (existing, unchanged)
-        → FAQ (existing, unchanged)
-        → Related Calculators (existing, unchanged)
-
-  </div>
-)}
+**Current (line 108–111):**
+```tsx
+<div className={cn(
+  "mx-auto transition-all duration-300",
+  isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-5xl px-4"
+)}>
 ```
 
-### 1. Comparison section (full-width)
+**Updated:**
+```tsx
+<div className={cn(
+  "mx-auto transition-all duration-300",
+  isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-5xl px-4 mb-16"
+)}>
+```
 
-- Wraps in `<section className="bg-muted/40 border-y border-border">` with `max-w-5xl` inner container
-- Eyebrow: "Why this is different"
-- H2: "Not all concrete calculators are built for real jobs"
-- Two lines of supporting text in `max-w-2xl` centered block
-- Comparison table in `bg-card rounded-xl shadow-sm border` card with `overflow-x-auto` and `min-w-[720px]`
-- 8 rows with exact content from the spec
-- Column styling: Feature = `font-medium text-foreground`, Basic = `text-muted-foreground`, TFC = `font-medium text-foreground`
-- Row padding: `py-4 px-4`, separators: `border-b border-border`
-- Closing line: "Built for real foundation takeoffs — not single pours."
+The `mb-16` is added only in the non-expanded state (same branch as the rest of the non-expanded styling), so it won't affect workspace mode.
 
-### 2. "What this looks like on a real job" section
-
-- Inside `max-w-4xl` container as first item
-- Card style: `rounded-lg border border-border bg-card p-6`
-- No `prose` classes — uses standard utility classes
-- H3, paragraph, 4-item `list-disc` list, closing paragraph
-
-### What does NOT change
-
-- Calculator logic, state, providers, intro section
-- Field Notes, FAQ, Related Calculators (content preserved exactly)
-- No new dependencies or animations
-
-### File modified
-
-- `src/pages/ConcreteCalculator.tsx` — lines 124–295
+### No other changes
+- No layout restructuring
+- No calculator logic changes
+- Single line edit
 
