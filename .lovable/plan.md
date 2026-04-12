@@ -1,14 +1,20 @@
 
 
-# Fix Inconsistent Divider Between Calculator and Quantities Panels
+# Refine Divider Between Calculator and Quantities Panels
 
-Yes — this is exactly the plan. Three edits in `src/components/calculator/CalculatorLayout.tsx`:
+## File: `src/components/calculator/CalculatorLayout.tsx`
 
-1. **Line 412 (`<main>`)**: Add `rounded-xl border border-border` to the outer wrapper
-2. **Line 414 (left panel)**: Remove `rounded-l-xl border border-border`, keep only `bg-card/60`
-3. **Line 425 (right panel)**: Remove `rounded-r-xl`, keep `border-l border-border bg-card`
+### Single edit — right panel class (approx. line 425)
 
-This eliminates the double-border between panels by moving the outer shell to `<main>` and using a single `border-l` as the internal divider.
+Change `border-border` to `border-border/60` on the right panel's `border-l`:
 
-No changes to layout structure, calculator logic, mobile layout, or footer styling.
+```tsx
+// Before
+<div className="w-[340px] flex flex-col overflow-hidden border-l border-border bg-card">
+
+// After
+<div className="w-[340px] flex flex-col overflow-hidden border-l border-border/60 bg-card">
+```
+
+This softens the divider line by reducing its opacity to 60%, making it feel more refined while keeping it clearly visible. No layout, structure, or logic changes.
 
