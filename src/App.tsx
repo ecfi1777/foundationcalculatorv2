@@ -9,6 +9,7 @@ import { ThemeProvider } from "@/hooks/useTheme";
 import { ProtectedRoute } from "@/components/ProtectedRoute";
 import { AdminRoute } from "@/components/AdminRoute";
 import Index from "./pages/Index";
+import AppCalculator from "./pages/AppCalculator";
 import Auth from "./pages/Auth";
 import Admin from "./pages/Admin";
 import Settings from "./pages/Settings";
@@ -18,6 +19,10 @@ import HowItWorks from "./pages/HowItWorks";
 import ResetPassword from "./pages/ResetPassword";
 import NotFound from "./pages/NotFound";
 import ConcreteCalculator from "./pages/ConcreteCalculator";
+import ConcreteSlabCalculator from "./pages/ConcreteSlabCalculator";
+import ConcreteFootingCalculator from "./pages/ConcreteFootingCalculator";
+import ConcreteWallCalculator from "./pages/ConcreteWallCalculator";
+import RebarCalculator from "./pages/RebarCalculator";
 
 const queryClient = new QueryClient();
 
@@ -32,11 +37,16 @@ const App = () => (
             <AuthProvider>
               <Routes>
                 <Route path="/" element={<Index />} />
+                <Route path="/app" element={<AppCalculator />} />
                 <Route path="/auth" element={<Auth />} />
                 <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/how-it-works" element={<HowItWorks />} />
                 <Route path="/how-it-works/:sectionSlug" element={<HowItWorks />} />
                 <Route path="/concrete-calculator" element={<ConcreteCalculator />} />
+                <Route path="/concrete-slab-calculator" element={<ConcreteSlabCalculator />} />
+                <Route path="/concrete-footing-calculator" element={<ConcreteFootingCalculator />} />
+                <Route path="/concrete-wall-calculator" element={<ConcreteWallCalculator />} />
+                <Route path="/rebar-calculator" element={<RebarCalculator />} />
                 <Route path="/admin" element={<AdminRoute><Admin /></AdminRoute>} />
                 <Route path="/settings" element={<ProtectedRoute><Settings /></ProtectedRoute>} />
                 <Route path="/upgrade" element={<ProtectedRoute><UpgradeRedirect /></ProtectedRoute>} />
