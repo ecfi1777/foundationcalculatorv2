@@ -422,7 +422,7 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
             <DraftActionButtons />
           </div>
         </div>
-        <div className="w-[340px] flex flex-col overflow-hidden border-l border-border bg-card">
+        <div className="w-[340px] flex flex-col overflow-hidden border-l border-border/60 bg-card">
           <QuantitiesPanel />
         </div>
       </main>
