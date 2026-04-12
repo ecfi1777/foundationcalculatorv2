@@ -291,18 +291,8 @@ function loadState(): CalcState {
   return initialState;
 }
 
-export function CalculatorProvider({ children, defaultTab }: { children: React.ReactNode; defaultTab?: CalculatorType }) {
-  const [state, baseDispatch] = useReducer(
-    reducer,
-    defaultTab,
-    (dt) => {
-      const loaded = loadState();
-      if (dt) {
-        return { ...loaded, activeTab: dt, activeAreaId: null };
-      }
-      return loaded;
-    },
-  );
+export function CalculatorProvider({ children }: { children: React.ReactNode }) {
+  const [state, baseDispatch] = useReducer(reducer, undefined, loadState);
   const isDirtyRef = useRef(false);
   const [isDirty, setIsDirty] = React.useState(false);
   const stateRef = useRef(state);
@@ -470,6 +460,17 @@ export function useCalculatorState() {
   const ctx = useContext(CalculatorContext);
   if (!ctx) throw new Error("useCalculatorState must be used within CalculatorProvider");
   return ctx;
+}
+
+export function TabInitializer({ tab }: { tab: CalculatorType }) {
+  const { state, dispatch } = useCalculatorState();
+  React.useLayoutEffect(() => {
+    if (state.activeTab !== tab) {
+      dispatch({ type: "SET_TAB", tab });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+  return null;
 }
 
 function getDefaultDimensions(type: CalculatorType): Record<string, number> {
