@@ -32,12 +32,8 @@ export function DraftActionButtons() {
     }
   };
 
-  const handleDiscard = () => {
-    if (hasRequiredData(activeArea)) {
-      setConfirmOpen(true);
-    } else {
-      dispatch({ type: "DELETE_AREA", id: activeArea.id });
-    }
+  const handleDelete = () => {
+    setConfirmOpen(true);
   };
 
   return (
