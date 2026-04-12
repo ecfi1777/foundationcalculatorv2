@@ -1,31 +1,22 @@
 
 
-# Add Vertical Spacing Below Calculator Section
+# Improve Visual Polish of Calculator Panel (Left Side)
 
-## File: `src/pages/ConcreteCalculator.tsx` — line 108
+## File: `src/components/calculator/CalculatorLayout.tsx`
 
-Add `mb-16` to the calculator wrapper div.
+### Three line-level edits (lines 413–425)
 
-**Current (line 108–111):**
-```tsx
-<div className={cn(
-  "mx-auto transition-all duration-300",
-  isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-5xl px-4"
-)}>
-```
+**1. Left panel wrapper (line 414)**
+`rounded-l-lg` → `rounded-l-xl border border-border bg-card/60`
 
-**Updated:**
-```tsx
-<div className={cn(
-  "mx-auto transition-all duration-300",
-  isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-5xl px-4 mb-16"
-)}>
-```
+**2. Footer (line 421)**
+`bg-card` → `bg-background/50 px-4 py-3`
 
-The `mb-16` is added only in the non-expanded state (same branch as the rest of the non-expanded styling), so it won't affect workspace mode.
+**3. Right panel (line 425)**
+`rounded-r-lg` → `rounded-r-xl` (keep `border-l border-border bg-card`, no margin added)
 
-### No other changes
-- No layout restructuring
-- No calculator logic changes
-- Single line edit
+### What does NOT change
+- Layout structure, mobile layout, calculator logic
+- No gaps/margins between panels
+- No new dependencies
 
