@@ -291,8 +291,18 @@ function loadState(): CalcState {
   return initialState;
 }
 
-export function CalculatorProvider({ children }: { children: React.ReactNode }) {
-  const [state, baseDispatch] = useReducer(reducer, initialState, loadState);
+export function CalculatorProvider({ children, defaultTab }: { children: React.ReactNode; defaultTab?: CalculatorType }) {
+  const [state, baseDispatch] = useReducer(
+    reducer,
+    defaultTab,
+    (dt) => {
+      const loaded = loadState();
+      if (dt) {
+        return { ...loaded, activeTab: dt, activeAreaId: null };
+      }
+      return loaded;
+    },
+  );
   const isDirtyRef = useRef(false);
   const [isDirty, setIsDirty] = React.useState(false);
   const stateRef = useRef(state);
