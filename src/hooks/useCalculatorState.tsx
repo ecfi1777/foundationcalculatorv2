@@ -291,8 +291,19 @@ function loadState(): CalcState {
   return initialState;
 }
 
-export function CalculatorProvider({ children }: { children: React.ReactNode }) {
-  const [state, baseDispatch] = useReducer(reducer, undefined, loadState);
+interface CalculatorProviderProps {
+  children: React.ReactNode;
+  initialTab?: CalculatorType;
+  hydrateFromStorage?: boolean;
+}
+
+export function CalculatorProvider({ children, initialTab, hydrateFromStorage = true }: CalculatorProviderProps) {
+  const [state, baseDispatch] = useReducer(reducer, undefined, () => {
+    if (!hydrateFromStorage) {
+      return { ...initialState, activeTab: initialTab ?? initialState.activeTab };
+    }
+    return loadState();
+  });
   const isDirtyRef = useRef(false);
   const [isDirty, setIsDirty] = React.useState(false);
   const stateRef = useRef(state);
@@ -317,7 +328,7 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
 
   // Wrap dispatch to track dirty state
   const dispatch: React.Dispatch<Action> = useCallback((action: Action) => {
-    if (action.type === "RESET") {
+    if (action.type === "RESET" && hydrateFromStorage) {
       localStorage.removeItem(STORAGE_KEY);
       localStorage.removeItem("tfc_anon_has_data");
     }
@@ -326,19 +337,19 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
       isDirtyRef.current = true;
       setIsDirty(true);
 
-      // Only flag anon data for committed work
-      if (action.type === "SAVE_AREA" || action.type === "ADD_SEGMENT") {
-        // SAVE_AREA = explicit commit; ADD_SEGMENT = may auto-commit in reducer.
-        // Either way the user has segment data worth preserving.
-        localStorage.setItem("tfc_anon_has_data", "true");
-      } else if (action.type !== "ADD_AREA") {
-        const currentState = stateRef.current;
-        const targetId = 'areaId' in action ? (action as any).areaId
-          : 'id' in action ? (action as any).id
-          : currentState.activeAreaId;
-        const targetArea = currentState.areas.find(a => a.id === targetId);
-        if (targetArea && !targetArea.isDraft) {
+      if (hydrateFromStorage) {
+        // Only flag anon data for committed work
+        if (action.type === "SAVE_AREA" || action.type === "ADD_SEGMENT") {
           localStorage.setItem("tfc_anon_has_data", "true");
+        } else if (action.type !== "ADD_AREA") {
+          const currentState = stateRef.current;
+          const targetId = 'areaId' in action ? (action as any).areaId
+            : 'id' in action ? (action as any).id
+            : currentState.activeAreaId;
+          const targetArea = currentState.areas.find(a => a.id === targetId);
+          if (targetArea && !targetArea.isDraft) {
+            localStorage.setItem("tfc_anon_has_data", "true");
+          }
         }
       }
     }
@@ -346,17 +357,19 @@ export function CalculatorProvider({ children }: { children: React.ReactNode }) 
       isDirtyRef.current = false;
       setIsDirty(false);
     }
-  }, []);
+  }, [hydrateFromStorage]);
 
   const markClean = useCallback(() => {
     isDirtyRef.current = false;
     setIsDirty(false);
   }, []);
 
-  // Persist to localStorage
+  // Persist to localStorage (only for /app hydrate-from-storage mode)
   useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  }, [state]);
+    if (hydrateFromStorage) {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    }
+  }, [state, hydrateFromStorage]);
 
   const getAreasForType = useCallback(
     (type: CalculatorType) => state.areas.filter((a) => a.type === type),
@@ -462,16 +475,6 @@ export function useCalculatorState() {
   return ctx;
 }
 
-export function TabInitializer({ tab }: { tab: CalculatorType }) {
-  const { state, dispatch } = useCalculatorState();
-  React.useLayoutEffect(() => {
-    if (state.activeTab !== tab) {
-      dispatch({ type: "SET_TAB", tab });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-  return null;
-}
 
 function getDefaultDimensions(type: CalculatorType): Record<string, number> {
   switch (type) {
