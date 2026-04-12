@@ -1,65 +1,57 @@
 
 
-# Phase 1: `/concrete-calculator` Page Rebuild
+# Copy-only update for `/concrete-calculator`
 
-## Current State
-The page already has intro, comparison table, real-job example, field notes, FAQ, and minimal internal links. Phase 1 replaces all SEO content sections with the 4 specified sections only (removing field notes and FAQ).
+## Changes — `src/pages/ConcreteCalculator.tsx` only
 
-## Changes — Single File Only
+No layout, component, routing, or logic changes. Text and data arrays only.
 
-**`src/pages/ConcreteCalculator.tsx`** — full rewrite of the page content sections.
+### 1. Hero subtext (lines 108–113)
 
-### Section 1: Hero + Calculator
-- Make the H1 visible (remove `sr-only`), text: "Concrete Calculator"
-- Short subheadline: contractor-focused, one line about multi-area takeoffs for real foundation work
-- One supporting line with key capabilities (feet/inches/fractions, multi-area, footings+walls+slabs)
-- Keep the existing calculator embed exactly as-is (CalculatorProvider, ProjectProvider, CalculatorLayout with expand toggle)
-- On mobile, minimize text above calculator so it stays near top
+Replace the two paragraphs with contractor-focused copy:
 
-### Section 2: Differentiator
-- H2: "Why this is different from a typical concrete calculator"
-- Replace current table with a responsive approach: table on desktop, stacked comparison cards on mobile
-- Six comparison rows per spec (one area vs multiple, one-off vs project workflow, generic vs foundation workflow, harder to revise vs area-by-area updates, no saved structure vs organized sections, basic input vs feet/inches/fractions-friendly)
-- Tight copy, no exaggeration
+- Main subline: Reference footings, walls, and slabs. Emphasize saving each section and adjusting when things change. Keep the running total idea.
+- Supporting line: Mention feet/inches/fractions and multi-area projects in plain field language.
 
-### Section 3: Real-World Basement Example
-- H2: "What a real foundation takeoff looks like"
-- Grid/card layout showing 5 example areas: Basement Footing, Foundation Wall, Garage Slab, Porch Slab, Stoop / Areaway
-- Each card: area name, short dimension hint, calculator type badge
-- Short text explaining real jobs = multiple areas, this tool keeps them together
-- No screenshots or fake UI
+Example direction:
+```
+"Set up your footings, walls, and slabs as separate areas.
+Save each one, adjust it when things change, and keep your total right."
 
-### Section 4: Internal Links
-- H2: "More Concrete Calculators"
-- 4 link cards in a responsive grid: slab, footing, wall, rebar
-- Each card: title, short helper text, link
-- Simple, crawlable `<Link>` elements
-- Include `/rebar-calculator` (not in current version)
+"Works in feet, inches, and fractions — built for multi-area jobs, not single pours."
+```
 
-### Removed from current page (not in Phase 1)
-- "Field Notes from 20 Years" section
-- FAQ section
-- These will come in later phases
+### 2. Differentiator intro (add a short paragraph before the table, after the H2, ~lines 141–143)
 
-### What stays unchanged
-- JSON-LD scripts (kept as-is)
-- SEO/Helmet meta (kept as-is)
-- Calculator embed block (CalculatorProvider/ProjectProvider/CalculatorLayout — untouched)
-- `isExpanded` state and expand toggle behavior
-- All calculator logic/state/hooks/routing files
+Insert 2–3 sentences between the H2 and the comparison table:
 
-### Layout & Responsive
-- Mobile-first: hero text minimal, calculator near top
-- Comparison section: uses `hidden md:block` table + `md:hidden` stacked cards
-- Example cards: `grid-cols-1 sm:grid-cols-2 lg:grid-cols-3`
-- Link cards: `grid-cols-1 sm:grid-cols-2`
+- Most calculators give you one box for one pour
+- Real jobs have multiple footing widths (e.g. 24″ main footing vs 18″ garage footing), different slab thicknesses (5″ garage vs 4″ basement), varying wall heights
+- Gets harder when you're running multiple pours in one day — three driveways, each a different size
+
+Keep it short and specific with at least one real numeric example.
+
+### 3. Real-world example section (lines 67–73 data + lines 188–218 copy)
+
+**Replace `exampleAreas` array** with a broader set reflecting flatwork + foundation scenarios:
+
+- Garage Slab (24′×24′×5″)
+- Walkway (30′×4′×4″)
+- Patio (16′×12′×4″)
+- Sidewalk (40′×4′×4″)
+- Main Footing (24″×12″, perimeter)
+- Frost Footing (18″×10″, garage)
+- Foundation Wall (8″×8′, perimeter)
+- Basement Slab (varied thickness)
+
+**Replace section copy:**
+
+- Opening paragraph: explain that typical calculators force you to run each of these separately and re-add totals by hand
+- Add one concrete mistake example: e.g. "You update the garage slab from 4 inches to 5 inches but forget to re-add the walkway and patio. Your total is off by 2 yards and you don't catch it until the truck shows up short."
+- Closing: keeping all areas in one place, editing one section without touching the rest, always seeing the correct total
 
 ### Files changed
-- `src/pages/ConcreteCalculator.tsx` — only file modified
+- `src/pages/ConcreteCalculator.tsx` — copy/data only
 
 ### Files NOT changed
-- No calculator hooks/state files
-- No reducer/persistence files  
-- No routing files
-- No calculation logic files
-
+- No calculator logic, hooks, state, routing, layout, or component files
