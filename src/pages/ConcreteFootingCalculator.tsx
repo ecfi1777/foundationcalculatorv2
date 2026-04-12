@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
-import { CalculatorProvider } from "@/hooks/useCalculatorState";
+import { CalculatorProvider, TabInitializer } from "@/hooks/useCalculatorState";
 import { ProjectProvider } from "@/hooks/useProject";
 import { CalculatorLayout } from "@/components/calculator/CalculatorLayout";
 import { Button } from "@/components/ui/button";
@@ -27,7 +27,8 @@ const ConcreteFootingCalculator = () => {
 
         {/* Calculator */}
         <section className="pb-8">
-          <CalculatorProvider defaultTab="footing">
+          <CalculatorProvider>
+            <TabInitializer tab="footing" />
             <ProjectProvider>
               <CalculatorLayout />
             </ProjectProvider>
