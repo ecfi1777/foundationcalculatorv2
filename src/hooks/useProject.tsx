@@ -159,7 +159,7 @@ async function getSubscriptionTier(userId: string): Promise<string> {
 
 const PROJECT_KEY = "tfc_current_project";
 
-export function ProjectProvider({ children }: { children: ReactNode }) {
+export function ProjectProvider({ children, clearCalculatorOnSignOut = true }: { children: ReactNode; clearCalculatorOnSignOut?: boolean }) {
   const { user } = useAuth();
   const { state, dispatch, isDirty, markClean } = useCalculatorState();
 
@@ -546,10 +546,10 @@ export function ProjectProvider({ children }: { children: ReactNode }) {
 
   // Clear all in-memory state reactively when user signs out
   useEffect(() => {
-    if (!user) {
+    if (!user && clearCalculatorOnSignOut) {
       clearAllState();
     }
-  }, [user, clearAllState]);
+  }, [user, clearAllState, clearCalculatorOnSignOut]);
 
   // ── Create new project ──
   const createNewProject = useCallback(() => {
