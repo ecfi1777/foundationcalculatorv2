@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { SEO } from "@/components/SEO";
-import { CalculatorProvider, TabInitializer } from "@/hooks/useCalculatorState";
+import { CalculatorProvider } from "@/hooks/useCalculatorState";
 import { ProjectProvider } from "@/hooks/useProject";
 import { CalculatorLayout } from "@/components/calculator/CalculatorLayout";
 import { Button } from "@/components/ui/button";
@@ -27,8 +27,7 @@ const ConcreteWallCalculator = () => {
 
         {/* Calculator */}
         <section className="pb-8">
-          <CalculatorProvider>
-            <TabInitializer tab="wall" />
+          <CalculatorProvider initialTab="wall" hydrateFromStorage={false}>
             <ProjectProvider>
               <CalculatorLayout />
             </ProjectProvider>
