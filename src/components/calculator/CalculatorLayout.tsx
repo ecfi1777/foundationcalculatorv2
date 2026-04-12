@@ -409,7 +409,7 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
       <div className="px-4 pt-2">
         <SaveBanner hasAreas={hasAreas} />
       </div>
-      <main className="flex min-h-[600px] items-stretch overflow-hidden">
+      <main className="flex h-[75vh] min-h-[600px] max-h-[900px] items-stretch overflow-hidden">
         <div className={cn(
           "flex-1 flex flex-col overflow-hidden rounded-l-lg",
           isProjectLocked && "opacity-60 pointer-events-none"
