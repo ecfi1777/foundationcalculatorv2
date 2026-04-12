@@ -7,6 +7,15 @@ import { CalculatorLayout } from "@/components/calculator/CalculatorLayout";
 import { SEO } from "@/components/SEO";
 import { Link } from "react-router-dom";
 import { cn } from "@/lib/utils";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 const JSON_LD_SOFTWARE = JSON.stringify({
   "@context": "https://schema.org",
@@ -46,6 +55,30 @@ const JSON_LD_HOW_TO = JSON.stringify({
   ]
 });
 
+const comparisonRows = [
+  { feature: "Areas per calculation", typical: "One area at a time", tfc: "Multiple named areas in one project" },
+  { feature: "Results", typical: "One-off number, start over each time", tfc: "Running project total that updates as you go" },
+  { feature: "Use case", typical: "Generic — any single pour", tfc: "Foundation work — footings, walls, slabs together" },
+  { feature: "Revisions", typical: "Re-enter everything to change a number", tfc: "Edit any area without touching the rest" },
+  { feature: "Organization", typical: "No saved structure", tfc: "Named areas organized under one project" },
+  { feature: "Input format", typical: "Decimal feet or inches only", tfc: "Feet, inches, and fractions — the way you measure" },
+];
+
+const exampleAreas = [
+  { name: "Basement Footing", hint: "24″ wide × 12″ deep, full perimeter", type: "Footing" },
+  { name: "Foundation Wall", hint: "8″ thick × 8′ tall, perimeter segments", type: "Wall" },
+  { name: "Garage Slab", hint: "24′ × 24′ × 4″ thick", type: "Slab" },
+  { name: "Porch Slab", hint: "12′ × 6′ × 4″ thick", type: "Slab" },
+  { name: "Stoop / Areaway", hint: "4′ × 5′ × 6″ thick", type: "Slab" },
+];
+
+const relatedCalculators = [
+  { title: "Concrete Slab Calculator", description: "Calculate yardage for driveways, garage floors, patios, and basement slabs.", href: "/concrete-slab-calculator" },
+  { title: "Concrete Footing Calculator", description: "Size footings for houses, garages, additions, and frost walls.", href: "/concrete-footing-calculator" },
+  { title: "Concrete Wall Calculator", description: "Foundation walls, retaining walls, and grade beams — measured in segments.", href: "/concrete-wall-calculator" },
+  { title: "Rebar Calculator", description: "Estimate linear feet of rebar for slabs, walls, and footings with overlap and waste.", href: "/rebar-calculator" },
+];
+
 export default function ConcreteCalculator() {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -61,50 +94,27 @@ export default function ConcreteCalculator() {
         canonical="https://foundationcalculator.com/concrete-calculator"
       />
 
-      {/* Hidden H1 — visible to Google, does not disrupt the app UI */}
-      <h1 className="sr-only">
-        Concrete Calculator — Cubic Yards for Slabs, Footings & Walls
-      </h1>
-
-      {/* JSON-LD Schema */}
       <Helmet>
         <script type="application/ld+json">{JSON_LD_SOFTWARE}</script>
         <script type="application/ld+json">{JSON_LD_HOW_TO}</script>
       </Helmet>
 
-      {/* ── Intro — product copy, above the calculator ── */}
+      {/* ── Section 1: Hero + Calculator ── */}
       {!isExpanded && (
-        <section className="max-w-3xl mx-auto px-4 pt-16 pb-10 text-center">
-          <p className="text-xs font-semibold uppercase tracking-widest text-primary mb-3">
-            Professional Takeoff Tool
+        <section className="max-w-4xl mx-auto px-4 pt-10 sm:pt-16 pb-6 sm:pb-10">
+          <h1 className="text-3xl sm:text-4xl font-bold text-foreground text-center">
+            Concrete Calculator
+          </h1>
+          <p className="mt-3 text-base sm:text-lg text-muted-foreground text-center max-w-2xl mx-auto">
+            Multi-area concrete takeoffs for foundation contractors. Footings, walls, slabs, and more — calculated together the way real jobs are bid.
           </p>
-          <h2 className="text-3xl sm:text-4xl font-bold text-foreground mb-4">
-            Concrete Calculator Built for Contractors
-          </h2>
-          <div className="max-w-2xl mx-auto space-y-3">
-            <p className="text-base text-muted-foreground leading-relaxed">
-              Most concrete calculators handle a single pour. Real foundation work involves
-              multiple areas — footings, walls, slabs — all calculated together.
-            </p>
-            <p className="text-base text-muted-foreground leading-relaxed">
-              This tool is a takeoff system. Measure each area separately and track a running
-              total across the entire job — the way real estimates are done.
-            </p>
-          </div>
-          <div className="flex flex-wrap items-center justify-center gap-3 mt-8">
-            {["Multi-area takeoffs", "Running totals", "PDF exports"].map((item) => (
-              <span
-                key={item}
-                className="inline-flex items-center rounded-full border border-border bg-muted/50 px-4 py-1.5 text-xs font-medium text-muted-foreground"
-              >
-                {item}
-              </span>
-            ))}
-          </div>
+          <p className="mt-2 text-sm text-muted-foreground text-center">
+            Handles feet, inches, and fractions. Built for multi-area projects, not single pours.
+          </p>
         </section>
       )}
 
-      {/* ── The real TFC calculator ── */}
+      {/* ── Calculator embed ── */}
       <div className={cn(
         "mx-auto transition-all duration-300",
         isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-5xl px-4 mb-16"
@@ -121,200 +131,115 @@ export default function ConcreteCalculator() {
         </div>
       </div>
 
-      {/* ── SEO content — below the fold, indexed by Google ── */}
+      {/* ── SEO content sections ── */}
       {!isExpanded && (
         <div className="bg-background text-foreground">
 
-          {/* ── 1. Comparison Section (full-width) ── */}
+          {/* ── Section 2: Differentiator ── */}
           <section className="bg-muted/40 border-y border-border">
-            <div className="max-w-5xl mx-auto px-4 py-16 space-y-8">
-              <p className="text-xs font-semibold uppercase tracking-widest text-primary text-center">
-                Why this is different
-              </p>
-
+            <div className="max-w-5xl mx-auto px-4 py-12 sm:py-16 space-y-8">
               <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">
-                Not all concrete calculators are built for real jobs
+                Why this is different from a typical concrete calculator
               </h2>
 
-              <div className="max-w-2xl mx-auto text-center space-y-2">
-                <p className="text-base text-muted-foreground">
-                  Most concrete calculators handle one pour. Real jobs don't.
-                </p>
-                <p className="text-base text-muted-foreground">
-                  Most concrete calculators give you one number. This lets you build out an entire foundation takeoff.
-                </p>
+              {/* Desktop table */}
+              <div className="hidden md:block">
+                <div className="bg-card rounded-xl shadow-sm border border-border overflow-hidden">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="font-semibold text-foreground py-3 px-4">Feature</TableHead>
+                        <TableHead className="font-semibold text-muted-foreground py-3 px-4">Typical Calculator</TableHead>
+                        <TableHead className="font-semibold text-foreground py-3 px-4">This Tool</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {comparisonRows.map((row, i) => (
+                        <TableRow key={i}>
+                          <TableCell className="font-medium text-foreground py-4 px-4">{row.feature}</TableCell>
+                          <TableCell className="text-muted-foreground py-4 px-4">{row.typical}</TableCell>
+                          <TableCell className="font-medium text-foreground py-4 px-4">{row.tfc}</TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               </div>
 
-              <div className="bg-card rounded-xl shadow-sm border border-border overflow-x-auto">
-                <table className="w-full min-w-[720px] text-sm">
-                  <thead>
-                    <tr className="border-b border-border">
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Feature</th>
-                      <th className="text-left py-3 px-4 font-semibold text-muted-foreground">Basic Concrete Calculator</th>
-                      <th className="text-left py-3 px-4 font-semibold text-foreground">Total Foundation Calculator</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {[
-                      ["One area at a time", "Yes", "No"],
-                      ["Multiple areas per project", "No", "Yes"],
-                      ["Running totals across job", "No", "Yes"],
-                      ["Footings + walls + slabs together", "No", "Yes"],
-                      ["Save and revisit projects", "Rarely", "Yes"],
-                      ["Export (PDF / CSV)", "Limited", "Yes"],
-                      ["Rebar and additional items", "Usually no", "Yes"],
-                      ["Built for contractor workflow", "No", "Yes"],
-                    ].map(([feature, basic, tfc], i) => (
-                      <tr key={i} className="border-b border-border last:border-b-0">
-                        <td className="py-4 px-4 font-medium text-foreground">{feature}</td>
-                        <td className="py-4 px-4 text-muted-foreground">{basic}</td>
-                        <td className="py-4 px-4 font-medium text-foreground">{tfc}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+              {/* Mobile stacked cards */}
+              <div className="md:hidden space-y-4">
+                {comparisonRows.map((row, i) => (
+                  <div key={i} className="rounded-lg border border-border bg-card p-4 space-y-2">
+                    <p className="text-sm font-semibold text-foreground">{row.feature}</p>
+                    <div className="flex items-start gap-2">
+                      <span className="text-xs font-medium text-muted-foreground bg-muted rounded px-2 py-0.5 shrink-0">Typical</span>
+                      <p className="text-sm text-muted-foreground">{row.typical}</p>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <span className="text-xs font-medium text-primary bg-primary/10 rounded px-2 py-0.5 shrink-0">This tool</span>
+                      <p className="text-sm text-foreground">{row.tfc}</p>
+                    </div>
+                  </div>
+                ))}
               </div>
-
-              <p className="text-center text-base font-medium text-foreground">
-                Built for real foundation takeoffs — not single pours.
-              </p>
             </div>
           </section>
 
-          {/* ── 2. Remaining SEO Content ── */}
-          <div className="max-w-4xl mx-auto px-4 py-16 space-y-10">
+          {/* ── Section 3: Real-World Basement Example ── */}
+          <section className="max-w-5xl mx-auto px-4 py-12 sm:py-16 space-y-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">
+              What a real foundation takeoff looks like
+            </h2>
+            <p className="text-base text-muted-foreground text-center max-w-2xl mx-auto">
+              A typical residential foundation isn't one slab — it's five or six different pours. This tool keeps them together in one project instead of running separate calculations and tracking them on paper.
+            </p>
 
-            {/* ── What this looks like on a real job ── */}
-            <section className="rounded-lg border border-border bg-card p-6">
-              <h3 className="text-xl font-semibold text-foreground">What this looks like on a real job</h3>
-              <p className="mt-3 text-muted-foreground">A typical job might include:</p>
-              <ul className="mt-3 space-y-2 text-muted-foreground list-disc pl-5">
-                <li>footings around the perimeter</li>
-                <li>basement walls</li>
-                <li>garage slab</li>
-                <li>porch or steps</li>
-              </ul>
-              <p className="mt-4 text-muted-foreground">
-                Instead of calculating each separately, you track everything in one place and get a running total.
-              </p>
-            </section>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+              {exampleAreas.map((area) => (
+                <Card key={area.name} className="bg-card">
+                  <CardHeader className="pb-2">
+                    <CardTitle className="text-base font-semibold text-foreground">
+                      {area.name}
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-2">
+                    <p className="text-sm text-muted-foreground">{area.hint}</p>
+                    <span className="inline-block text-xs font-medium text-primary bg-primary/10 rounded px-2 py-0.5">
+                      {area.type}
+                    </span>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
 
-            {/* ── Field Notes ── */}
-            <section className="rounded-lg border border-border bg-card p-6 prose prose-sm dark:prose-invert max-w-none">
-              <h2 className="text-xl font-semibold text-foreground">
-                Field Notes from 20 Years in Foundation Work
-              </h2>
-              <p>
-                The formula is simple:{" "}
-                <strong>
-                  Length × Width × Thickness (in feet) ÷ 27 = cubic yards.
-                </strong>{" "}
-                That converts cubic feet to cubic yards, which is how ready-mix
-                concrete is sold. Thickness in inches must be divided by 12
-                first — a 4-inch slab is 0.333 feet thick.
-              </p>
-              <p>
-                Most contractors order{" "}
-                <strong>10% extra</strong> as a
-                waste factor. Subgrades are never perfectly level, forms flex
-                slightly, and concrete does not get delivered twice on short
-                notice. Adjust the waste percentage in the calculator above
-                to match your jobsite conditions.
-              </p>
-              <p>
-                Standard residential slabs run 4 inches thick. Garage floors
-                and driveways where heavy trucks will park should be 5–6
-                inches. House footings typically run{" "}
-                <strong>20–24 inches wide</strong>{" "}
-                and{" "}
-                <strong>10–12 inches deep</strong>{" "}
-                — deeper in frost-prone areas.
-              </p>
-            </section>
+            <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+              Each area calculates independently. The project total updates automatically. Change one area and the rest stay put.
+            </p>
+          </section>
 
-            {/* ── FAQ ── */}
-            <section className="rounded-lg border border-border bg-card p-6 space-y-6">
-              <h2 className="text-xl font-semibold text-foreground">
-                Concrete Calculator — Common Questions
-              </h2>
-              <div className="space-y-4">
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-foreground">
-                    How many cubic yards of concrete do I need for a 10×10 slab?
+          {/* ── Section 4: Internal Links ── */}
+          <section className="max-w-4xl mx-auto px-4 py-12 sm:py-16">
+            <h2 className="text-2xl font-bold text-foreground text-center mb-8">
+              More Concrete Calculators
+            </h2>
+            <nav className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {relatedCalculators.map((calc) => (
+                <Link
+                  key={calc.href}
+                  to={calc.href}
+                  className="rounded-lg border border-border bg-card p-5 hover:border-primary/50 transition-colors group"
+                >
+                  <h3 className="text-base font-semibold text-foreground group-hover:text-primary transition-colors">
+                    {calc.title}
                   </h3>
-                  <p className="text-sm text-muted-foreground">
-                    A 10×10 slab at 4 inches thick requires 1.24 cubic yards
-                    before waste. With a 10% waste factor, order 1.36 cubic
-                    yards. Use the calculator above to adjust for your exact
-                    thickness and waste preference.
+                  <p className="mt-1 text-sm text-muted-foreground">
+                    {calc.description}
                   </p>
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-foreground">
-                    How do I convert cubic feet to cubic yards?
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    Divide cubic feet by 27. There are 27 cubic feet in one
-                    cubic yard (3 ft × 3 ft × 3 ft = 27 ft³). Concrete is
-                    always ordered in cubic yards from a ready-mix plant.
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-foreground">
-                    How much does a cubic yard of concrete weigh?
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    A cubic yard of standard concrete weighs approximately
-                    4,000 lbs (2 tons). This matters when estimating truck
-                    loads and site access for your pour.
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-foreground">
-                    Should I order bags or ready-mix concrete?
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    For anything over 1 cubic yard, call a ready-mix plant.
-                    Mixing bags by hand for large pours leads to inconsistent
-                    results and far more labor than it is worth. Bags are best
-                    for fence posts, small repairs, and pours under half a yard.
-                  </p>
-                </div>
-                <div className="space-y-1">
-                  <h3 className="text-sm font-medium text-foreground">
-                    What is a concrete takeoff?
-                  </h3>
-                  <p className="text-sm text-muted-foreground">
-                    A concrete takeoff is the process of calculating the total
-                    volume of concrete needed for a project from the plans or
-                    field measurements. A professional takeoff breaks the job
-                    into named areas — footings, walls, slabs — calculates each
-                    one separately, and totals them with waste factors applied.
-                    That is exactly what this tool does.
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            {/* ── Related Calculators ── */}
-            <nav className="rounded-lg border border-border bg-card p-6 space-y-3">
-              <h2 className="text-lg font-semibold text-foreground">
-                More Concrete Calculators
-              </h2>
-              <div className="flex flex-wrap gap-2">
-                {[
-                  { label: "Slab Calculator",    href: "/concrete-slab-calculator"    },
-                  { label: "Footing Calculator", href: "/concrete-footing-calculator" },
-                  { label: "Wall Calculator",    href: "/concrete-wall-calculator"    },
-                ].map(({ label, href }) => (
-                  <Link key={href} to={href} className="text-sm text-primary underline underline-offset-2 hover:text-primary/80">
-                    {label}
-                  </Link>
-                ))}
-              </div>
+                </Link>
+              ))}
             </nav>
+          </section>
 
-          </div>
         </div>
       )}
     </>
