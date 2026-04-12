@@ -124,56 +124,79 @@ export default function ConcreteCalculator() {
       {/* ── SEO content — below the fold, indexed by Google ── */}
       {!isExpanded && (
         <div className="bg-background text-foreground">
+
+          {/* ── 1. Comparison Section (full-width) ── */}
+          <section className="bg-muted/40 border-y border-border">
+            <div className="max-w-5xl mx-auto px-4 py-16 space-y-8">
+              <p className="text-xs font-semibold uppercase tracking-widest text-primary text-center">
+                Why this is different
+              </p>
+
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">
+                Not all concrete calculators are built for real jobs
+              </h2>
+
+              <div className="max-w-2xl mx-auto text-center space-y-2">
+                <p className="text-base text-muted-foreground">
+                  Most concrete calculators handle one pour. Real jobs don't.
+                </p>
+                <p className="text-base text-muted-foreground">
+                  Most concrete calculators give you one number. This lets you build out an entire foundation takeoff.
+                </p>
+              </div>
+
+              <div className="bg-card rounded-xl shadow-sm border border-border overflow-x-auto">
+                <table className="w-full min-w-[720px] text-sm">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-3 px-4 font-semibold text-foreground">Feature</th>
+                      <th className="text-left py-3 px-4 font-semibold text-muted-foreground">Basic Concrete Calculator</th>
+                      <th className="text-left py-3 px-4 font-semibold text-foreground">Total Foundation Calculator</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {[
+                      ["One area at a time", "Yes", "No"],
+                      ["Multiple areas per project", "No", "Yes"],
+                      ["Running totals across job", "No", "Yes"],
+                      ["Footings + walls + slabs together", "No", "Yes"],
+                      ["Save and revisit projects", "Rarely", "Yes"],
+                      ["Export (PDF / CSV)", "Limited", "Yes"],
+                      ["Rebar and additional items", "Usually no", "Yes"],
+                      ["Built for contractor workflow", "No", "Yes"],
+                    ].map(([feature, basic, tfc], i) => (
+                      <tr key={i} className="border-b border-border last:border-b-0">
+                        <td className="py-4 px-4 font-medium text-foreground">{feature}</td>
+                        <td className="py-4 px-4 text-muted-foreground">{basic}</td>
+                        <td className="py-4 px-4 font-medium text-foreground">{tfc}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+
+              <p className="text-center text-base font-medium text-foreground">
+                Built for real foundation takeoffs — not single pours.
+              </p>
+            </div>
+          </section>
+
+          {/* ── 2. Remaining SEO Content ── */}
           <div className="max-w-4xl mx-auto px-4 py-16 space-y-10">
 
-            {/* ── Differentiator ── */}
-            <section className="rounded-lg border border-border bg-card p-6 prose prose-sm dark:prose-invert max-w-none">
-              <h2>This Is a Takeoff Tool, Not a Calculator</h2>
-              <p>
-                Most concrete calculators are built for homeowners estimating a single slab or patio.
-                That's not how real foundation work happens.
-              </p>
-              <p>
-                A typical job includes multiple pours — footings, walls, garage slabs, basement floors —
-                all with different dimensions, different waste, and all needing to roll into one total.
-              </p>
-              <p>
-                That's a takeoff. This tool is built to handle that entire workflow in one place.
-              </p>
-              <table>
-                <thead>
-                  <tr>
-                    <th>Feature</th>
-                    <th>Generic Calculator</th>
-                    <th>Total Foundation Calculator</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr><td>Calculate multiple areas in one project</td><td>No</td><td>Yes</td></tr>
-                  <tr><td>Running total across all pours</td><td>No</td><td>Yes</td></tr>
-                  <tr><td>Different waste per area</td><td>No</td><td>Yes</td></tr>
-                  <tr><td>Multiple pour types in one job (footings, walls, slabs)</td><td>No</td><td>Yes</td></tr>
-                  <tr><td>Save and revisit takeoffs</td><td>No</td><td>Yes</td></tr>
-                  <tr><td>Export a PDF for job files or estimates</td><td>No</td><td>Yes</td></tr>
-                  <tr><td>Rebar and stone tracking included</td><td>No</td><td>Yes</td></tr>
-                </tbody>
-              </table>
-              <p>
-                Generic calculator sites are built for estimating one section at a time.
-                This tool is built for running a full foundation takeoff — the way contractors actually work.
-              </p>
-            </section>
-
-            {/* ── Why Contractors Use This ── */}
-            <section className="rounded-lg border border-border bg-card p-6 prose prose-sm dark:prose-invert max-w-none">
-              <h3>Why Contractors Use This Instead of Basic Calculators</h3>
-              <ul>
-                <li>Measure multiple areas in one job (footings, walls, slabs)</li>
-                <li>See a running total before ordering concrete</li>
-                <li>Adjust waste per section</li>
-                <li>Save and revisit takeoffs later</li>
-                <li>Export a clean PDF for job files or estimates</li>
+            {/* ── What this looks like on a real job ── */}
+            <section className="rounded-lg border border-border bg-card p-6">
+              <h3 className="text-xl font-semibold text-foreground">What this looks like on a real job</h3>
+              <p className="mt-3 text-muted-foreground">A typical job might include:</p>
+              <ul className="mt-3 space-y-2 text-muted-foreground list-disc pl-5">
+                <li>footings around the perimeter</li>
+                <li>basement walls</li>
+                <li>garage slab</li>
+                <li>porch or steps</li>
               </ul>
+              <p className="mt-4 text-muted-foreground">
+                Instead of calculating each separately, you track everything in one place and get a running total.
+              </p>
             </section>
 
             {/* ── Field Notes ── */}
