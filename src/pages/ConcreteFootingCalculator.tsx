@@ -27,7 +27,7 @@ const ConcreteFootingCalculator = () => {
 
         {/* Calculator */}
         <section className="pb-8">
-          <CalculatorProvider>
+          <CalculatorProvider defaultTab="footing">
             <ProjectProvider>
               <CalculatorLayout />
             </ProjectProvider>
