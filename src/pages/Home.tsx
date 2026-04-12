@@ -58,10 +58,7 @@ const Home = () => {
           </p>
           <div className="mt-8 flex flex-wrap items-center justify-center gap-4">
             <Button asChild size="lg">
-              <Link to="/app">Start Calculator</Link>
-            </Button>
-            <Button asChild variant="outline" size="lg">
-              <Link to="/concrete-calculator">View Calculator</Link>
+              <Link to="/app">Start Calculating</Link>
             </Button>
           </div>
         </section>
