@@ -1,7 +1,7 @@
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
-import { hasRequiredData } from "@/types/calculator";
+
 import { Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
@@ -32,12 +32,8 @@ export function DraftActionButtons() {
     }
   };
 
-  const handleDiscard = () => {
-    if (hasRequiredData(activeArea)) {
-      setConfirmOpen(true);
-    } else {
-      dispatch({ type: "DELETE_AREA", id: activeArea.id });
-    }
+  const handleDelete = () => {
+    setConfirmOpen(true);
   };
 
   return (
@@ -50,10 +46,10 @@ export function DraftActionButtons() {
         <Button
           variant="outline"
           className="flex-1 gap-1 h-9 text-sm text-destructive border-destructive/30 hover:bg-destructive/10"
-          onClick={handleDiscard}
+          onClick={handleDelete}
         >
           <Trash2 className="h-4 w-4" />
-          Discard Area
+          Delete Area
         </Button>
       </div>
 
@@ -64,9 +60,9 @@ export function DraftActionButtons() {
           dispatch({ type: "DELETE_AREA", id: activeArea.id });
           setConfirmOpen(false);
         }}
-        title="Discard Area"
-        description={`Are you sure you want to discard "${activeArea.name}"? All measurements will be permanently removed.`}
-        confirmLabel="Discard"
+        title="Delete Area"
+        description={`Are you sure you want to delete "${activeArea.name}"? All measurements will be permanently removed.`}
+        confirmLabel="Delete"
         variant="destructive"
       />
     </>
