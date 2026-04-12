@@ -296,7 +296,7 @@ export function CalculatorProvider({ children, defaultTab }: { children: React.R
     reducer,
     defaultTab,
     (dt) => {
-      const loaded = loadState(initialState);
+      const loaded = loadState();
       if (dt) {
         return { ...loaded, activeTab: dt, activeAreaId: null };
       }
