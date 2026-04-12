@@ -107,7 +107,7 @@ export default function ConcreteCalculator() {
       {/* ── The real TFC calculator ── */}
       <div className={cn(
         "mx-auto transition-all duration-300",
-        isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-5xl px-4"
+        isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-5xl px-4 mb-16"
       )}>
         <div className={cn(isExpanded ? "" : "min-h-[70vh]")}>
           <CalculatorProvider>
