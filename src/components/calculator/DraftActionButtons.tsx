@@ -1,7 +1,7 @@
 import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
-import { hasRequiredData } from "@/types/calculator";
+
 import { Save, Trash2 } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
