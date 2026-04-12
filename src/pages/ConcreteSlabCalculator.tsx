@@ -28,7 +28,7 @@ const ConcreteSlabCalculator = () => {
         {/* Calculator */}
         <section className="pb-8">
           <CalculatorProvider initialTab="slab" hydrateFromStorage={false}>
-            <ProjectProvider>
+            <ProjectProvider clearCalculatorOnSignOut={false}>
               <CalculatorLayout />
             </ProjectProvider>
           </CalculatorProvider>
