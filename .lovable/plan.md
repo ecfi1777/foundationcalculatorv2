@@ -1,24 +1,20 @@
 
 
-# Cap Workspace Height — Revised Approach
+# Update Area Action Labels and Confirmation
 
-## Change: `src/components/calculator/CalculatorLayout.tsx`
+## Changes: `src/components/calculator/DraftActionButtons.tsx`
 
-**Line 412** — Replace the current `<main>` classes:
-
-```
-flex min-h-[600px] items-stretch overflow-hidden
-```
-→
-```
-flex h-[75vh] min-h-[600px] max-h-[900px] items-stretch overflow-hidden
-```
-
-One class addition (`h-[75vh]` and `max-h-[900px]`). No hard-coded pixel subtraction. The existing internal shell structure (scrollable body + pinned footer) activates automatically once the parent has a concrete height.
+1. **Keep "Save Area"** — no label change on the positive button
+2. **Rename "Discard Area" → "Delete Area"** on the destructive button (line ~57)
+3. **Always confirm before deletion** — remove the `hasRequiredData` conditional; always open the confirm dialog when Delete Area is clicked
+4. **Update confirmation dialog copy:**
+   - Title: "Delete Area"
+   - Description: `Are you sure you want to delete "${activeArea.name}"? All measurements will be permanently removed.`
+   - Confirm label: "Delete"
 
 ### Files modified
-- `src/components/calculator/CalculatorLayout.tsx` — one line change
+- `src/components/calculator/DraftActionButtons.tsx`
 
 ### Unchanged
-- Everything else
+- CalculatorLayout.tsx, QuantitiesPanel, calculation logic, state management, mobile layout
 
