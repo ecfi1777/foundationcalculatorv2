@@ -246,7 +246,7 @@ export default function ConcreteCalculator() {
             <Card className="max-w-lg mx-auto">
               <CardHeader className="pb-3">
                 <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Project</p>
-                <CardTitle className="text-lg font-bold text-foreground">Basement + Garage</CardTitle>
+                <CardTitle className="text-lg font-bold text-foreground">Smith Residence</CardTitle>
               </CardHeader>
               <CardContent className="space-y-0">
                 {projectAreas.map((area, i) => (
