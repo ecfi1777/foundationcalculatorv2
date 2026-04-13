@@ -1,82 +1,66 @@
 
 
-# Open Workspace / Exit Workspace — Implementation Plan
+# Fix inconsistent calculator width on SEO pages
 
-## Verified tab mappings
+## Current state
 
-Confirmed from `src/types/calculator.ts` — internal `CalculatorType` values:
+`/concrete-calculator` wraps its calculator in:
+```html
+<div className="mx-auto max-w-5xl px-4 mb-16">
+  <div className="min-h-[70vh]">
+    <CalculatorProvider>...</CalculatorProvider>
+  </div>
+</div>
+```
 
-| SEO page | `tab` param | `from` param |
-|---|---|---|
-| `/concrete-calculator` | `footing` | `/concrete-calculator` |
-| `/concrete-slab-calculator` | `slab` | `/concrete-slab-calculator` |
-| `/concrete-footing-calculator` | `footing` | `/concrete-footing-calculator` |
-| `/concrete-wall-calculator` | `wall` | `/concrete-wall-calculator` |
-| `/rebar-calculator` | `footing` | `/rebar-calculator` |
+The other 4 pages use only `<section className="pb-8">` with no max-width — causing full-width stretching on large screens.
 
-Rebar has no standalone tab — `footing` is already used (`initialTab="footing"`). Comment will document this.
+## Plan
 
-## Changes
+### 1. Create `SeoCalculatorContainer`
 
-### 1. New file: `src/lib/workspaceHandoff.ts`
+**New file**: `src/components/calculator/SeoCalculatorContainer.tsx`
 
-Three concerns in one small module:
-- **`stashDraft(state)`** — writes calculator state to `sessionStorage` key `tfc_workspace_handoff`
-- **`consumeDraft()`** — reads + deletes that key, returns parsed state or null
-- **`stashExitTarget(path)` / `getExitTarget()`** — persists last SEO page in `localStorage` key `tfc_last_calculator_page`
+Exact same classes as `/concrete-calculator`:
+```tsx
+const SeoCalculatorContainer = ({ children }: { children: React.ReactNode }) => (
+  <div className="mx-auto max-w-5xl px-4 mb-16">
+    <div className="min-h-[70vh]">
+      {children}
+    </div>
+  </div>
+);
+```
 
-### 2. `AppHeader.tsx` — replace expand/collapse with mode props
+### 2. Apply to 4 SEO pages
 
-Remove: `isExpanded`, `onToggleExpand`
+Replace the bare `<section className="pb-8">` wrapper around each `<CalculatorProvider>` block with `<SeoCalculatorContainer>`:
 
-Add: `mode?: "embedded" | "workspace"`, `onOpenWorkspace?`, `onExitWorkspace?`
+- `src/pages/ConcreteFootingCalculator.tsx`
+- `src/pages/ConcreteSlabCalculator.tsx`
+- `src/pages/ConcreteWallCalculator.tsx`
+- `src/pages/RebarCalculator.tsx`
 
-- `"embedded"` → Maximize2 + "Open Workspace"
-- `"workspace"` → Minimize2 + "Exit Workspace"
-- Same styling, desktop-only visibility
+Each becomes:
+```tsx
+<SeoCalculatorContainer>
+  <CalculatorProvider ...>
+    <ProjectProvider ...>
+      <CalculatorLayout ... />
+    </ProjectProvider>
+  </CalculatorProvider>
+</SeoCalculatorContainer>
+```
 
-### 3. `CalculatorLayout.tsx` — forward mode props
+### 3. Do NOT touch
 
-Replace `isExpanded`/`onToggleExpand` with `mode`/`onOpenWorkspace`/`onExitWorkspace`. Forward to `AppHeader`. Remove expand-related conditional classes. When `onOpenWorkspace` is provided, `CalculatorLayout` stashes the current draft state (via `useCalculatorState`) before calling the callback.
+- `ConcreteCalculator.tsx` (already correct)
+- Calculator logic, SEO content, headers, mobile layout
 
-### 4. `ConcreteCalculator.tsx` — remove expand/collapse, add embedded mode
-
-- Remove `isExpanded` state and all conditional hero/content hiding
-- Always show all SEO content sections
-- Pass `mode="embedded"` and `onOpenWorkspace` that navigates to `/app?tab=footing&from=/concrete-calculator`
-
-### 5. Other SEO pages (4 files)
-
-Each passes `mode="embedded"` and appropriate `onOpenWorkspace` handler. Minimal change per file — add `useNavigate` import + the callback prop.
-
-### 6. `AppCalculator.tsx` — workspace mode + draft hydration
-
-- Read `tab` and `from` from `useSearchParams`
-- If `from` present, call `stashExitTarget(from)`
-- Pass `mode="workspace"` and `onExitWorkspace` (uses `from` → `getExitTarget()` → `/concrete-calculator`)
-- After mount, check `consumeDraft()`. If found, dispatch `LOAD` with handoff state. Otherwise respect existing state, then `tab` param as fallback for `SET_TAB`.
-
-### 7. No changes to `CalculatorProvider` internals
-
-Handoff uses existing `LOAD` dispatch mechanism from `AppCalculator`.
-
-## Files changed
-
-1. **New**: `src/lib/workspaceHandoff.ts`
-2. `src/components/calculator/AppHeader.tsx`
-3. `src/components/calculator/CalculatorLayout.tsx`
-4. `src/pages/AppCalculator.tsx`
-5. `src/pages/ConcreteCalculator.tsx`
-6. `src/pages/ConcreteSlabCalculator.tsx`
-7. `src/pages/ConcreteFootingCalculator.tsx`
-8. `src/pages/ConcreteWallCalculator.tsx`
-9. `src/pages/RebarCalculator.tsx`
-
-## Unchanged
-
-- Calculation logic, formulas, types
-- SEO content sections
-- Project save/load/export
-- Mobile layout
-- localStorage persistence for `/app` workspace state
+### Files changed
+1. **New**: `src/components/calculator/SeoCalculatorContainer.tsx`
+2. `src/pages/ConcreteFootingCalculator.tsx`
+3. `src/pages/ConcreteSlabCalculator.tsx`
+4. `src/pages/ConcreteWallCalculator.tsx`
+5. `src/pages/RebarCalculator.tsx`
 
