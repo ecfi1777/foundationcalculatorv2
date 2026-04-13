@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { CalculatorProvider } from "@/hooks/useCalculatorState";
 import { ProjectProvider } from "@/hooks/useProject";
@@ -6,6 +6,7 @@ import { CalculatorLayout } from "@/components/calculator/CalculatorLayout";
 import { Button } from "@/components/ui/button";
 
 const RebarCalculator = () => {
+  const navigate = useNavigate();
   return (
     <>
       <SEO
@@ -27,9 +28,13 @@ const RebarCalculator = () => {
 
         {/* Calculator */}
         <section className="pb-8">
+          {/* Rebar has no standalone tab — maps to "footing" which is the primary rebar-enabled calculator type */}
           <CalculatorProvider initialTab="footing" hydrateFromStorage={false}>
             <ProjectProvider clearCalculatorOnSignOut={false}>
-              <CalculatorLayout />
+              <CalculatorLayout
+                mode="embedded"
+                onOpenWorkspace={() => navigate("/app?tab=footing&from=/rebar-calculator")}
+              />
             </ProjectProvider>
           </CalculatorProvider>
         </section>

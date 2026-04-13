@@ -1,5 +1,6 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { Helmet } from "react-helmet-async";
+import { useNavigate } from "react-router-dom";
 import { captureRefCode } from "@/lib/localStorage";
 import { CalculatorProvider } from "@/hooks/useCalculatorState";
 import { ProjectProvider } from "@/hooks/useProject";
@@ -126,7 +127,7 @@ const concreteFaqItems = [
 ];
 
 export default function ConcreteCalculator() {
-  const [isExpanded, setIsExpanded] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     captureRefCode();
@@ -146,34 +147,29 @@ export default function ConcreteCalculator() {
       </Helmet>
 
       {/* ── Section 1: Hero + Calculator ── */}
-      {!isExpanded && (
-        <section className="max-w-4xl mx-auto px-4 pt-10 sm:pt-16 pb-6 sm:pb-10">
-          <h1 className="text-3xl sm:text-4xl font-bold text-foreground text-center">
-            Concrete Calculator
-          </h1>
-          <p className="mt-3 text-base sm:text-lg text-muted-foreground text-center max-w-2xl mx-auto">
-            Set up your footings, walls, and slabs as separate areas. Save each one, adjust it when things change, and keep your total right.
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground text-center">
-            Works in feet, inches, and fractions — built for multi-area jobs, not single pours.
-          </p>
-          <p className="mt-2 text-sm text-muted-foreground text-center">
-            Built for real foundation work — not just one-off calculations.
-          </p>
-        </section>
-      )}
+      <section className="max-w-4xl mx-auto px-4 pt-10 sm:pt-16 pb-6 sm:pb-10">
+        <h1 className="text-3xl sm:text-4xl font-bold text-foreground text-center">
+          Concrete Calculator
+        </h1>
+        <p className="mt-3 text-base sm:text-lg text-muted-foreground text-center max-w-2xl mx-auto">
+          Set up your footings, walls, and slabs as separate areas. Save each one, adjust it when things change, and keep your total right.
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground text-center">
+          Works in feet, inches, and fractions — built for multi-area jobs, not single pours.
+        </p>
+        <p className="mt-2 text-sm text-muted-foreground text-center">
+          Built for real foundation work — not just one-off calculations.
+        </p>
+      </section>
 
       {/* ── Calculator embed ── */}
-      <div className={cn(
-        "mx-auto transition-all duration-300",
-        isExpanded ? "max-w-[1600px] px-6 min-h-[85vh]" : "max-w-5xl px-4 mb-16"
-      )}>
-        <div className={cn(isExpanded ? "" : "min-h-[70vh]")}>
+      <div className="mx-auto max-w-5xl px-4 mb-16">
+        <div className="min-h-[70vh]">
           <CalculatorProvider>
             <ProjectProvider>
               <CalculatorLayout
-                isExpanded={isExpanded}
-                onToggleExpand={() => setIsExpanded(prev => !prev)}
+                mode="embedded"
+                onOpenWorkspace={() => navigate("/app?tab=footing&from=/concrete-calculator")}
               />
             </ProjectProvider>
           </CalculatorProvider>
@@ -181,8 +177,7 @@ export default function ConcreteCalculator() {
       </div>
 
       {/* ── SEO content sections ── */}
-      {!isExpanded && (
-        <div className="bg-background text-foreground">
+      <div className="bg-background text-foreground">
 
           {/* ── Section 2: Differentiator ── */}
           <section className="bg-muted/40 border-y border-border">
@@ -419,7 +414,5 @@ export default function ConcreteCalculator() {
           </section>
 
         </div>
-      )}
-    </>
   );
 }
