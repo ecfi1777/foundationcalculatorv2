@@ -1,48 +1,50 @@
 
 
-# Refine "Real-World Example" section on `/concrete-calculator`
+# Refinement pass on `/concrete-calculator`
 
 ## Single file change: `src/pages/ConcreteCalculator.tsx`
 
-### 1. Replace `exampleAreas` data array (lines 67-76)
+Four targeted edits — no new sections, no layout changes, no logic changes.
 
-Replace with a new `projectAreas` array matching the requested example:
+---
 
-```ts
-const projectAreas = [
-  { name: "Basement Footing", measure: "200 LF", yards: "6.58 yd³" },
-  { name: "Frost Footing", measure: "35 LF", yards: "3.24 yd³" },
-  { name: "Foundation Walls", measure: "235 LF", yards: "46.42 yd³" },
-  { name: "Basement Slab", measure: "3,375 SF", yards: "41.67 yd³" },
-  { name: "Detached Garage", measure: "120 LF", yards: "4.54 yd³" },
-];
-const projectTotal = "103.11 yd³";
+### 1. Takeoff comparison cards — clearer labels (lines 83-98, 288-297)
+
+Update `takeoffTools` data to use structured fields `bestFor` and `thisTool` instead of `strength`/`comparison`. Update the card JSX to render explicit labels:
+
+```
+Bluebeam
+Best for: Drawing-based takeoffs with markup and measurement tools.
+This tool: Faster when you already have dimensions — no plans required.
 ```
 
-### 2. Rewrite Section 3 JSX (lines 239-272)
+Same pattern for PlanSwift and Stack. Each card gets two labeled lines with bold "Best for:" and "This tool:" prefixes.
 
-- Keep H2 title: "What a real foundation takeoff looks like"
-- Replace intro paragraph with: "A real job isn't one number — it's a set of areas that all roll into one total."
-- Remove the grid of 6-8 area cards
-- Replace with a single `Card` containing:
-  - Header: "Project: Basement + Garage" (bold, small label style)
-  - List of 5 rows, each showing area name on the left, measure + yards on the right, separated by a subtle border-bottom
-  - A divider line (`border-t`)
-  - Total row: bold "Total" on left, "103.11 yd³" on right
-- Below the card, one closing line: "Change one area and the total updates — without redoing the rest."
+### 2. Differentiator intro copy — tighten (line 191)
 
-### 3. Styling
+Replace the current paragraph with a shorter, harder-hitting version:
 
-- Card uses existing `Card` component, max-w-lg, centered
-- Each row: `flex justify-between`, `py-2 border-b border-border last:border-0`
-- Area name: `text-sm font-medium text-foreground`
-- Measure + yards: `text-sm text-muted-foreground` (measure) and `text-sm font-medium text-foreground` (yards)
-- Total row: `font-semibold`, slightly larger or same size
-- Mobile: single column, naturally responsive
+> "Most concrete calculators handle one pour at a time. That works for a single slab — but real foundation jobs have footings, walls, and slabs at different sizes. When you're juggling multiple areas, one input box falls apart."
+
+### 3. Contractor insights — improve scannability (lines 331-340)
+
+- Increase bullet spacing from `space-y-3` to `space-y-4`
+- Add `leading-relaxed` to each list item for better line height
+- Use a slightly bolder bullet (e.g., `font-bold` on the bullet span)
+
+### 4. Internal links — more specific descriptions (lines 76-81)
+
+Update `relatedCalculators` descriptions:
+
+- **Slab**: "Calculate slab yardage with adjustable thickness across multiple sections — driveways, garage floors, patios, and basements."
+- **Footing**: "Calculate footing concrete from linear footage and footing dimensions — continuous footings, frost walls, and stepped sections."
+- **Wall**: "Calculate wall concrete for foundation walls and retaining walls — measured by segment with adjustable heights and thicknesses."
+- **Rebar**: "Calculate rebar quantities for slabs, footings, and walls — includes spacing, overlap, and layout options."
+
+---
 
 ### What stays unchanged
-- H2 title text
-- All other sections (hero, differentiator, Phase 2 sections)
-- Calculator logic, providers, state, routing
-- No new components or dependencies
+- All section order, layout structure, calculator logic, state, routing
+- No new components, no new dependencies
+- One file changed: `src/pages/ConcreteCalculator.tsx`
 
