@@ -82,6 +82,51 @@ const relatedCalculators = [
   { title: "Rebar Calculator", description: "Estimate linear feet of rebar for slabs, walls, and footings with overlap and waste.", href: "/rebar-calculator" },
 ];
 
+const takeoffTools = [
+  {
+    name: "Bluebeam",
+    strength: "Full drawing-based takeoffs with markup and measurement tools.",
+    comparison: "This tool is faster when you already have dimensions and just need yardage — no plans required.",
+  },
+  {
+    name: "PlanSwift",
+    strength: "Detailed plan takeoffs with material and labor estimating.",
+    comparison: "Better for quick field calcs or office work when you need a number without opening a full project.",
+  },
+  {
+    name: "Stack",
+    strength: "Cloud-based takeoff and estimating for larger teams.",
+    comparison: "Simpler to use, easier to adjust — works well for contractors handling their own concrete numbers.",
+  },
+];
+
+const mistakeItems = [
+  { title: "Missing a section", desc: "You calculate the slab but forget the footing under it." },
+  { title: "Double-counting", desc: "Two people run the same area and both add it to the total." },
+  { title: "Lost notes", desc: "Dimensions written on scrap paper or buried in texts." },
+  { title: "Changes break totals", desc: "You update one area but forget to re-add the rest." },
+];
+
+const contractorNotes = [
+  "Footings vary across the same job — corners, T-sections, and frost areas are rarely the same size.",
+  "Garage slabs are almost always thicker than basement slabs. Don't assume 4 inches everywhere.",
+  "Townhouse jobs can mean three or four pours in one day, each with different dimensions.",
+  "The hardest part isn't the math — it's keeping everything organized when something changes.",
+  "Subgrade is never perfectly level. Budget waste into every pour, especially on sloped lots.",
+  "When a builder changes a wall height or adds a bump-out, every number downstream moves.",
+  "If you're hand-adding totals from separate calculators, you will eventually miss something.",
+];
+
+const concreteFaqItems = [
+  { q: "How do I calculate how much concrete I need?", a: "Multiply length × width × thickness (in feet), then divide by 27 to get cubic yards. This calculator does that math for you and lets you add waste." },
+  { q: "How do I convert cubic feet to cubic yards?", a: "Divide cubic feet by 27. There are 27 cubic feet in one cubic yard." },
+  { q: "Can I calculate multiple areas in one project?", a: "Yes. Add as many areas as you need — footings, slabs, walls — and the project total updates automatically." },
+  { q: "What's the difference between this and a basic calculator?", a: "Basic calculators handle one area at a time. This tool lets you build a full project with named areas, different types, and a running total." },
+  { q: "Can I use feet, inches, and fractions?", a: "Yes. Enter dimensions the way you measure — 8 feet 6-1/2 inches works just like you'd say it on the job." },
+  { q: "Can I calculate footings, walls, and slabs together?", a: "Yes. Each area can be a different type. Add a footing, a wall, and a slab in the same project and see one combined total." },
+  { q: "Is this meant to replace Bluebeam or PlanSwift?", a: "No. Those are full takeoff tools built for plans. This is faster when you already have dimensions and need a quick, accurate yardage number." },
+];
+
 export default function ConcreteCalculator() {
   const [isExpanded, setIsExpanded] = useState(false);
 
@@ -226,7 +271,90 @@ export default function ConcreteCalculator() {
             </p>
           </section>
 
-          {/* ── Section 4: Internal Links ── */}
+          {/* ── Section 4: Takeoff Software Comparison ── */}
+          <section className="bg-muted/40 border-y border-border">
+            <div className="max-w-5xl mx-auto px-4 py-12 sm:py-16 space-y-8">
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">
+                Concrete Calculator vs Takeoff Software
+              </h2>
+              <p className="text-base text-muted-foreground text-center max-w-2xl mx-auto">
+                Takeoff software like Bluebeam, PlanSwift, and Stack are full plan-based tools built for measuring drawings. This calculator is faster when you already have your dimensions and just need an accurate yardage number — in the field or at your desk.
+              </p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {takeoffTools.map((tool) => (
+                  <Card key={tool.name} className="bg-card">
+                    <CardHeader className="pb-2">
+                      <CardTitle className="text-base font-semibold text-foreground">{tool.name}</CardTitle>
+                    </CardHeader>
+                    <CardContent className="space-y-3">
+                      <p className="text-sm text-muted-foreground">{tool.strength}</p>
+                      <div className="flex items-start gap-2">
+                        <span className="text-xs font-medium text-primary bg-primary/10 rounded px-2 py-0.5 shrink-0">This tool</span>
+                        <p className="text-sm text-foreground">{tool.comparison}</p>
+                      </div>
+                    </CardContent>
+                  </Card>
+                ))}
+              </div>
+            </div>
+          </section>
+
+          {/* ── Section 5: Mistake Prevention ── */}
+          <section className="max-w-5xl mx-auto px-4 py-12 sm:py-16 space-y-8">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">
+              Avoid Costly Concrete Mistakes
+            </h2>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {mistakeItems.map((item) => (
+                <div key={item.title} className="rounded-lg border border-border bg-card p-4 space-y-1">
+                  <p className="text-sm font-semibold text-foreground">{item.title}</p>
+                  <p className="text-sm text-muted-foreground">{item.desc}</p>
+                </div>
+              ))}
+            </div>
+            <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+              Here's how it happens: you change a garage slab from 4″ to 5″ but forget to update your total. Now you're short 2 yards when the truck shows up — and concrete doesn't get delivered twice on short notice.
+            </p>
+            <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+              This tool saves every area in one place. Edit one section without touching the rest. The total always reflects the current numbers — no re-adding, no spreadsheet.
+            </p>
+          </section>
+
+          {/* ── Section 6: Contractor Insights ── */}
+          <section className="bg-muted/40 border-y border-border">
+            <div className="max-w-5xl mx-auto px-4 py-12 sm:py-16 space-y-6">
+              <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">
+                Contractor Notes from the Field
+              </h2>
+              <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
+                <ul className="space-y-3">
+                  {contractorNotes.map((note, i) => (
+                    <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
+                      <span className="text-primary mt-1 shrink-0">•</span>
+                      {note}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+          </section>
+
+          {/* ── Section 7: FAQ (static) ── */}
+          <section className="max-w-5xl mx-auto px-4 py-12 sm:py-16 space-y-6">
+            <h2 className="text-2xl sm:text-3xl font-bold text-foreground text-center">
+              Concrete Calculator FAQ
+            </h2>
+            <div className="space-y-6 max-w-3xl mx-auto">
+              {concreteFaqItems.map((item, i) => (
+                <div key={i} className="space-y-1">
+                  <p className="text-sm font-semibold text-foreground">{item.q}</p>
+                  <p className="text-sm text-muted-foreground">{item.a}</p>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* ── Section 8: Internal Links ── */}
           <section className="max-w-4xl mx-auto px-4 py-12 sm:py-16">
             <h2 className="text-2xl font-bold text-foreground text-center mb-8">
               More Concrete Calculators
@@ -247,6 +375,21 @@ export default function ConcreteCalculator() {
                 </Link>
               ))}
             </nav>
+          </section>
+
+          {/* ── Section 9: Feedback Link ── */}
+          <section className="max-w-4xl mx-auto px-4 py-8 text-center">
+            <p className="text-sm text-muted-foreground">
+              Have an idea or something that could be improved?{" "}
+              <a
+                href="https://forms.example.com/feedback"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-primary hover:underline"
+              >
+                Send feedback
+              </a>
+            </p>
           </section>
 
         </div>
