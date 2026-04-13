@@ -1,80 +1,72 @@
 
 
-# Enhance `/concrete-slab-calculator` page
+# Enhance `/concrete-footing-calculator` page
 
-## Single file change: `src/pages/ConcreteSlabCalculator.tsx`
+## Single file change: `src/pages/ConcreteFootingCalculator.tsx`
 
-Replace the current Example and Link-back sections with 5 new sections, keeping the Hero + Calculator untouched.
-
----
-
-### Section order after changes
-
-1. Hero + Calculator — **no change**
-2. **Formula** — "How to Calculate Concrete for a Slab"
-3. **Real-World Example** — multi-section example replacing current single example
-4. **Contractor Tips** — 5 bullet points
-5. **FAQ** — 7 slab-specific Q&As, all expanded
-6. **Internal Links** — 4 related calculators
-7. Link back button (moved to bottom)
+Rewrite the page content below the calculator to match the slab page pattern. The hero (H1 + intro) and calculator embed stay as-is, with only the intro paragraph shortened. Everything below the calculator is replaced.
 
 ---
 
-### 1. Formula
-- H2: "How to Calculate Concrete for a Slab"
-- Card with formula: `Length (ft) × Width (ft) × Thickness (ft) ÷ 27 = cubic yards`
-- Two short lines: thickness in inches must be divided by 12; the calculator handles this automatically
+### Section order
 
-### 2. Real-World Example (replaces existing)
-- H2: "What a Real Slab Pour Looks Like"
-- Single card with 3 line items:
-  - Garage Slab: 24′ × 24′ × 5″ → 8.89 yd³
-  - Patio: 12′ × 10′ × 4″ → 1.48 yd³
-  - Walkway (3 sections): 4′ × 40′ × 4″ → 1.98 yd³
-  - Total: 12.35 yd³
-- Intro: "Most pours include more than one slab area. The total rolls up across all sections."
-- Closing: "Add or remove sections — the total updates automatically."
+1. **H1 + short intro** — keep existing, replace intro paragraph with 2–3 sentences about linear footage, width/depth, and multiple footing sizes
+2. **Calculator** — no change (footing tab, fresh state)
+3. **Formula** — "How to Calculate Concrete for Footings"
+4. **Real-World Example** — "What a Real Footing Layout Looks Like" with 3 line items + total
+5. **Contractor Tips** — 5 bullets
+6. **FAQ** — 7 items, all expanded
+7. **Internal Links** — 2×2 grid (slab, wall, rebar, main calculator)
+8. **Link back button** — same as current
 
-### 3. Contractor Tips
-- H2: "Contractor Tips"
-- 5 bullets in a card:
-  - Garage slabs are typically 5″–6″ thick; patios and walkways are usually 4″
-  - Always add 5–10% for waste — forms aren't perfect and ground isn't level
-  - Poor subgrade or soft spots can increase the concrete needed
-  - Calculate each slab area separately, then combine for your total order
-  - **"Many contractors round up when ordering to avoid coming up short."** *(softened per user feedback)*
+---
 
-### 4. FAQ
-- H2: "Concrete Slab Calculator FAQ"
-- 7 items, all visible (no accordion):
-  - How many yards of concrete for a 24×24 slab?
-  - How thick should a concrete slab be?
-  - How do I convert square feet to cubic yards?
-  - Do I need rebar or wire mesh in a slab?
-  - How much extra concrete should I order?
-  - What's the difference between a 4-inch and 5-inch slab?
-  - Can I pour multiple slab areas in one project?
-- Answers: 2-3 sentences each
+### Content details
 
-### 5. Internal Links
-- H2: "Related Calculators"
-- 2×2 grid of cards:
-  - `/concrete-calculator` — "Full concrete calculator for footings, walls, slabs, and more — all in one project."
-  - `/concrete-footing-calculator` — "Calculate footing concrete from linear footage and footing dimensions."
-  - `/concrete-wall-calculator` — "Calculate wall concrete for foundation and retaining wall sections."
-  - `/rebar-calculator` — "Calculate rebar quantities for slabs, footings, and walls."
+**Intro (replace lines 23-25):**
+"Footing concrete is calculated from linear footage, width, and depth. Most jobs have more than one footing size — different sections for main walls, garages, and frost footings. Enter your dimensions above and the calculator handles the math."
 
-### 6. Link back button — same as current, moved below Internal Links
+**Formula card:**
+`Length (ft) × Width (ft) × Depth (ft) ÷ 27 = cubic yards`
+"Width and depth are usually measured in inches — divide by 12 to convert to feet. The calculator handles this automatically."
+
+**Example card (3 items):**
+- Main Footing: 200 LF × 24″ × 12″ → 14.81 yd³
+- Garage Footing: 120 LF × 18″ × 10″ → 5.56 yd³
+- Frost Footing Sections: 60 LF × 24″ × 12″ → 4.44 yd³
+- Total: 24.81 yd³
+- Intro: "Most jobs don't use one footing size. Different sections often have different widths and depths."
+- Closing: "Adjust any section and the total updates automatically."
+
+**Contractor Tips (5 bullets):**
+- Footing sizes often vary across the same job — main footings, garage footings, and porch footings may all differ
+- Garage and porch footings are often narrower or shallower than main foundation footings
+- Frost footings may require deeper or wider sections depending on local frost depth requirements
+- Stepped footings need to be measured section by section — don't average the depth
+- Always account for waste and irregular trenches — 5–10% extra is standard
+
+**FAQ (7 items, expanded):**
+1. How many yards of concrete per 100 ft of footing? → Depends on width and depth. A 20″ × 12″ footing at 100 LF needs about 6.17 yd³. A 24″ × 12″ footing needs about 7.41 yd³.
+2. What is a typical footing size? → Residential footings are commonly 16″–24″ wide and 8″–12″ deep. Size depends on load, soil, and local building codes.
+3. How do I calculate footing concrete from linear feet? → Multiply linear feet by width (in feet) by depth (in feet), then divide by 27. Convert inches to feet first.
+4. What is a frost footing? → A frost footing extends below the local frost line to prevent heaving. Depths vary by region — typically 36″–48″ in cold climates.
+5. How do stepped footings affect concrete quantity? → Each step adds volume. Measure each stepped section separately with its own depth, then combine the totals.
+6. How much extra concrete should I order? → Plan for 5–10% extra. Trenches are rarely perfectly uniform, and waste from spillage adds up on longer runs.
+7. Do footings need rebar? → Most footings require continuous rebar per code. Check local requirements — typically two horizontal bars with vertical ties at wall intersections.
+
+**Internal Links (2×2 grid):**
+- `/concrete-calculator` — "Full concrete calculator for footings, walls, slabs, and more — all in one project."
+- `/concrete-slab-calculator` — "Calculate slab yardage with thickness across multiple sections."
+- `/concrete-wall-calculator` — "Calculate concrete for foundation walls and retaining walls."
+- `/rebar-calculator` — "Calculate rebar quantities for slabs, footings, and wall layouts."
 
 ---
 
 ### Styling
-- All sections: `mx-auto max-w-3xl px-4 pb-12`
-- Cards use existing `Card` / border+bg-card pattern
-- FAQ: bold question, muted answer, stacked with `space-y-2`
-- Mobile-friendly (single column, grid collapses)
+Follows exact same pattern as the slab page: `max-w-3xl mx-auto px-4 pb-12`, card borders, divide-y for example rows, `space-y-4` for tips, stacked cards for FAQ.
 
 ### What stays unchanged
-- Hero, calculator embed, SEO, providers — no change
-- No new files, no state, no logic changes
+- SEO meta tags (already good)
+- Calculator embed with `initialTab="footing"` and `hydrateFromStorage={false}`
+- No new files, components, dependencies, or logic changes
 
