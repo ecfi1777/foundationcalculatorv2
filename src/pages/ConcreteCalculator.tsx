@@ -157,6 +157,9 @@ export default function ConcreteCalculator() {
           <p className="mt-2 text-sm text-muted-foreground text-center">
             Works in feet, inches, and fractions — built for multi-area jobs, not single pours.
           </p>
+          <p className="mt-2 text-sm text-muted-foreground text-center">
+            Built for real foundation work — not just one-off calculations.
+          </p>
         </section>
       )}
 
@@ -189,6 +192,9 @@ export default function ConcreteCalculator() {
               </h2>
               <p className="text-base text-muted-foreground text-center max-w-2xl mx-auto">
                 Most concrete calculators handle one pour at a time. That works for a single slab — but real foundation jobs have footings, walls, and slabs at different sizes. When you're juggling multiple areas, one input box falls apart.
+              </p>
+              <p className="text-base text-muted-foreground text-center max-w-2xl mx-auto mt-2">
+                When you're working on a real job, you shouldn't have to keep restarting your numbers just to make one change.
               </p>
 
               {/* Desktop table */}
@@ -269,7 +275,7 @@ export default function ConcreteCalculator() {
             </Card>
 
             <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
-              Change one area and the total updates — without redoing the rest.
+              Instead of running each section separately and trying to keep track of it, everything stays organized in one place — and your total stays right as things change.
             </p>
           </section>
 
