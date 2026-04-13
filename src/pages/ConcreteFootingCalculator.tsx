@@ -3,6 +3,7 @@ import { SEO } from "@/components/SEO";
 import { CalculatorProvider } from "@/hooks/useCalculatorState";
 import { ProjectProvider } from "@/hooks/useProject";
 import { CalculatorLayout } from "@/components/calculator/CalculatorLayout";
+import SeoCalculatorContainer from "@/components/calculator/SeoCalculatorContainer";
 import { Button } from "@/components/ui/button";
 
 const ConcreteFootingCalculator = () => {
