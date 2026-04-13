@@ -82,6 +82,51 @@ const relatedCalculators = [
   { title: "Rebar Calculator", description: "Estimate linear feet of rebar for slabs, walls, and footings with overlap and waste.", href: "/rebar-calculator" },
 ];
 
+const takeoffTools = [
+  {
+    name: "Bluebeam",
+    strength: "Full drawing-based takeoffs with markup and measurement tools.",
+    comparison: "This tool is faster when you already have dimensions and just need yardage — no plans required.",
+  },
+  {
+    name: "PlanSwift",
+    strength: "Detailed plan takeoffs with material and labor estimating.",
+    comparison: "Better for quick field calcs or office work when you need a number without opening a full project.",
+  },
+  {
+    name: "Stack",
+    strength: "Cloud-based takeoff and estimating for larger teams.",
+    comparison: "Simpler to use, easier to adjust — works well for contractors handling their own concrete numbers.",
+  },
+];
+
+const mistakeItems = [
+  { title: "Missing a section", desc: "You calculate the slab but forget the footing under it." },
+  { title: "Double-counting", desc: "Two people run the same area and both add it to the total." },
+  { title: "Lost notes", desc: "Dimensions written on scrap paper or buried in texts." },
+  { title: "Changes break totals", desc: "You update one area but forget to re-add the rest." },
+];
+
+const contractorNotes = [
+  "Footings vary across the same job — corners, T-sections, and frost areas are rarely the same size.",
+  "Garage slabs are almost always thicker than basement slabs. Don't assume 4 inches everywhere.",
+  "Townhouse jobs can mean three or four pours in one day, each with different dimensions.",
+  "The hardest part isn't the math — it's keeping everything organized when something changes.",
+  "Subgrade is never perfectly level. Budget waste into every pour, especially on sloped lots.",
+  "When a builder changes a wall height or adds a bump-out, every number downstream moves.",
+  "If you're hand-adding totals from separate calculators, you will eventually miss something.",
+];
+
+const concreteFaqItems = [
+  { q: "How do I calculate how much concrete I need?", a: "Multiply length × width × thickness (in feet), then divide by 27 to get cubic yards. This calculator does that math for you and lets you add waste." },
+  { q: "How do I convert cubic feet to cubic yards?", a: "Divide cubic feet by 27. There are 27 cubic feet in one cubic yard." },
+  { q: "Can I calculate multiple areas in one project?", a: "Yes. Add as many areas as you need — footings, slabs, walls — and the project total updates automatically." },
+  { q: "What's the difference between this and a basic calculator?", a: "Basic calculators handle one area at a time. This tool lets you build a full project with named areas, different types, and a running total." },
+  { q: "Can I use feet, inches, and fractions?", a: "Yes. Enter dimensions the way you measure — 8 feet 6-1/2 inches works just like you'd say it on the job." },
+  { q: "Can I calculate footings, walls, and slabs together?", a: "Yes. Each area can be a different type. Add a footing, a wall, and a slab in the same project and see one combined total." },
+  { q: "Is this meant to replace Bluebeam or PlanSwift?", a: "No. Those are full takeoff tools built for plans. This is faster when you already have dimensions and need a quick, accurate yardage number." },
+];
+
 export default function ConcreteCalculator() {
   const [isExpanded, setIsExpanded] = useState(false);
 
