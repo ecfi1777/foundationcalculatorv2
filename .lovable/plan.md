@@ -4,37 +4,35 @@
 
 ## Single file: `src/pages/ConcreteCalculator.tsx`
 
-Three text-only edits — no layout, logic, or structural changes.
+Two text-only edits.
 
-### Edit 1: Hero section (after line 159)
+### Edit 1: Takeoff section (after line 309, before `</div>` closing)
 
-Add a new `<p>` after the "not single pours" line:
+After the grid of takeoff tool cards (line 309) and before the closing `</div>` on line 310, add three new paragraphs:
 
 ```
-<p className="mt-2 text-sm text-muted-foreground text-center">
-  Built for real foundation work — not just one-off calculations.
+<p className="text-sm text-muted-foreground text-center max-w-xl mx-auto mt-6">
+  If you already have full plans and need a complete takeoff, those tools make sense.
+</p>
+<p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+  But if you're working with real numbers in the field or making quick adjustments, they're slower than they need to be.
+</p>
+<p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+  That's where this tool fits.
 </p>
 ```
 
-### Edit 2: Differentiator intro (after line 192)
+### Edit 2: Mistake section (after line 325, before existing closing paragraphs)
 
-Add a new `<p>` after the "one input box falls apart" paragraph:
+Insert a new paragraph after the grid of mistake cards and before the existing closing paragraphs:
 
 ```
-<p className="text-base text-muted-foreground text-center max-w-2xl mx-auto mt-2">
-  When you're working on a real job, you shouldn't have to keep restarting your numbers just to make one change.
+<p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+  Most of the time, the mistake isn't the math — it's losing track of one part of the job.
 </p>
 ```
-
-### Edit 3: Example closing paragraph (lines 271–273)
-
-Replace the text content:
-
-**Before:** "Change one area and the total updates — without redoing the rest."
-
-**After:** "Instead of running each section separately and trying to keep track of it, everything stays organized in one place — and your total stays right as things change."
 
 ### What stays unchanged
 - All layout, components, calculator logic, routing, state
-- Comparison table, project card, all other sections
+- All other sections
 
