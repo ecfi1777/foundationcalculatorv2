@@ -64,16 +64,14 @@ const comparisonRows = [
   { feature: "Input format", typical: "Decimal feet or inches only", tfc: "Feet, inches, and fractions — the way you measure" },
 ];
 
-const exampleAreas = [
-  { name: "Garage Slab", hint: "24′ × 24′ × 5″ thick", type: "Slab" },
-  { name: "Walkway", hint: "30′ × 4′ × 4″ thick", type: "Slab" },
-  { name: "Patio", hint: "16′ × 12′ × 4″ thick", type: "Slab" },
-  { name: "Sidewalk", hint: "40′ × 4′ × 4″ thick", type: "Slab" },
-  { name: "Main Footing", hint: "24″ wide × 12″ deep, perimeter", type: "Footing" },
-  { name: "Frost Footing", hint: "18″ wide × 10″ deep, garage", type: "Footing" },
-  { name: "Foundation Wall", hint: "8″ thick × 8′ tall, perimeter", type: "Wall" },
-  { name: "Basement Slab", hint: "Varied thickness by section", type: "Slab" },
+const projectAreas = [
+  { name: "Basement Footing", measure: "200 LF", yards: "6.58 yd³" },
+  { name: "Frost Footing", measure: "35 LF", yards: "3.24 yd³" },
+  { name: "Foundation Walls", measure: "235 LF", yards: "46.42 yd³" },
+  { name: "Basement Slab", measure: "3,375 SF", yards: "41.67 yd³" },
+  { name: "Detached Garage", measure: "120 LF", yards: "4.54 yd³" },
 ];
+const projectTotal = "103.11 yd³";
 
 const relatedCalculators = [
   { title: "Concrete Slab Calculator", description: "Calculate yardage for driveways, garage floors, patios, and basement slabs.", href: "/concrete-slab-calculator" },
@@ -242,32 +240,36 @@ export default function ConcreteCalculator() {
               What a real foundation takeoff looks like
             </h2>
             <p className="text-base text-muted-foreground text-center max-w-2xl mx-auto">
-              With a typical calculator, you'd run each of these separately — garage slab, walkway, patio, sidewalk, footings, walls — then add the totals by hand or in a spreadsheet. Every time something changes, you redo the math.
+              A real job isn't one number — it's a set of areas that all roll into one total.
             </p>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-              {exampleAreas.map((area) => (
-                <Card key={area.name} className="bg-card">
-                  <CardHeader className="pb-2">
-                    <CardTitle className="text-base font-semibold text-foreground">
-                      {area.name}
-                    </CardTitle>
-                  </CardHeader>
-                  <CardContent className="space-y-2">
-                    <p className="text-sm text-muted-foreground">{area.hint}</p>
-                    <span className="inline-block text-xs font-medium text-primary bg-primary/10 rounded px-2 py-0.5">
-                      {area.type}
+            <Card className="max-w-lg mx-auto">
+              <CardHeader className="pb-3">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">Project</p>
+                <CardTitle className="text-lg font-bold text-foreground">Basement + Garage</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-0">
+                {projectAreas.map((area, i) => (
+                  <div
+                    key={area.name}
+                    className={`flex items-center justify-between py-2.5 ${i < projectAreas.length - 1 ? "border-b border-border" : ""}`}
+                  >
+                    <span className="text-sm font-medium text-foreground">{area.name}</span>
+                    <span className="flex items-center gap-3">
+                      <span className="text-sm text-muted-foreground">{area.measure}</span>
+                      <span className="text-sm font-medium text-foreground">{area.yards}</span>
                     </span>
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+                  </div>
+                ))}
+                <div className="flex items-center justify-between pt-3 mt-2 border-t-2 border-border">
+                  <span className="text-sm font-semibold text-foreground">Total</span>
+                  <span className="text-sm font-semibold text-foreground">{projectTotal}</span>
+                </div>
+              </CardContent>
+            </Card>
 
             <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
-              Here's what goes wrong: you update the garage slab from 4 inches to 5 inches but forget to re-add the walkway and patio. Your total is off by 2 yards and you don't catch it until the truck shows up short.
-            </p>
-            <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
-              This tool keeps all your areas in one place. Edit one section without touching the rest. The project total always reflects every area — no re-adding, no spreadsheet.
+              Change one area and the total updates — without redoing the rest.
             </p>
           </section>
 
