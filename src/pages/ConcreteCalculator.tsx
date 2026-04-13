@@ -333,6 +333,9 @@ export default function ConcreteCalculator() {
               ))}
             </div>
             <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+              Most of the time, the mistake isn't the math — it's losing track of one part of the job.
+            </p>
+            <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
               Here's how it happens: you change a garage slab from 4″ to 5″ but forget to update your total. Now you're short 2 yards when the truck shows up — and concrete doesn't get delivered twice on short notice.
             </p>
             <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
