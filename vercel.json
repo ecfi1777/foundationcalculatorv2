@@ -1,5 +1,18 @@
 {
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "redirects": [
+    {
+      "source": "/(.*)",
+      "has": [
+        {
+          "type": "host",
+          "value": "foundationcalculatorv2.vercel.app"
+        }
+      ],
+      "destination": "https://foundationcalculator.com/$1",
+      "permanent": true
+    }
   ]
 }
