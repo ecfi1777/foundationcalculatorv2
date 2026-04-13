@@ -4,35 +4,44 @@
 
 ## Single file: `src/pages/ConcreteCalculator.tsx`
 
-Two text-only edits.
+Three text-only edits.
 
-### Edit 1: Takeoff section (after line 309, before `</div>` closing)
+### Edit 1: Contractor notes — tighten bullets (lines 108–116)
 
-After the grid of takeoff tool cards (line 309) and before the closing `</div>` on line 310, add three new paragraphs:
+Replace the `contractorNotes` array with shorter, one-sentence bullets:
 
+```js
+const contractorNotes = [
+  "Footings often change size across the same job.",
+  "Garage slabs are almost always thicker than basement slabs.",
+  "Townhouse jobs can mean three or four pours with different dimensions in one day.",
+  "The hardest part isn't the math — it's keeping everything organized.",
+  "Subgrade is never level. Budget waste into every pour.",
+  "One wall height change moves every number downstream.",
+  "If you're hand-adding totals from separate calculators, you'll miss something.",
+];
 ```
-<p className="text-sm text-muted-foreground text-center max-w-xl mx-auto mt-6">
-  If you already have full plans and need a complete takeoff, those tools make sense.
-</p>
-<p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
-  But if you're working with real numbers in the field or making quick adjustments, they're slower than they need to be.
-</p>
-<p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
-  That's where this tool fits.
+
+### Edit 2: FAQ answer update (line 122)
+
+Replace the answer for "What's the difference between this and a basic calculator?":
+
+**Before:** `"Basic calculators handle one area at a time. This tool lets you build a full project with named areas, different types, and a running total."`
+
+**After:** `"For simple one-off numbers, those work fine. This is built for real jobs where you're tracking multiple areas and making changes."`
+
+### Edit 3: Internal links intro (before line 385)
+
+Add a `<p>` between the `<h2>` heading and the `<nav>` grid:
+
+```tsx
+<p className="text-sm text-muted-foreground text-center max-w-xl mx-auto mb-8">
+  If you're working on a specific part of a job, you can jump straight to a dedicated calculator:
 </p>
 ```
 
-### Edit 2: Mistake section (after line 325, before existing closing paragraphs)
-
-Insert a new paragraph after the grid of mistake cards and before the existing closing paragraphs:
-
-```
-<p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
-  Most of the time, the mistake isn't the math — it's losing track of one part of the job.
-</p>
-```
+(Also remove the existing `mb-8` from the `<h2>` on line 382 since the new `<p>` provides the spacing.)
 
 ### What stays unchanged
 - All layout, components, calculator logic, routing, state
-- All other sections
 
