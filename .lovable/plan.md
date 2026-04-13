@@ -1,68 +1,53 @@
 
 
-# Enhance `/concrete-wall-calculator` page
+# Enhance `/rebar-calculator` page
 
-## Single file change: `src/pages/ConcreteWallCalculator.tsx`
+## Single file change: `src/pages/RebarCalculator.tsx`
 
-Rewrite the page to match the footing/slab page pattern. Keep SEO, H1, and calculator embed. Replace everything below the calculator with 5 new sections.
-
----
-
-### Section order
-
-1. **H1 + intro** — keep H1, replace intro with: "Wall concrete is calculated from length, height, and thickness. Foundation walls, stem walls, and retaining walls are common — and most jobs include multiple wall sections at different dimensions. Enter your measurements above and the calculator handles the rest."
-2. **Calculator** — no change (`initialTab="wall"`, `hydrateFromStorage={false}`)
-3. **Formula** — "How to Calculate Concrete for Walls"
-4. **Real-World Example** — "What a Real Wall Layout Looks Like"
-5. **Contractor Tips** — 6 bullets
-6. **FAQ** — 7 items, all expanded
-7. **Internal Links** — 2×2 grid
-8. **Link back button**
+Replace the placeholder with a full content page matching the footing/slab/wall pattern exactly.
 
 ---
 
-### Content
+### Calculator embed
 
-**Formula card:**
-`Length (ft) × Height (ft) × Thickness (ft) ÷ 27 = cubic yards`
-"Thickness is usually measured in inches — divide by 12 to convert to feet. The calculator handles this automatically."
+Use `initialTab="footing"` with `hydrateFromStorage={false}` — footing is the most common rebar use case, and rebar controls (the inline checkbox addon) are immediately visible within the footing form. No logic, routing, or state changes needed.
 
-**Example card (3 items, divide-y):**
-- Foundation Walls: 235 LF × 8′ × 8″ → 46.42 yd³
-- Garage Stem Wall: 120 LF × 4′ × 8″ → 11.85 yd³
-- Retaining Wall Section: 60 LF × 3′ × 10″ → 5.56 yd³
-- Total: 63.83 yd³
-- Intro: "Most projects include multiple wall sections with different heights and thicknesses."
-- Closing: "Adjust any section and the total updates automatically."
+### SEO
 
-**Contractor Tips (6 bullets):**
-- Wall thickness varies depending on structure type and engineering requirements
-- Basement foundation walls are typically 8″ thick for residential construction
-- Retaining walls may require 10″–12″ or thicker depending on height and soil pressure
-- Height changes have a large impact on volume — even a small increase adds significant yardage
-- Deduct for window and door openings where possible to avoid over-ordering
-- Always add 5–10% for waste — forms shift, and walls are rarely perfectly uniform
+Update title to "Rebar Calculator | Free Rebar Estimator" and description to target rebar-specific queries.
 
-**FAQ (7 items, expanded):**
-1. How many yards of concrete per linear foot of wall? → Depends on height and thickness. An 8′ tall × 8″ thick wall uses about 0.20 yd³ per linear foot.
-2. What is a typical foundation wall thickness? → Most residential foundation walls are 8″ thick. Taller walls or heavy loads may require 10″ or more.
-3. How do I calculate concrete for a wall? → Multiply length × height × thickness (all in feet), then divide by 27. Convert inches to feet first.
-4. Should I subtract for window and door openings? → Yes, if the openings are significant. Small openings may not be worth deducting — the extra concrete covers waste.
-5. How much extra concrete should I order? → Plan for 5–10% extra. Wall forms can shift slightly, and concrete settles into uneven spots.
-6. What's the difference between a stem wall and a foundation wall? → A stem wall is the shorter wall between the footing and the slab or floor. A foundation wall runs the full height from footing to top of wall.
-7. Do concrete walls need rebar? → Yes. Most poured walls require both horizontal and vertical rebar per code. Spacing depends on wall height and local requirements.
+### Section order & content
 
-**Internal Links (2×2 grid):**
-- `/concrete-calculator` — "Full concrete calculator for footings, walls, slabs, and more — all in one project."
-- `/concrete-slab-calculator` — "Calculate slab yardage with thickness across multiple sections."
-- `/concrete-footing-calculator` — "Calculate footing concrete from linear footage and footing dimensions."
-- `/rebar-calculator` — "Calculate rebar quantities for slabs, footings, and wall layouts."
+Follows the exact same JSX structure, class names, and card patterns as the footing page.
 
----
+1. **H1 + intro** — "Rebar Calculator" with: "Rebar quantities depend on spacing, bar size, overlap, and layout — and they're different for slabs, footings, and walls. Most jobs have multiple sections with different rebar configurations. Enter your dimensions above and the calculator totals the bars, overlap, and footage."
+
+2. **Calculator** — `CalculatorProvider initialTab="footing" hydrateFromStorage={false}` wrapping `ProjectProvider` + `CalculatorLayout`
+
+3. **Formula** — "How to Calculate Rebar" card with 3 bullet-style lines (slab grids / footing+wall runs / overlap) + closing line about the calculator handling layout math
+
+4. **Real-World Example** — "What a Real Rebar Layout Looks Like" card with divide-y rows:
+   - Garage Slab Grid — #4 @ 12″ O.C. → 1,840 LF
+   - Main Footing — 3 continuous #4 bars → 600 LF
+   - Foundation Wall Verticals — #4 @ 24″ O.C. → 188 LF
+   - Foundation Wall Horizontals — 2 runs #4 → 470 LF
+   - Total: 3,098 LF
+
+5. **Contractor Tips** — 6 bullets (spacing impact, continuous bars, wall steel, overlap, waste 5–10%, separate layouts)
+
+6. **FAQ** — 7 expanded items (how to calculate, spacing effect, splice meaning, separate by type, waste, horizontal vs vertical, project totals)
+
+7. **Internal Links** — 2×2 grid linking to `/concrete-calculator`, `/concrete-slab-calculator`, `/concrete-footing-calculator`, `/concrete-wall-calculator`
+
+8. **Link back button** — same pattern as other pages
 
 ### Styling
-Same pattern as footing page: `max-w-3xl mx-auto px-4 pb-12`, card borders, divide-y for example rows, `space-y-4` for tips, stacked cards for FAQ.
+
+Identical to footing page: `max-w-3xl mx-auto px-4 pb-12`, `rounded-lg border border-border/60 bg-card`, `divide-y`, `space-y-4` for FAQ.
 
 ### What stays unchanged
-- SEO meta tags, calculator embed, no new files/components/dependencies
+
+- No new files, components, or dependencies
+- No calculator logic, state, routing, or provider changes
+- One file modified: `src/pages/RebarCalculator.tsx`
 
