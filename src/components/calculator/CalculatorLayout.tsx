@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { stashDraft } from "@/lib/workspaceHandoff";
 import { Pencil } from "lucide-react";
 import type { CalculatorType } from "@/types/calculator";
 import { useNavigate } from "react-router-dom";
@@ -254,8 +255,6 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
   // Wrap onOpenWorkspace to stash draft before navigating
   const handleOpenWorkspace = useCallback(() => {
     if (onOpenWorkspace) {
-      // Stash current calculator state for handoff to /app
-      const { stashDraft } = require("@/lib/workspaceHandoff");
       stashDraft(state);
       onOpenWorkspace();
     }
