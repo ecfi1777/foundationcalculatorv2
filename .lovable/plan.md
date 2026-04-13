@@ -1,72 +1,68 @@
 
 
-# Enhance `/concrete-footing-calculator` page
+# Enhance `/concrete-wall-calculator` page
 
-## Single file change: `src/pages/ConcreteFootingCalculator.tsx`
+## Single file change: `src/pages/ConcreteWallCalculator.tsx`
 
-Rewrite the page content below the calculator to match the slab page pattern. The hero (H1 + intro) and calculator embed stay as-is, with only the intro paragraph shortened. Everything below the calculator is replaced.
+Rewrite the page to match the footing/slab page pattern. Keep SEO, H1, and calculator embed. Replace everything below the calculator with 5 new sections.
 
 ---
 
 ### Section order
 
-1. **H1 + short intro** — keep existing, replace intro paragraph with 2–3 sentences about linear footage, width/depth, and multiple footing sizes
-2. **Calculator** — no change (footing tab, fresh state)
-3. **Formula** — "How to Calculate Concrete for Footings"
-4. **Real-World Example** — "What a Real Footing Layout Looks Like" with 3 line items + total
-5. **Contractor Tips** — 5 bullets
+1. **H1 + intro** — keep H1, replace intro with: "Wall concrete is calculated from length, height, and thickness. Foundation walls, stem walls, and retaining walls are common — and most jobs include multiple wall sections at different dimensions. Enter your measurements above and the calculator handles the rest."
+2. **Calculator** — no change (`initialTab="wall"`, `hydrateFromStorage={false}`)
+3. **Formula** — "How to Calculate Concrete for Walls"
+4. **Real-World Example** — "What a Real Wall Layout Looks Like"
+5. **Contractor Tips** — 6 bullets
 6. **FAQ** — 7 items, all expanded
-7. **Internal Links** — 2×2 grid (slab, wall, rebar, main calculator)
-8. **Link back button** — same as current
+7. **Internal Links** — 2×2 grid
+8. **Link back button**
 
 ---
 
-### Content details
-
-**Intro (replace lines 23-25):**
-"Footing concrete is calculated from linear footage, width, and depth. Most jobs have more than one footing size — different sections for main walls, garages, and frost footings. Enter your dimensions above and the calculator handles the math."
+### Content
 
 **Formula card:**
-`Length (ft) × Width (ft) × Depth (ft) ÷ 27 = cubic yards`
-"Width and depth are usually measured in inches — divide by 12 to convert to feet. The calculator handles this automatically."
+`Length (ft) × Height (ft) × Thickness (ft) ÷ 27 = cubic yards`
+"Thickness is usually measured in inches — divide by 12 to convert to feet. The calculator handles this automatically."
 
-**Example card (3 items):**
-- Main Footing: 200 LF × 24″ × 12″ → 14.81 yd³
-- Garage Footing: 120 LF × 18″ × 10″ → 5.56 yd³
-- Frost Footing Sections: 60 LF × 24″ × 12″ → 4.44 yd³
-- Total: 24.81 yd³
-- Intro: "Most jobs don't use one footing size. Different sections often have different widths and depths."
+**Example card (3 items, divide-y):**
+- Foundation Walls: 235 LF × 8′ × 8″ → 46.42 yd³
+- Garage Stem Wall: 120 LF × 4′ × 8″ → 11.85 yd³
+- Retaining Wall Section: 60 LF × 3′ × 10″ → 5.56 yd³
+- Total: 63.83 yd³
+- Intro: "Most projects include multiple wall sections with different heights and thicknesses."
 - Closing: "Adjust any section and the total updates automatically."
 
-**Contractor Tips (5 bullets):**
-- Footing sizes often vary across the same job — main footings, garage footings, and porch footings may all differ
-- Garage and porch footings are often narrower or shallower than main foundation footings
-- Frost footings may require deeper or wider sections depending on local frost depth requirements
-- Stepped footings need to be measured section by section — don't average the depth
-- Always account for waste and irregular trenches — 5–10% extra is standard
+**Contractor Tips (6 bullets):**
+- Wall thickness varies depending on structure type and engineering requirements
+- Basement foundation walls are typically 8″ thick for residential construction
+- Retaining walls may require 10″–12″ or thicker depending on height and soil pressure
+- Height changes have a large impact on volume — even a small increase adds significant yardage
+- Deduct for window and door openings where possible to avoid over-ordering
+- Always add 5–10% for waste — forms shift, and walls are rarely perfectly uniform
 
 **FAQ (7 items, expanded):**
-1. How many yards of concrete per 100 ft of footing? → Depends on width and depth. A 20″ × 12″ footing at 100 LF needs about 6.17 yd³. A 24″ × 12″ footing needs about 7.41 yd³.
-2. What is a typical footing size? → Residential footings are commonly 16″–24″ wide and 8″–12″ deep. Size depends on load, soil, and local building codes.
-3. How do I calculate footing concrete from linear feet? → Multiply linear feet by width (in feet) by depth (in feet), then divide by 27. Convert inches to feet first.
-4. What is a frost footing? → A frost footing extends below the local frost line to prevent heaving. Depths vary by region — typically 36″–48″ in cold climates.
-5. How do stepped footings affect concrete quantity? → Each step adds volume. Measure each stepped section separately with its own depth, then combine the totals.
-6. How much extra concrete should I order? → Plan for 5–10% extra. Trenches are rarely perfectly uniform, and waste from spillage adds up on longer runs.
-7. Do footings need rebar? → Most footings require continuous rebar per code. Check local requirements — typically two horizontal bars with vertical ties at wall intersections.
+1. How many yards of concrete per linear foot of wall? → Depends on height and thickness. An 8′ tall × 8″ thick wall uses about 0.20 yd³ per linear foot.
+2. What is a typical foundation wall thickness? → Most residential foundation walls are 8″ thick. Taller walls or heavy loads may require 10″ or more.
+3. How do I calculate concrete for a wall? → Multiply length × height × thickness (all in feet), then divide by 27. Convert inches to feet first.
+4. Should I subtract for window and door openings? → Yes, if the openings are significant. Small openings may not be worth deducting — the extra concrete covers waste.
+5. How much extra concrete should I order? → Plan for 5–10% extra. Wall forms can shift slightly, and concrete settles into uneven spots.
+6. What's the difference between a stem wall and a foundation wall? → A stem wall is the shorter wall between the footing and the slab or floor. A foundation wall runs the full height from footing to top of wall.
+7. Do concrete walls need rebar? → Yes. Most poured walls require both horizontal and vertical rebar per code. Spacing depends on wall height and local requirements.
 
 **Internal Links (2×2 grid):**
 - `/concrete-calculator` — "Full concrete calculator for footings, walls, slabs, and more — all in one project."
 - `/concrete-slab-calculator` — "Calculate slab yardage with thickness across multiple sections."
-- `/concrete-wall-calculator` — "Calculate concrete for foundation walls and retaining walls."
+- `/concrete-footing-calculator` — "Calculate footing concrete from linear footage and footing dimensions."
 - `/rebar-calculator` — "Calculate rebar quantities for slabs, footings, and wall layouts."
 
 ---
 
 ### Styling
-Follows exact same pattern as the slab page: `max-w-3xl mx-auto px-4 pb-12`, card borders, divide-y for example rows, `space-y-4` for tips, stacked cards for FAQ.
+Same pattern as footing page: `max-w-3xl mx-auto px-4 pb-12`, card borders, divide-y for example rows, `space-y-4` for tips, stacked cards for FAQ.
 
 ### What stays unchanged
-- SEO meta tags (already good)
-- Calculator embed with `initialTab="footing"` and `hydrateFromStorage={false}`
-- No new files, components, dependencies, or logic changes
+- SEO meta tags, calculator embed, no new files/components/dependencies
 
