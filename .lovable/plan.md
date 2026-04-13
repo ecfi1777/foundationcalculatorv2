@@ -1,58 +1,48 @@
 
 
-# Phase 2: Add new sections to `/concrete-calculator`
+# Refine "Real-World Example" section on `/concrete-calculator`
 
 ## Single file change: `src/pages/ConcreteCalculator.tsx`
 
-Insert 5 new sections between Section 3 (Real-World Example, ends line 227) and Section 4 (Internal Links, starts line 229). Move Internal Links down. Add Feedback Link at the bottom.
+### 1. Replace `exampleAreas` data array (lines 67-76)
 
-## Final section order
+Replace with a new `projectAreas` array matching the requested example:
 
-1. Hero + Calculator — no change
-2. Differentiator — no change
-3. Real-World Example — no change
-4. **NEW — Takeoff Software Comparison**
-5. **NEW — Mistake Prevention**
-6. **NEW — Contractor Insights**
-7. **NEW — FAQ (static)**
-8. Internal Links — existing, moved down, no content change
-9. **NEW — Feedback Link**
+```ts
+const projectAreas = [
+  { name: "Basement Footing", measure: "200 LF", yards: "6.58 yd³" },
+  { name: "Frost Footing", measure: "35 LF", yards: "3.24 yd³" },
+  { name: "Foundation Walls", measure: "235 LF", yards: "46.42 yd³" },
+  { name: "Basement Slab", measure: "3,375 SF", yards: "41.67 yd³" },
+  { name: "Detached Garage", measure: "120 LF", yards: "4.54 yd³" },
+];
+const projectTotal = "103.11 yd³";
+```
 
-## New data arrays (added after `relatedCalculators`)
+### 2. Rewrite Section 3 JSX (lines 239-272)
 
-- `takeoffTools` — 3 items (Bluebeam, PlanSwift, Stack) with `name`, `strength`, `comparison`
-- `mistakeItems` — 4 items with `title`, `desc`
-- `contractorNotes` — 7 string items
-- `faqItems` — 7 items with `q`, `a`
+- Keep H2 title: "What a real foundation takeoff looks like"
+- Replace intro paragraph with: "A real job isn't one number — it's a set of areas that all roll into one total."
+- Remove the grid of 6-8 area cards
+- Replace with a single `Card` containing:
+  - Header: "Project: Basement + Garage" (bold, small label style)
+  - List of 5 rows, each showing area name on the left, measure + yards on the right, separated by a subtle border-bottom
+  - A divider line (`border-t`)
+  - Total row: bold "Total" on left, "103.11 yd³" on right
+- Below the card, one closing line: "Change one area and the total updates — without redoing the rest."
 
-## New JSX sections
+### 3. Styling
 
-### Takeoff Software Comparison
-- Background: `bg-muted/40 border-y border-border`
-- H2 + short intro paragraph
-- 3 cards in `grid-cols-1 md:grid-cols-3`
-- Each card: tool name bold, strength text, "This tool:" comparison line
+- Card uses existing `Card` component, max-w-lg, centered
+- Each row: `flex justify-between`, `py-2 border-b border-border last:border-0`
+- Area name: `text-sm font-medium text-foreground`
+- Measure + yards: `text-sm text-muted-foreground` (measure) and `text-sm font-medium text-foreground` (yards)
+- Total row: `font-semibold`, slightly larger or same size
+- Mobile: single column, naturally responsive
 
-### Mistake Prevention
-- H2 + 4 mini-cards in `grid-cols-1 sm:grid-cols-2`
-- Example paragraph (garage slab 4"→5", truck short)
-- Closing line about auto-updating totals
-
-### Contractor Insights
-- Background: `bg-muted/40 border-y border-border`
-- H2 + single card with 7 bullet items
-
-### FAQ (static, no state)
-- H2 + 7 stacked blocks, question bold, answer below
-- All expanded, no accordion
-
-### Feedback Link
-- Minimal centered section after Internal Links
-- Placeholder URL: `https://forms.example.com/feedback`
-
-## What stays unchanged
-- All Phase 1 sections — zero edits
-- Calculator embed, JSON-LD, SEO/Helmet
-- All imports, providers, state
-- No new files, no new dependencies
+### What stays unchanged
+- H2 title text
+- All other sections (hero, differentiator, Phase 2 sections)
+- Calculator logic, providers, state, routing
+- No new components or dependencies
 
