@@ -307,6 +307,15 @@ export default function ConcreteCalculator() {
                   </Card>
                 ))}
               </div>
+              <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto mt-6">
+                If you already have full plans and need a complete takeoff, those tools make sense.
+              </p>
+              <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+                But if you're working with real numbers in the field or making quick adjustments, they're slower than they need to be.
+              </p>
+              <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+                That's where this tool fits.
+              </p>
             </div>
           </section>
 
@@ -323,6 +332,9 @@ export default function ConcreteCalculator() {
                 </div>
               ))}
             </div>
+            <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
+              Most of the time, the mistake isn't the math — it's losing track of one part of the job.
+            </p>
             <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto">
               Here's how it happens: you change a garage slab from 4″ to 5″ but forget to update your total. Now you're short 2 yards when the truck shows up — and concrete doesn't get delivered twice on short notice.
             </p>
