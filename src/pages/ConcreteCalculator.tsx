@@ -414,5 +414,6 @@ export default function ConcreteCalculator() {
           </section>
 
         </div>
+    </>
   );
 }
