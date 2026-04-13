@@ -106,20 +106,20 @@ const mistakeItems = [
 ];
 
 const contractorNotes = [
-  "Footings vary across the same job — corners, T-sections, and frost areas are rarely the same size.",
-  "Garage slabs are almost always thicker than basement slabs. Don't assume 4 inches everywhere.",
-  "Townhouse jobs can mean three or four pours in one day, each with different dimensions.",
-  "The hardest part isn't the math — it's keeping everything organized when something changes.",
-  "Subgrade is never perfectly level. Budget waste into every pour, especially on sloped lots.",
-  "When a builder changes a wall height or adds a bump-out, every number downstream moves.",
-  "If you're hand-adding totals from separate calculators, you will eventually miss something.",
+  "Footings often change size across the same job.",
+  "Garage slabs are almost always thicker than basement slabs.",
+  "Townhouse jobs can mean three or four pours with different dimensions in one day.",
+  "The hardest part isn't the math — it's keeping everything organized.",
+  "Subgrade is never level. Budget waste into every pour.",
+  "One wall height change moves every number downstream.",
+  "If you're hand-adding totals from separate calculators, you'll miss something.",
 ];
 
 const concreteFaqItems = [
   { q: "How do I calculate how much concrete I need?", a: "Multiply length × width × thickness (in feet), then divide by 27 to get cubic yards. This calculator does that math for you and lets you add waste." },
   { q: "How do I convert cubic feet to cubic yards?", a: "Divide cubic feet by 27. There are 27 cubic feet in one cubic yard." },
   { q: "Can I calculate multiple areas in one project?", a: "Yes. Add as many areas as you need — footings, slabs, walls — and the project total updates automatically." },
-  { q: "What's the difference between this and a basic calculator?", a: "Basic calculators handle one area at a time. This tool lets you build a full project with named areas, different types, and a running total." },
+  { q: "What's the difference between this and a basic calculator?", a: "For simple one-off numbers, those work fine. This is built for real jobs where you're tracking multiple areas and making changes." },
   { q: "Can I use feet, inches, and fractions?", a: "Yes. Enter dimensions the way you measure — 8 feet 6-1/2 inches works just like you'd say it on the job." },
   { q: "Can I calculate footings, walls, and slabs together?", a: "Yes. Each area can be a different type. Add a footing, a wall, and a slab in the same project and see one combined total." },
   { q: "Is this meant to replace Bluebeam or PlanSwift?", a: "No. Those are full takeoff tools built for plans. This is faster when you already have dimensions and need a quick, accurate yardage number." },
@@ -379,9 +379,12 @@ export default function ConcreteCalculator() {
 
           {/* ── Section 8: Internal Links ── */}
           <section className="max-w-4xl mx-auto px-4 py-12 sm:py-16">
-            <h2 className="text-2xl font-bold text-foreground text-center mb-8">
+            <h2 className="text-2xl font-bold text-foreground text-center mb-4">
               More Concrete Calculators
             </h2>
+            <p className="text-sm text-muted-foreground text-center max-w-xl mx-auto mb-8">
+              If you're working on a specific part of a job, you can jump straight to a dedicated calculator:
+            </p>
             <nav className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               {relatedCalculators.map((calc) => (
                 <Link
