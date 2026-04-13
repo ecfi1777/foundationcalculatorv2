@@ -3,6 +3,7 @@ import { SEO } from "@/components/SEO";
 import { CalculatorProvider } from "@/hooks/useCalculatorState";
 import { ProjectProvider } from "@/hooks/useProject";
 import { CalculatorLayout } from "@/components/calculator/CalculatorLayout";
+import SeoCalculatorContainer from "@/components/calculator/SeoCalculatorContainer";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
@@ -28,7 +29,7 @@ const ConcreteWallCalculator = () => {
         </section>
 
         {/* Calculator */}
-        <section className="pb-8">
+        <SeoCalculatorContainer>
           <CalculatorProvider initialTab="wall" hydrateFromStorage={false}>
             <ProjectProvider clearCalculatorOnSignOut={false}>
               <CalculatorLayout
@@ -37,7 +38,7 @@ const ConcreteWallCalculator = () => {
               />
             </ProjectProvider>
           </CalculatorProvider>
-        </section>
+        </SeoCalculatorContainer>
 
         {/* Formula */}
         <section className="mx-auto max-w-3xl px-4 pb-12">
