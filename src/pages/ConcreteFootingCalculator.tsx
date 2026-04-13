@@ -27,7 +27,7 @@ const ConcreteFootingCalculator = () => {
         </section>
 
         {/* Calculator */}
-        <section className="pb-8">
+        <SeoCalculatorContainer>
           <CalculatorProvider initialTab="footing" hydrateFromStorage={false}>
             <ProjectProvider clearCalculatorOnSignOut={false}>
               <CalculatorLayout
@@ -36,7 +36,7 @@ const ConcreteFootingCalculator = () => {
               />
             </ProjectProvider>
           </CalculatorProvider>
-        </section>
+        </SeoCalculatorContainer>
 
         {/* Formula */}
         <section className="mx-auto max-w-3xl px-4 pb-12">
