@@ -74,27 +74,27 @@ const projectAreas = [
 const projectTotal = "103.11 yd³";
 
 const relatedCalculators = [
-  { title: "Concrete Slab Calculator", description: "Calculate yardage for driveways, garage floors, patios, and basement slabs.", href: "/concrete-slab-calculator" },
-  { title: "Concrete Footing Calculator", description: "Size footings for houses, garages, additions, and frost walls.", href: "/concrete-footing-calculator" },
-  { title: "Concrete Wall Calculator", description: "Foundation walls, retaining walls, and grade beams — measured in segments.", href: "/concrete-wall-calculator" },
-  { title: "Rebar Calculator", description: "Estimate linear feet of rebar for slabs, walls, and footings with overlap and waste.", href: "/rebar-calculator" },
+  { title: "Concrete Slab Calculator", description: "Calculate slab yardage with adjustable thickness across multiple sections — driveways, garage floors, patios, and basements.", href: "/concrete-slab-calculator" },
+  { title: "Concrete Footing Calculator", description: "Calculate footing concrete from linear footage and footing dimensions — continuous footings, frost walls, and stepped sections.", href: "/concrete-footing-calculator" },
+  { title: "Concrete Wall Calculator", description: "Calculate wall concrete for foundation walls and retaining walls — measured by segment with adjustable heights and thicknesses.", href: "/concrete-wall-calculator" },
+  { title: "Rebar Calculator", description: "Calculate rebar quantities for slabs, footings, and walls — includes spacing, overlap, and layout options.", href: "/rebar-calculator" },
 ];
 
 const takeoffTools = [
   {
     name: "Bluebeam",
-    strength: "Full drawing-based takeoffs with markup and measurement tools.",
-    comparison: "This tool is faster when you already have dimensions and just need yardage — no plans required.",
+    bestFor: "Drawing-based takeoffs with markup and measurement tools.",
+    thisTool: "Faster when you already have dimensions — no plans required.",
   },
   {
     name: "PlanSwift",
-    strength: "Detailed plan takeoffs with material and labor estimating.",
-    comparison: "Better for quick field calcs or office work when you need a number without opening a full project.",
+    bestFor: "Detailed plan takeoffs with material and labor estimating.",
+    thisTool: "Better for quick field calcs when you need a number without opening a full project.",
   },
   {
     name: "Stack",
-    strength: "Cloud-based takeoff and estimating for larger teams.",
-    comparison: "Simpler to use, easier to adjust — works well for contractors handling their own concrete numbers.",
+    bestFor: "Cloud-based takeoff and estimating for larger teams.",
+    thisTool: "Simpler to use, easier to adjust — works for contractors handling their own concrete numbers.",
   },
 ];
 
@@ -188,7 +188,7 @@ export default function ConcreteCalculator() {
                 Why this is different from a typical concrete calculator
               </h2>
               <p className="text-base text-muted-foreground text-center max-w-2xl mx-auto">
-                Most calculators give you one box for one pour. Real jobs have a 24″ main footing and an 18″ garage footing, a 5″ garage slab and a 4″ basement slab, and walls at different heights. It gets worse when you're running three driveways in one day, each a different size. One input box doesn't cut it.
+                Most concrete calculators handle one pour at a time. That works for a single slab — but real foundation jobs have footings, walls, and slabs at different sizes. When you're juggling multiple areas, one input box falls apart.
               </p>
 
               {/* Desktop table */}
@@ -289,11 +289,14 @@ export default function ConcreteCalculator() {
                       <CardTitle className="text-base font-semibold text-foreground">{tool.name}</CardTitle>
                     </CardHeader>
                     <CardContent className="space-y-3">
-                      <p className="text-sm text-muted-foreground">{tool.strength}</p>
-                      <div className="flex items-start gap-2">
-                        <span className="text-xs font-medium text-primary bg-primary/10 rounded px-2 py-0.5 shrink-0">This tool</span>
-                        <p className="text-sm text-foreground">{tool.comparison}</p>
-                      </div>
+                      <p className="text-sm text-muted-foreground">
+                        <span className="font-semibold text-foreground">Best for: </span>
+                        {tool.bestFor}
+                      </p>
+                      <p className="text-sm text-foreground">
+                        <span className="font-semibold text-primary">This tool: </span>
+                        {tool.thisTool}
+                      </p>
                     </CardContent>
                   </Card>
                 ))}
@@ -329,10 +332,10 @@ export default function ConcreteCalculator() {
                 Contractor Notes from the Field
               </h2>
               <div className="rounded-lg border border-border bg-card p-5 sm:p-6">
-                <ul className="space-y-3">
+                <ul className="space-y-4">
                   {contractorNotes.map((note, i) => (
-                    <li key={i} className="text-sm text-muted-foreground flex items-start gap-2">
-                      <span className="text-primary mt-1 shrink-0">•</span>
+                    <li key={i} className="text-sm text-muted-foreground leading-relaxed flex items-start gap-2">
+                      <span className="text-primary font-bold mt-0.5 shrink-0">•</span>
                       {note}
                     </li>
                   ))}
