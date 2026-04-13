@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { CalculatorProvider } from "@/hooks/useCalculatorState";
 import { ProjectProvider } from "@/hooks/useProject";
@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 
 const ConcreteWallCalculator = () => {
+  const navigate = useNavigate();
   return (
     <>
       <SEO
@@ -30,7 +31,10 @@ const ConcreteWallCalculator = () => {
         <section className="pb-8">
           <CalculatorProvider initialTab="wall" hydrateFromStorage={false}>
             <ProjectProvider clearCalculatorOnSignOut={false}>
-              <CalculatorLayout />
+              <CalculatorLayout
+                mode="embedded"
+                onOpenWorkspace={() => navigate("/app?tab=wall&from=/concrete-wall-calculator")}
+              />
             </ProjectProvider>
           </CalculatorProvider>
         </section>

@@ -35,8 +35,10 @@ interface AppHeaderProps {
   isExporting?: boolean;
   canExport?: boolean;
   onSignOut?: () => void;
-  isExpanded?: boolean;
-  onToggleExpand?: () => void;
+  /** Calculator display mode — "embedded" shows Open Workspace, "workspace" shows Exit Workspace */
+  mode?: "embedded" | "workspace";
+  onOpenWorkspace?: () => void;
+  onExitWorkspace?: () => void;
 }
 
 export function AppHeader({
@@ -46,8 +48,9 @@ export function AppHeader({
   isDirty, hasSubstantiveData, onResetToBlank,
   onExportPDF, onExportCSV, isExporting, canExport,
   onSignOut,
-  isExpanded,
-  onToggleExpand,
+  mode,
+  onOpenWorkspace,
+  onExitWorkspace,
 }: AppHeaderProps) {
   const { user } = useAuth();
   const { theme, toggleTheme } = useTheme();
@@ -191,14 +194,17 @@ export function AppHeader({
         </DropdownMenu>
 
         {/* Workspace toggle — desktop only */}
-        {onToggleExpand && (
+        {mode === "embedded" && onOpenWorkspace && (
           <div className="hidden sm:flex">
-            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={onToggleExpand}>
-              {isExpanded ? (
-                <><Minimize2 className="h-4 w-4" /> Exit Workspace</>
-              ) : (
-                <><Maximize2 className="h-4 w-4" /> Open Workspace</>
-              )}
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={onOpenWorkspace}>
+              <Maximize2 className="h-4 w-4" /> Open Workspace
+            </Button>
+          </div>
+        )}
+        {mode === "workspace" && onExitWorkspace && (
+          <div className="hidden sm:flex">
+            <Button variant="ghost" size="sm" className="gap-1.5 text-muted-foreground hover:text-foreground" onClick={onExitWorkspace}>
+              <Minimize2 className="h-4 w-4" /> Exit Workspace
             </Button>
           </div>
         )}

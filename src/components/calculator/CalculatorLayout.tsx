@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { stashDraft } from "@/lib/workspaceHandoff";
 import { Pencil } from "lucide-react";
 import type { CalculatorType } from "@/types/calculator";
 import { useNavigate } from "react-router-dom";
@@ -48,11 +49,13 @@ function ActiveForm() {
 }
 
 interface CalculatorLayoutProps {
-  isExpanded?: boolean;
-  onToggleExpand?: () => void;
+  /** "embedded" = SEO page with Open Workspace; "workspace" = /app with Exit Workspace */
+  mode?: "embedded" | "workspace";
+  onOpenWorkspace?: () => void;
+  onExitWorkspace?: () => void;
 }
 
-export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayoutProps) {
+export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: CalculatorLayoutProps) {
   const isMobile = useIsMobile();
   const { state, dispatch } = useCalculatorState();
   const { user, signOut } = useAuth();
@@ -249,6 +252,14 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
     </>
   );
 
+  // Wrap onOpenWorkspace to stash draft before navigating
+  const handleOpenWorkspace = useCallback(() => {
+    if (onOpenWorkspace) {
+      stashDraft(state);
+      onOpenWorkspace();
+    }
+  }, [onOpenWorkspace, state]);
+
   const headerProps = {
     projectName,
     onProjectNameChange: () => currentProject && setShowEditModal(true),
@@ -274,8 +285,9 @@ export function CalculatorLayout({ isExpanded, onToggleExpand }: CalculatorLayou
     isExporting,
     canExport,
     onSignOut: handleSignOut,
-    isExpanded,
-    onToggleExpand,
+    mode,
+    onOpenWorkspace: handleOpenWorkspace,
+    onExitWorkspace,
   };
 
   // ── MOBILE ──
