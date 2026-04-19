@@ -35,9 +35,11 @@ export function DraftActionButtons() {
 
   const handleCancel = () => {
     flushBeforeSave();
-    // Editing existing committed area — Cancel reverts to snapshot, no data lost.
+    // Editing existing committed area — always confirm. Cancel Edit reverts
+    // all in-session changes to the snapshot, which is destructive to whatever
+    // the user has typed since entering edit mode.
     if (isEditingExisting) {
-      dispatch({ type: "CANCEL_EDIT", id: activeArea.id });
+      setCancelConfirmOpen(true);
       return;
     }
     // New area with entered data — confirm before destroying.
