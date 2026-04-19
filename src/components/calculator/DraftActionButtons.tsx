@@ -102,9 +102,13 @@ export function DraftActionButtons() {
           dispatch({ type: "CANCEL_EDIT", id: activeArea.id });
           setCancelConfirmOpen(false);
         }}
-        title="Discard this area?"
-        description="Cancelling will discard all measurements in this area. If you only want to remove a specific segment or section, close this dialog and delete it individually from the list above."
-        confirmLabel="Discard Area"
+        title={isEditingExisting ? "Discard your changes?" : "Discard this area?"}
+        description={
+          isEditingExisting
+            ? "Cancelling will revert all changes you've made since you started editing this area. The area will return to its previously saved state."
+            : "Cancelling will discard all measurements in this area. If you only want to remove a specific segment or section, close this dialog and delete it individually from the list above."
+        }
+        confirmLabel={isEditingExisting ? "Discard Changes" : "Discard Area"}
         variant="destructive"
       />
     </>
