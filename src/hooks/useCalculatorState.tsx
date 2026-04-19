@@ -95,6 +95,11 @@ function reducer(state: CalcState, action: Action): CalcState {
         if (a.isDraft && !a.hasUserModifiedDimensions) {
           updated.hasUserModifiedDimensions = true;
         }
+        // Auto-commit draft if this update makes the area valid.
+        // Mirrors the ADD_SEGMENT pattern at lines 107–118.
+        if (a.isDraft && getMissingFields(updated).length === 0) {
+          return { ...updated, isDraft: false };
+        }
         return updated;
       });
       return { ...state, areas };
