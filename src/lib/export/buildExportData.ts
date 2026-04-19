@@ -94,10 +94,10 @@ export function buildExportData(
           thicknessIn: sec.thicknessIn,
           sqft: slabResult.sqft,
           volumeCY: slabResult.volumeWithWasteCy,
-          stoneEnabled: areaStoneActive && sec.includeStone,
+          stoneEnabled: stoneIncluded,
           stoneTons: secStoneTons,
-          stoneDepthIn: areaStoneActive && sec.includeStone ? areaStoneDepthIn : null,
-          stoneTypeName: areaStoneActive && sec.includeStone ? areaStoneTypeName : null,
+          stoneDepthIn: stoneIncluded ? areaStoneDepthIn : null,
+          stoneTypeName: stoneIncluded ? areaStoneTypeName : null,
         };
       });
 
