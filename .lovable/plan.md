@@ -1,63 +1,62 @@
 
 
-# Auth intent: refined cleanup semantics
+# Preserve calculator state across /auth redirect
 
-## Cleanup matrix
+## Root cause
 
-| Trigger | Action |
-|---|---|
-| `Auth.tsx` mount with no user | Do nothing (intent must survive for CalculatorLayout) |
-| `Auth.tsx` successful auth → navigate to `redirectTo` | **peek only**, do NOT clear (CalculatorLayout consumes) |
-| `Auth.tsx` unmount via back button / manual nav away while still unauthenticated | `clearAuthIntent()` (abandoned flow) |
-| `CalculatorLayout` mount with authenticated user + intent | `consumeAuthIntent()` → repopulate `pendingAction` |
-| `AccountCreationModal` "Maybe later" / close | `clearAuthIntent()` |
-| `SaveBanner` X dismiss | `clearAuthIntent()` |
-| `useAuth` sign-out | `clearAuthIntent()` |
+`CalculatorProvider` already persists to `localStorage` (`tfc_calculator_state`) and rehydrates on remount, so most state would survive `/auth`. **But** `migrateLoadedState` (useCalculatorState.tsx lines 257-266) **unconditionally discards every `isDraft` area** on load. Anonymous users clicking Save almost always have only a draft area (auto-provisioned, never explicitly committed via "Save Area"). After auth round-trip → provider remounts → draft gets dropped → save resumes against empty state.
 
-## Auth.tsx unmount logic (key detail)
+## Fix: piggyback on existing `workspaceHandoff` pattern
 
-Use a ref to track whether a successful auth occurred during the page's lifetime:
+The `stashDraft` / `consumeDraft` pair in `src/lib/workspaceHandoff.ts` already implements exactly the sessionStorage handoff we need, and `WorkspaceShell` in `AppCalculator.tsx` already consumes it on mount via `dispatch({ type: "LOAD", state: handoff })`. The `LOAD` action restores state verbatim — no draft filtering — so drafts survive.
 
+So we just need to **stash before redirecting to /auth** and let the existing consume path do the rest.
+
+## Changes
+
+### 1. `src/components/calculator/CalculatorLayout.tsx`
+
+In `handleSave` and `handleNewProject`, before `setShowAccountModal(true)`, snapshot current state:
 ```ts
-const successfulAuthRef = useRef(false);
-
-// In the effect that watches `user` and navigates:
-useEffect(() => {
-  if (user) {
-    successfulAuthRef.current = true;
-    const dest = peekAuthIntent()?.redirectTo ?? "/";
-    navigate(dest, { replace: true });
-  }
-}, [user]);
-
-// Cleanup on unmount:
-useEffect(() => {
-  return () => {
-    if (!successfulAuthRef.current) {
-      clearAuthIntent(); // only abandoned flow
-    }
-  };
-}, []);
+stashDraft(state); // existing import already present at line 2
 ```
+That's it for save/new-project entry points.
 
-This guarantees:
-- Successful login/signup → intent survives navigation → CalculatorLayout consumes it.
-- User clicks browser back / navigates elsewhere without auth → intent cleared, no stale resume on later visits.
+### 2. `src/components/project/AccountCreationModal.tsx`
 
-## Files changed (unchanged from prior plan)
+The "Create Free Account" CTA navigates to `/auth`. Pull `state` from `useCalculatorState()` and call `stashDraft(state)` immediately before `navigate("/auth")` (alongside the existing `setAuthIntent` call).
 
-1. **New** `src/lib/authIntent.ts` — `setAuthIntent`, `peekAuthIntent`, `consumeAuthIntent`, `clearAuthIntent`
-2. `src/pages/Auth.tsx` — peek for redirect, `successfulAuthRef` + unmount cleanup, OAuth/email `redirectTo` → `/auth`
-3. `src/components/calculator/CalculatorLayout.tsx` — write intent on save/new-project; consume on mount
-4. `src/components/project/AccountCreationModal.tsx` — write on CTA, clear on dismiss
-5. `src/components/calculator/SaveBanner.tsx` — write on Sign Up, clear on X
-6. `src/hooks/useAuth.tsx` — `clearAuthIntent()` in sign-out
+### 3. `src/components/calculator/SaveBanner.tsx`
+
+Same — pull `state` from `useCalculatorState()` and `stashDraft(state)` before `navigate("/auth")` in `handleSignUp`.
+
+### 4. `src/pages/AppCalculator.tsx` — **no change needed**
+
+`WorkspaceShell` already calls `consumeDraft<CalcState>()` on mount and dispatches `LOAD` (lines 41-46). The handoff path runs whether the user came from an SEO page or from `/auth`. The existing `LOAD` reducer case (line 200-201) replaces state verbatim, preserving drafts.
+
+### 5. Order of operations on return
+
+`WorkspaceShell` mount: `consumeDraft` runs first (line 41), then `CalculatorLayout` mounts and its existing effect (line 117) sees `user && pendingAction` and resumes save against the now-restored state. ✅
+
+## What we deliberately do NOT change
+
+- Calculator reducer / migration logic (drafts still get discarded on plain localStorage reload — that's intentional cross-session behavior).
+- Database / server persistence — anonymous users still write nothing to the server.
+- Auth intent system — already correct.
+- OAuth flow — Google redirects back to `/auth`, which navigates to `/app`, which mounts `WorkspaceShell` and consumes the draft. Same path as email signup.
+
+## Files changed
+
+1. `src/components/calculator/CalculatorLayout.tsx` — add `stashDraft(state)` in `handleSave` and `handleNewProject` (anonymous branches only).
+2. `src/components/project/AccountCreationModal.tsx` — `stashDraft(state)` before navigate.
+3. `src/components/calculator/SaveBanner.tsx` — `stashDraft(state)` before navigate.
 
 ## Verification
 
-1. Save → signup → resumes save on `/app` → reload → no reopen (consumed by CalculatorLayout, not Auth).
-2. Save → reach `/auth` → click browser back without authenticating → revisit `/auth` later → lands on `/` (intent cleared on unmount).
-3. Save → "Maybe later" → intent cleared.
-4. OAuth round-trip → returns to `/auth` → success path preserves intent → `/app` resumes save.
-5. Direct `/auth` visit, no intent → post-login lands on `/`.
+1. Anonymous → add areas (drafts + committed) → Save → AccountCreationModal → "Create Free Account" → email signup → confirm → land on `/app` → all areas restored exactly → save modal opens automatically.
+2. Same flow via Google OAuth.
+3. Same flow via login (existing user).
+4. Anonymous → Save → "Maybe later" on modal → state still in `localStorage` (handoff was stashed but not consumed; sessionStorage entry harmlessly evicted on next `/app` mount via `consumeDraft`).
+5. Anonymous → click Save banner X → no stash, no intent, no regression.
+6. Authenticated user save flows — `stashDraft` not invoked (anonymous-only branches), no behavior change.
 
