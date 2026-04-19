@@ -35,9 +35,11 @@ export function DraftActionButtons() {
 
   const handleCancel = () => {
     flushBeforeSave();
-    // Editing existing committed area — Cancel reverts to snapshot, no data lost.
+    // Editing existing committed area — always confirm. Cancel Edit reverts
+    // all in-session changes to the snapshot, which is destructive to whatever
+    // the user has typed since entering edit mode.
     if (isEditingExisting) {
-      dispatch({ type: "CANCEL_EDIT", id: activeArea.id });
+      setCancelConfirmOpen(true);
       return;
     }
     // New area with entered data — confirm before destroying.
@@ -100,9 +102,13 @@ export function DraftActionButtons() {
           dispatch({ type: "CANCEL_EDIT", id: activeArea.id });
           setCancelConfirmOpen(false);
         }}
-        title="Discard this area?"
-        description="Cancelling will discard all measurements in this area. If you only want to remove a specific segment or section, close this dialog and delete it individually from the list above."
-        confirmLabel="Discard Area"
+        title={isEditingExisting ? "Discard your changes?" : "Discard this area?"}
+        description={
+          isEditingExisting
+            ? "Cancelling will revert all changes you've made since you started editing this area. The area will return to its previously saved state."
+            : "Cancelling will discard all measurements in this area. If you only want to remove a specific segment or section, close this dialog and delete it individually from the list above."
+        }
+        confirmLabel={isEditingExisting ? "Discard Changes" : "Discard Area"}
         variant="destructive"
       />
     </>
