@@ -27,7 +27,10 @@ const ZERO_GRID: RebarSlabGridResult = { barsLengthwise: 0, barsWidthwise: 0, to
 export function calcRebarHorizontal(input: RebarHorizontalInput): RebarHorizontalResult {
   if (input.linearFt <= 0 || input.numRows <= 0 || input.barLengthFt <= 0) return { ...ZERO_HORIZ };
 
-  const numSplices = Math.floor(input.linearFt / input.barLengthFt);
+  // Splices only occur when more than one bar is required per row.
+  // Corrects prior FLOOR(L/bar) spec which incorrectly added a splice for
+  // a single-bar run (e.g. 20 ft) and over-counted exact multiples.
+  const numSplices = Math.max(Math.ceil(input.linearFt / input.barLengthFt) - 1, 0);
   const overlapLf = numSplices * inchesToFeet(input.overlapIn) * input.numRows;
   const totalLf = (input.linearFt * input.numRows) + overlapLf;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
