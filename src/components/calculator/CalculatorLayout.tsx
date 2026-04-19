@@ -157,6 +157,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
   // ── New Project handler ──
   const handleNewProject = useCallback(() => {
     if (!user) {
+      stashDraft(state);
       setAuthIntent({ redirectTo: "/app", action: "newProject" });
       setPendingAction({ type: "newProject" });
       setShowAccountModal(true);
