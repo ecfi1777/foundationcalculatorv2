@@ -8,7 +8,7 @@ import { useState } from "react";
 
 /** Save / Cancel / Delete buttons rendered below the calculator form.
  *  Visibility:
- *  - New area (no preEditSnapshot):         Save Area + Cancel Edit
+ *  - New area (no preEditSnapshot):         Save Area + Cancel
  *  - Editing existing (has preEditSnapshot): Save Area + Cancel Edit + Delete Area
  */
 export function DraftActionButtons() {
@@ -60,7 +60,7 @@ export function DraftActionButtons() {
           onClick={handleCancel}
         >
           <X className="h-4 w-4" />
-          Cancel Edit
+          {isEditingExisting ? "Cancel Edit" : "Cancel"}
         </Button>
         {isEditingExisting && (
           <Button
