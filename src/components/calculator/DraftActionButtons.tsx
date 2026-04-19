@@ -5,15 +5,17 @@ import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 import { Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
+import { hasRequiredData } from "@/types/calculator";
 
 /** Save / Cancel / Delete buttons rendered below the calculator form.
  *  Visibility:
- *  - New area (no preEditSnapshot):         Save Area + Cancel
+ *  - New area (no preEditSnapshot):          Save Area + Cancel
  *  - Editing existing (has preEditSnapshot): Save Area + Cancel Edit + Delete Area
  */
 export function DraftActionButtons() {
   const { activeArea, saveArea, dispatch, flushBeforeSave, flushPendingSegment } = useCalculatorState();
-  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [deleteConfirmOpen, setDeleteConfirmOpen] = useState(false);
+  const [cancelConfirmOpen, setCancelConfirmOpen] = useState(false);
 
   if (!activeArea?.isDraft) return null;
 
@@ -21,30 +23,34 @@ export function DraftActionButtons() {
 
   const handleSave = () => {
     flushBeforeSave();
-    const segmentFlushed = flushPendingSegment();
-    if (segmentFlushed) {
-      // ADD_SEGMENT auto-committed the area in the reducer.
-      // Calling saveArea here would read stale state and fail — skip it.
-      toast.success("Area saved");
-      dispatch({ type: "SET_ACTIVE_AREA", id: null });
-      return;
-    }
+    flushPendingSegment();
     const result = saveArea(activeArea.id);
     if (!result.valid) {
       toast.error(`Missing required fields: ${result.missingFields.join(", ")}`);
-    } else {
-      toast.success("Area saved");
-      dispatch({ type: "SET_ACTIVE_AREA", id: null });
+      return;
     }
+    toast.success("Area saved");
+    dispatch({ type: "SET_ACTIVE_AREA", id: null });
   };
 
   const handleCancel = () => {
     flushBeforeSave();
+    // Editing existing committed area — Cancel reverts to snapshot, no data lost.
+    if (isEditingExisting) {
+      dispatch({ type: "CANCEL_EDIT", id: activeArea.id });
+      return;
+    }
+    // New area with entered data — confirm before destroying.
+    if (hasRequiredData(activeArea)) {
+      setCancelConfirmOpen(true);
+      return;
+    }
+    // New area, no data entered — nothing to lose.
     dispatch({ type: "CANCEL_EDIT", id: activeArea.id });
   };
 
   const handleDelete = () => {
-    setConfirmOpen(true);
+    setDeleteConfirmOpen(true);
   };
 
   return (
@@ -75,15 +81,28 @@ export function DraftActionButtons() {
       </div>
 
       <ConfirmDialog
-        open={confirmOpen}
-        onClose={() => setConfirmOpen(false)}
+        open={deleteConfirmOpen}
+        onClose={() => setDeleteConfirmOpen(false)}
         onConfirm={() => {
           dispatch({ type: "DELETE_AREA", id: activeArea.id });
-          setConfirmOpen(false);
+          setDeleteConfirmOpen(false);
         }}
         title="Delete Area"
         description={`Are you sure you want to delete "${activeArea.name}"? All measurements will be permanently removed.`}
         confirmLabel="Delete"
+        variant="destructive"
+      />
+
+      <ConfirmDialog
+        open={cancelConfirmOpen}
+        onClose={() => setCancelConfirmOpen(false)}
+        onConfirm={() => {
+          dispatch({ type: "CANCEL_EDIT", id: activeArea.id });
+          setCancelConfirmOpen(false);
+        }}
+        title="Discard this area?"
+        description="Cancelling will discard all measurements in this area. If you only want to remove a specific segment or section, close this dialog and delete it individually from the list above."
+        confirmLabel="Discard Area"
         variant="destructive"
       />
     </>
