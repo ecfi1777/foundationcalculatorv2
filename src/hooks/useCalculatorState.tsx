@@ -497,7 +497,11 @@ export function CalculatorProvider({ children, initialTab, hydrateFromStorage = 
 
   const saveArea = useCallback(
     (id: string): { valid: boolean; missingFields: string[] } => {
-      const area = state.areas.find((a) => a.id === id);
+      // Use stateRef to read the latest state, not closure state. Callers like
+      // DraftActionButtons.handleSave dispatch ADD_SEGMENT (via flushPendingSegment)
+      // immediately before calling saveArea — closure state would still reflect
+      // pre-dispatch state and fail validation.
+      const area = stateRef.current.areas.find((a) => a.id === id);
       if (!area || !area.isDraft) return { valid: true, missingFields: [] };
       const missingFields = getMissingFields(area);
       if (missingFields.length === 0) {
@@ -506,7 +510,7 @@ export function CalculatorProvider({ children, initialTab, hydrateFromStorage = 
       }
       return { valid: false, missingFields };
     },
-    [state.areas, dispatch]
+    [dispatch]
   );
 
   const activeArea = state.activeAreaId
