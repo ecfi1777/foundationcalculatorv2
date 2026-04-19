@@ -4,6 +4,8 @@ import { X } from "lucide-react";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { setAuthIntent, clearAuthIntent } from "@/lib/authIntent";
+import { stashDraft } from "@/lib/workspaceHandoff";
+import { useCalculatorState } from "@/hooks/useCalculatorState";
 
 interface SaveBannerProps {
   hasAreas: boolean;
@@ -11,12 +13,14 @@ interface SaveBannerProps {
 
 export function SaveBanner({ hasAreas }: SaveBannerProps) {
   const { user } = useAuth();
+  const { state } = useCalculatorState();
   const navigate = useNavigate();
   const [dismissed, setDismissed] = useState(false);
 
   if (!hasAreas || user || dismissed) return null;
 
   const handleSignUp = () => {
+    stashDraft(state);
     setAuthIntent({ redirectTo: "/app", action: "save" });
     navigate("/auth");
   };

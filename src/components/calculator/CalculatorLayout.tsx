@@ -137,6 +137,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
   // ── Save handler ──
   const handleSave = useCallback(() => {
     if (!user) {
+      stashDraft(state);
       setAuthIntent({ redirectTo: "/app", action: "save" });
       setPendingAction({ type: "save" });
       setShowAccountModal(true);
@@ -151,11 +152,12 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
       return;
     }
     setShowNameModal(true);
-  }, [user, currentProject, saveProject, setPendingAction, subscriptionTier, editableProjectCount]);
+  }, [user, state, currentProject, saveProject, setPendingAction, subscriptionTier, editableProjectCount]);
 
   // ── New Project handler ──
   const handleNewProject = useCallback(() => {
     if (!user) {
+      stashDraft(state);
       setAuthIntent({ redirectTo: "/app", action: "newProject" });
       setPendingAction({ type: "newProject" });
       setShowAccountModal(true);
@@ -170,7 +172,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
       return;
     }
     createNewProject();
-  }, [user, subscriptionTier, editableProjectCount, isDirty, hasSubstantiveData, createNewProject, setPendingAction]);
+  }, [user, state, subscriptionTier, editableProjectCount, isDirty, hasSubstantiveData, createNewProject, setPendingAction]);
 
   // ── First save confirm ──
   const handleNameConfirm = useCallback((name: string) => {
@@ -269,6 +271,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
     onSave: handleSave,
     onOpenProjects: () => {
       if (!user) {
+        stashDraft(state);
         setAuthIntent({ redirectTo: "/app", action: "save" });
         setPendingAction({ type: "save" });
         setShowAccountModal(true);
