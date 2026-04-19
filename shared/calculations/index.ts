@@ -231,8 +231,7 @@ export function calcSpliceOverlap(
   overlapIn: number
 ): number {
   if (totalLengthFt <= 0 || barLengthFt <= 0) return 0;
-  const numBars = Math.ceil(totalLengthFt / barLengthFt);
-  const splices = Math.max(numBars - 1, 0);
+  const splices = Math.floor(totalLengthFt / barLengthFt);
   return splices * inchesToFeet(overlapIn);
 }
 
