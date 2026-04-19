@@ -7,6 +7,7 @@ import type { ProjectExportData, AreaExportData, ExportCalculatorType } from "@/
 import { CALC_TYPE_TO_DB } from "@/types/calculator";
 import { computeArea } from "@/lib/computeArea";
 import { calcSlabSection } from "@/lib/calculations/slab";
+import { calcStoneBase } from "@/lib/calculations/stoneBase";
 import { formatSegment } from "@/lib/segmentParser";
 import { LINEAR_TYPES } from "./exportUtils";
 
