@@ -35,6 +35,7 @@ type Action =
   | { type: "UPDATE_REBAR"; areaId: string; elementType: RebarElementType; rebar: Partial<RebarConfig> }
   | { type: "SAVE_AREA"; id: string }
   | { type: "EDIT_AREA"; tab: CalculatorType; id: string }
+  | { type: "CANCEL_EDIT"; id: string }
   | { type: "LOAD"; state: CalcState }
   | { type: "RESET" };
 
@@ -43,7 +44,7 @@ const DATA_ACTIONS = new Set([
   "ADD_AREA", "DELETE_AREA", "UPDATE_AREA", "RENAME_AREA",
   "ADD_SEGMENT", "UPDATE_SEGMENT", "DELETE_SEGMENT",
   "ADD_SECTION", "UPDATE_SECTION", "DELETE_SECTION",
-  "UPDATE_REBAR", "SAVE_AREA",
+  "UPDATE_REBAR", "SAVE_AREA", "CANCEL_EDIT",
 ]);
 
 /**
@@ -74,8 +75,43 @@ function reducer(state: CalcState, action: Action): CalcState {
       return { ...state, areas, activeAreaId: action.id };
     }
     case "EDIT_AREA": {
-      const areas = resolveOutgoingDraft(state.areas, state.activeAreaId);
+      const resolvedAreas = resolveOutgoingDraft(state.areas, state.activeAreaId);
+      // Stash a pre-edit snapshot on the target area and flip to draft so
+      // DraftActionButtons renders. Snapshot omits its own field to prevent
+      // recursive nesting on re-edit (belt-and-braces: Save/Cancel always
+      // clear the snapshot before another edit session can start).
+      const areas = resolvedAreas.map((a) => {
+        if (a.id !== action.id) return a;
+        // Guard: if an area is already in an edit session (shouldn't normally
+        // happen — resolveOutgoingDraft handles outgoing, but a stale EDIT_AREA
+        // on the same id is possible), preserve the existing snapshot rather
+        // than overwriting it with already-edited state.
+        if (a.preEditSnapshot) return { ...a, isDraft: true };
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { preEditSnapshot: _omit, ...rest } = a;
+        return { ...a, isDraft: true, preEditSnapshot: rest };
+      });
       return { ...state, areas, activeTab: action.tab, activeAreaId: action.id };
+    }
+    case "CANCEL_EDIT": {
+      // If the area has a preEditSnapshot, restore it (editing an existing
+      // committed area). Otherwise, delete the area entirely (it was a
+      // brand-new draft with nothing to restore — Cancel = discard).
+      const target = state.areas.find((a) => a.id === action.id);
+      if (!target) {
+        return { ...state, activeAreaId: null };
+      }
+      if (target.preEditSnapshot) {
+        const restored: CalcArea = {
+          ...target.preEditSnapshot,
+          isDraft: false,
+        };
+        const areas = state.areas.map((a) => (a.id === action.id ? restored : a));
+        return { ...state, areas, activeAreaId: null };
+      }
+      // No snapshot — this was a new draft. Discard it.
+      const areas = state.areas.filter((a) => a.id !== action.id);
+      return { ...state, areas, activeAreaId: null };
     }
     case "ADD_AREA": {
       // Resolve any existing draft before adding new one
@@ -193,7 +229,10 @@ function reducer(state: CalcState, action: Action): CalcState {
     case "SAVE_AREA": {
       const areas = state.areas.map((a) => {
         if (a.id !== action.id || !a.isDraft) return a;
-        return { ...a, isDraft: false };
+        // Clear any pre-edit snapshot — the current state is now the committed state.
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const { preEditSnapshot: _snapshot, ...rest } = a;
+        return { ...rest, isDraft: false };
       });
       return { ...state, areas };
     }
@@ -364,10 +403,26 @@ export function CalculatorProvider({ children, initialTab, hydrateFromStorage = 
     setIsDirty(false);
   }, []);
 
-  // Persist to localStorage (only for /app hydrate-from-storage mode)
+  // Persist to localStorage (only for /app hydrate-from-storage mode).
+  // Strip preEditSnapshot on persist — edit sessions are ephemeral and should
+  // not survive a page refresh. On reload, editing a previously-committed area
+  // that was mid-edit at refresh time will start a fresh edit session.
   useEffect(() => {
     if (hydrateFromStorage) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+      const persistable: CalcState = {
+        ...state,
+        areas: state.areas.map((a) => {
+          if (!a.preEditSnapshot) return a;
+          // Mid-edit at persist time: commit the in-progress edits.
+          // Rationale: we've been showing the edits live in Quantities, so
+          // persisting the edited state matches what the user saw. On reload
+          // the area is committed (isDraft: false) and looks like a saved area.
+          // eslint-disable-next-line @typescript-eslint/no-unused-vars
+          const { preEditSnapshot: _snapshot, ...rest } = a;
+          return { ...rest, isDraft: false };
+        }),
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(persistable));
     }
   }, [state, hydrateFromStorage]);
 

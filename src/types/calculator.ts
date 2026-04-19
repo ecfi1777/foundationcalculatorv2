@@ -217,6 +217,15 @@ export interface CalcArea {
   /** True once the user has changed at least one dimension on this draft area */
   hasUserModifiedDimensions?: boolean;
 
+  /**
+   * Pre-edit snapshot. Populated by EDIT_AREA when the user clicks pencil on
+   * a committed area. Restored by CANCEL_EDIT. Cleared on save or cancel.
+   * Presence of this field is the signal that an area is in an edit session
+   * of a previously-committed area (as opposed to a brand-new draft).
+   * Omit this field from the snapshot itself to prevent recursive nesting.
+   */
+  preEditSnapshot?: Omit<CalcArea, "preEditSnapshot">;
+
   // Footing mode
   footingMode?: FootingMode;
 
