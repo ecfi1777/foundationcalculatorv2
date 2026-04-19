@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
-import { migrateAnonData, attachReferralIfNeeded } from "@/lib/migrateAnonData";
+import { attachReferralIfNeeded } from "@/lib/migrateAnonData";
 import { hasAnonData, captureRefCode } from "@/lib/localStorage";
 import { peekAuthIntent, clearAuthIntent } from "@/lib/authIntent";
 import { Button } from "@/components/ui/button";
@@ -87,17 +87,15 @@ export default function Auth() {
       const postLogin = async () => {
         await attachReferralIfNeeded(user.id);
         const intent = peekAuthIntent();
-        // Skip legacy localStorage migration when the user arrived via the
-        // auth-handoff flow. In that case the canonical draft lives in
-        // sessionStorage (tfc_workspace_handoff) and /app will hydrate from it
-        // and resume the pending action. Running migrateAnonData here would
-        // create a ghost "My Project" in the DB, consume the free-tier project
-        // slot, and cause the resumed save to hit the paywall.
-        if (!intent && hasAnonData()) {
-          await migrateAnonData(user.id);
-        }
-        // /app consumes the intent on mount (WorkspaceShell).
-        const dest = intent?.redirectTo ?? "/";
+        // migrateAnonData is deprecated. Every realistic anon-save entry point
+        // now flows through the auth handoff (SaveBanner, header Save, header
+        // Sign In, AccountCreationModal), all of which set an intent and stash
+        // the draft in sessionStorage. /app's WorkspaceShell consumes the
+        // handoff on mount and auto-saves it as "Untitled Project" via
+        // saveProject, which correctly handles rebar, stone, and all the gaps
+        // migrateAnonData had. Default destination is /app so users with
+        // abandoned localStorage still land inside the app.
+        const dest = intent?.redirectTo ?? "/app";
         navigate(dest, { replace: true });
       };
       postLogin();

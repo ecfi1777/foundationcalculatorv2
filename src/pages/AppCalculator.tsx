@@ -10,6 +10,7 @@ import { consumeDraft, stashExitTarget, getExitTarget } from "@/lib/workspaceHan
 import { consumeAuthIntent } from "@/lib/authIntent";
 import type { CalcState } from "@/hooks/useCalculatorState";
 import type { CalculatorType } from "@/types/calculator";
+import { hasRequiredData } from "@/types/calculator";
 
 const VALID_TABS: CalculatorType[] = [
   "footing", "wall", "gradeBeam", "curbGutter",
@@ -24,9 +25,13 @@ function WorkspaceShell() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
   const { user } = useAuth();
-  const { dispatch } = useCalculatorState();
-  const { setPendingAction } = useProject();
+  const { state, dispatch } = useCalculatorState();
+  const { setPendingAction, currentProject, saveProject } = useProject();
   const hasHydrated = useRef(false);
+  const hasAutoSavedHandoff = useRef(false);
+  // Tracks whether this mount hydrated from a handoff. Set synchronously in
+  // the mount effect; consumed by the post-hydration auto-save effect.
+  const hydratedFromHandoff = useRef(false);
 
   const fromParam = searchParams.get("from");
   const tabParam = searchParams.get("tab") as CalculatorType | null;
@@ -50,6 +55,7 @@ function WorkspaceShell() {
     if (handoff) {
       // Handoff draft wins — hydrate workspace with pre-auth calculator state
       dispatch({ type: "LOAD", state: handoff });
+      hydratedFromHandoff.current = true;
       if (tabParam && VALID_TABS.includes(tabParam) && handoff.activeTab !== tabParam) {
         dispatch({ type: "SET_TAB", tab: tabParam });
       }
@@ -69,6 +75,23 @@ function WorkspaceShell() {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  // After handoff hydration is reflected in state, auto-save as a new project
+  // if: user is authenticated, no currentProject exists, the handoff hydrated
+  // real work (at least one area with required data), and we haven't already
+  // auto-saved on this mount. Creates "Untitled Project" — user can rename via
+  // the header pencil. This supersedes the legacy migrateAnonData path.
+  useEffect(() => {
+    if (!user) return;
+    if (hasAutoSavedHandoff.current) return;
+    if (!hydratedFromHandoff.current) return;
+    if (currentProject) return;
+    if (state.areas.length === 0) return;
+    if (!state.areas.some((a) => hasRequiredData(a))) return;
+
+    hasAutoSavedHandoff.current = true;
+    void saveProject("Untitled Project");
+  }, [user, state.areas, currentProject, saveProject]);
 
   const handleExitWorkspace = () => {
     const target = fromParam || getExitTarget() || "/concrete-calculator";
