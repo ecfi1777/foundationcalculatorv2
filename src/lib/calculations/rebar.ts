@@ -27,7 +27,7 @@ const ZERO_GRID: RebarSlabGridResult = { barsLengthwise: 0, barsWidthwise: 0, to
 export function calcRebarHorizontal(input: RebarHorizontalInput): RebarHorizontalResult {
   if (input.linearFt <= 0 || input.numRows <= 0 || input.barLengthFt <= 0) return { ...ZERO_HORIZ };
 
-  const numSplices = Math.max(Math.ceil(input.linearFt / input.barLengthFt) - 1, 0);
+  const numSplices = Math.floor(input.linearFt / input.barLengthFt);
   const overlapLf = numSplices * inchesToFeet(input.overlapIn) * input.numRows;
   const totalLf = (input.linearFt * input.numRows) + overlapLf;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
