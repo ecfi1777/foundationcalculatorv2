@@ -35,6 +35,7 @@ interface AppHeaderProps {
   isExporting?: boolean;
   canExport?: boolean;
   onSignOut?: () => void;
+  onSignIn?: () => void;
   /** Calculator display mode — "embedded" shows Open Workspace, "workspace" shows Exit Workspace */
   mode?: "embedded" | "workspace";
   onOpenWorkspace?: () => void;
@@ -48,6 +49,7 @@ export function AppHeader({
   isDirty, hasSubstantiveData, onResetToBlank,
   onExportPDF, onExportCSV, isExporting, canExport,
   onSignOut,
+  onSignIn,
   mode,
   onOpenWorkspace,
   onExitWorkspace,
@@ -244,7 +246,10 @@ export function AppHeader({
                 </DropdownMenuItem>
               </>
             ) : (
-              <DropdownMenuItem onClick={() => navigate("/auth")}>
+              <DropdownMenuItem onClick={() => {
+                if (onSignIn) onSignIn();
+                else navigate("/auth");
+              }}>
                 <User className="h-4 w-4 mr-2" /> Sign In
               </DropdownMenuItem>
             )}
