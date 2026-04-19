@@ -102,6 +102,9 @@ function dbAreaToCalcArea(dbArea: any, segments: any[], sections: any[], rebarCo
     wastePct: Number(dbArea.waste_pct) || 0,
     footingMode: inputs.footingMode as FootingMode | undefined,
     dimensions: inputs.dimensions ?? {},
+    stoneEnabled: typeof inputs.stoneEnabled === "boolean" ? inputs.stoneEnabled : (dbArea.stone_enabled ?? false),
+    stoneDepthIn: typeof inputs.stoneDepthIn === "number" ? inputs.stoneDepthIn : 4,
+    stoneTypeId: typeof inputs.stoneTypeId === "string" ? inputs.stoneTypeId : "57stone",
     segments: segments
       .filter((s: any) => s.area_id === dbArea.id)
       .sort((a: any, b: any) => a.sort_order - b.sort_order)
@@ -342,8 +345,14 @@ export function ProjectProvider({ children, clearCalculatorOnSignOut = true }: {
           sort_order: area.sortOrder,
           waste_pct: area.wastePct,
           rebar_enabled: anyEnabled,
-          stone_enabled: area.sections.some(s => s.includeStone),
-          inputs: { footingMode: area.footingMode, dimensions: area.dimensions },
+          stone_enabled: area.stoneEnabled ?? false,
+          inputs: {
+            footingMode: area.footingMode,
+            dimensions: area.dimensions,
+            stoneEnabled: area.stoneEnabled ?? false,
+            stoneDepthIn: area.stoneDepthIn ?? 4,
+            stoneTypeId: area.stoneTypeId ?? "57stone",
+          },
           inputs_version: 1,
         };
 
@@ -375,7 +384,7 @@ export function ProjectProvider({ children, clearCalculatorOnSignOut = true }: {
           await supabase.from("segments").delete().in("id", toDeleteSegs.map((s: any) => s.id));
         }
 
-        // Upsert sections
+        // Upsert sections — mirror area-level stone settings (stone is area-level in UI)
         if (area.sections.length > 0) {
           const sectionRows = area.sections.map((s) => ({
             id: s.id,
@@ -388,9 +397,9 @@ export function ProjectProvider({ children, clearCalculatorOnSignOut = true }: {
             width_in: s.widthIn,
             width_fraction: s.widthFraction ?? "0",
             thickness_in: s.thicknessIn,
-            include_stone: s.includeStone,
-            stone_depth_in: s.stoneDepthIn || null,
-            stone_type_id: s.stoneTypeId || null,
+            include_stone: area.stoneEnabled ?? false,
+            stone_depth_in: (area.stoneEnabled ? area.stoneDepthIn : null) ?? null,
+            stone_type_id: (area.stoneEnabled ? area.stoneTypeId : null) ?? null,
             sort_order: s.sortOrder,
           }));
           const { error: secErr } = await supabase.from("sections").upsert(sectionRows);
