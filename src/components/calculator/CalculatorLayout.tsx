@@ -172,7 +172,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
       return;
     }
     createNewProject();
-  }, [user, subscriptionTier, editableProjectCount, isDirty, hasSubstantiveData, createNewProject, setPendingAction]);
+  }, [user, state, subscriptionTier, editableProjectCount, isDirty, hasSubstantiveData, createNewProject, setPendingAction]);
 
   // ── First save confirm ──
   const handleNameConfirm = useCallback((name: string) => {
