@@ -152,7 +152,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
       return;
     }
     setShowNameModal(true);
-  }, [user, currentProject, saveProject, setPendingAction, subscriptionTier, editableProjectCount]);
+  }, [user, state, currentProject, saveProject, setPendingAction, subscriptionTier, editableProjectCount]);
 
   // ── New Project handler ──
   const handleNewProject = useCallback(() => {
