@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { stashDraft } from "@/lib/workspaceHandoff";
+import { setAuthIntent, consumeAuthIntent } from "@/lib/authIntent";
 import { Pencil } from "lucide-react";
 import type { CalculatorType } from "@/types/calculator";
 import { useNavigate } from "react-router-dom";
