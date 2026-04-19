@@ -86,11 +86,18 @@ export default function Auth() {
       successfulAuthRef.current = true;
       const postLogin = async () => {
         await attachReferralIfNeeded(user.id);
-        if (hasAnonData()) {
+        const intent = peekAuthIntent();
+        // Skip legacy localStorage migration when the user arrived via the
+        // auth-handoff flow. In that case the canonical draft lives in
+        // sessionStorage (tfc_workspace_handoff) and /app will hydrate from it
+        // and resume the pending action. Running migrateAnonData here would
+        // create a ghost "My Project" in the DB, consume the free-tier project
+        // slot, and cause the resumed save to hit the paywall.
+        if (!intent && hasAnonData()) {
           await migrateAnonData(user.id);
         }
-        // Peek (do not consume) — CalculatorLayout consumes the intent on mount.
-        const dest = peekAuthIntent()?.redirectTo ?? "/";
+        // /app consumes the intent on mount (WorkspaceShell).
+        const dest = intent?.redirectTo ?? "/";
         navigate(dest, { replace: true });
       };
       postLogin();
