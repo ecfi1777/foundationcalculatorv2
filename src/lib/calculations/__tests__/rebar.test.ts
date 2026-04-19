@@ -1,64 +1,71 @@
 import { describe, it, expect } from "vitest";
 import { calcRebarHorizontal, calcRebarVertical, calcRebarSlabGrid } from "../rebar";
 
-describe("calcRebarHorizontal — FLOOR splice count (per spec)", () => {
-  it("calculates horizontal rebar with splices using FLOOR", () => {
-    // 100 LF, 2 rows, 20ft bars, 12" overlap
-    // num_splices = floor(100/20) = 5
-    // overlap_lf = 5 × 1ft × 2 rows = 10
-    // total = (100 × 2) + 10 = 210
+// NOTE: Splice formula corrected from FLOOR(L/bar) to
+// max(ceil(L/bar) - 1, 0) — splices only when 2+ bars are required.
+
+describe("calcRebarHorizontal — splice = max(ceil(L/bar) - 1, 0)", () => {
+  it("100 LF, 2 rows: ceil(100/20)-1 = 4 splices → overlap 4ft × 2 = 8 → total 208", () => {
     const result = calcRebarHorizontal({
       linearFt: 100, numRows: 2, overlapIn: 12, barLengthFt: 20, wastePct: 0,
     });
-    expect(result.totalLf).toBeCloseTo(210);
+    expect(result.totalLf).toBeCloseTo(208);
   });
 
-  it("exact multiple: 20 ft → 1 splice", () => {
-    // floor(20/20) = 1 splice → overlap = 1ft → total = 20 + 1 = 21
+  it("15 ft → 0 splices → total = 15", () => {
+    const result = calcRebarHorizontal({
+      linearFt: 15, numRows: 1, overlapIn: 12, barLengthFt: 20, wastePct: 0,
+    });
+    expect(result.totalLf).toBe(15);
+  });
+
+  it("20 ft → 0 splices → total = 20", () => {
     const result = calcRebarHorizontal({
       linearFt: 20, numRows: 1, overlapIn: 12, barLengthFt: 20, wastePct: 0,
     });
-    expect(result.totalLf).toBeCloseTo(21);
+    expect(result.totalLf).toBeCloseTo(20);
   });
 
-  it("exact multiple: 40 ft → 2 splices", () => {
-    // floor(40/20) = 2 → overlap = 2ft → total = 40 + 2 = 42
+  it("21 ft → 1 splice → total = 22", () => {
+    const result = calcRebarHorizontal({
+      linearFt: 21, numRows: 1, overlapIn: 12, barLengthFt: 20, wastePct: 0,
+    });
+    expect(result.totalLf).toBeCloseTo(22);
+  });
+
+  it("40 ft → 1 splice → total = 41", () => {
     const result = calcRebarHorizontal({
       linearFt: 40, numRows: 1, overlapIn: 12, barLengthFt: 20, wastePct: 0,
     });
-    expect(result.totalLf).toBeCloseTo(42);
+    expect(result.totalLf).toBeCloseTo(41);
   });
 
-  it("exact multiple: 60 ft → 3 splices", () => {
-    // floor(60/20) = 3 → overlap = 3ft → total = 60 + 3 = 63
+  it("41 ft → 2 splices → total = 43", () => {
+    const result = calcRebarHorizontal({
+      linearFt: 41, numRows: 1, overlapIn: 12, barLengthFt: 20, wastePct: 0,
+    });
+    expect(result.totalLf).toBeCloseTo(43);
+  });
+
+  it("60 ft → 2 splices → total = 62", () => {
     const result = calcRebarHorizontal({
       linearFt: 60, numRows: 1, overlapIn: 12, barLengthFt: 20, wastePct: 0,
     });
-    expect(result.totalLf).toBeCloseTo(63);
+    expect(result.totalLf).toBeCloseTo(62);
   });
 
-  it("non-multiple: 25 ft → 1 splice", () => {
-    // floor(25/20) = 1 → overlap = 1ft → total = 25 + 1 = 26
+  it("25 ft → 1 splice → total = 26", () => {
     const result = calcRebarHorizontal({
       linearFt: 25, numRows: 1, overlapIn: 12, barLengthFt: 20, wastePct: 0,
     });
     expect(result.totalLf).toBeCloseTo(26);
   });
 
-  it("non-multiple: 37 ft → 1 splice", () => {
-    // floor(37/20) = 1 → overlap = 1ft → total = 37 + 1 = 38
+  it("37 ft → 1 splice → total = 38", () => {
     const result = calcRebarHorizontal({
       linearFt: 37, numRows: 1, overlapIn: 12, barLengthFt: 20, wastePct: 0,
     });
     expect(result.totalLf).toBeCloseTo(38);
-  });
-
-  it("no splice when under one bar length", () => {
-    // floor(15/20) = 0 splices
-    const result = calcRebarHorizontal({
-      linearFt: 15, numRows: 1, overlapIn: 12, barLengthFt: 20, wastePct: 0,
-    });
-    expect(result.totalLf).toBe(15);
   });
 
   it("applies waste", () => {
@@ -113,9 +120,9 @@ describe("calcRebarVertical — floor, no overlap", () => {
   });
 });
 
-describe("calcRebarSlabGrid — FLOOR splice count", () => {
-  it("calculates grid rebar for a slab section (10×10)", () => {
-    // splices: floor(10/20)=0 both directions → no overlap added
+describe("calcRebarSlabGrid — splice = max(ceil(L/bar) - 1, 0)", () => {
+  it("10×10: no splices either direction", () => {
+    // splices: ceil(10/20)-1 = 0 both directions
     const result = calcRebarSlabGrid({
       lengthFt: 10, widthFt: 10, spacingIn: 12,
       overlapIn: 12, barLengthFt: 20, wastePct: 0,
@@ -125,43 +132,52 @@ describe("calcRebarSlabGrid — FLOOR splice count", () => {
     expect(result.totalLf).toBeCloseTo(220);
   });
 
-  it("adds splices for long runs (30×10)", () => {
-    // barsLengthwise = floor(10*12/12)+1 = 11
-    // barsWidthwise  = floor(30*12/12)+1 = 31
-    // spliceLength = floor(30/20) × 1ft = 1ft
-    // spliceWidth  = floor(10/20) × 1ft = 0ft
+  it("30×10: lengthwise needs splice", () => {
+    // barsLengthwise = 11, barsWidthwise = 31
+    // spliceLength = ceil(30/20)-1 = 1 × 1ft = 1ft
+    // spliceWidth  = ceil(10/20)-1 = 0
     // lfLengthwise = 11 × (30 + 1) = 341
-    // lfWidthwise  = 31 × (10 + 0) = 310
+    // lfWidthwise  = 31 × 10 = 310
     // total = 651
     const result = calcRebarSlabGrid({
       lengthFt: 30, widthFt: 10, spacingIn: 12,
       overlapIn: 12, barLengthFt: 20, wastePct: 0,
     });
-    expect(result.barsLengthwise).toBe(11);
-    expect(result.barsWidthwise).toBe(31);
     expect(result.totalLf).toBeCloseTo(651);
   });
 
-  it("exact multiple lengthwise: 40 ft → 2 splices per bar", () => {
-    // barsLengthwise = floor(10*12/12)+1 = 11
-    // barsWidthwise  = floor(40*12/12)+1 = 41
-    // spliceLength = floor(40/20) × 1ft = 2ft
-    // spliceWidth  = floor(10/20) × 1ft = 0ft
-    // lfLengthwise = 11 × (40 + 2) = 462
-    // lfWidthwise  = 41 × (10 + 0) = 410
-    // total = 872
+  it("40×10 exact multiple → 1 splice (not 2)", () => {
+    // spliceLength = ceil(40/20)-1 = 1 × 1ft = 1ft
+    // barsLengthwise = 11, barsWidthwise = 41
+    // lfLengthwise = 11 × 41 = 451
+    // lfWidthwise  = 41 × 10 = 410
+    // total = 861
     const result = calcRebarSlabGrid({
       lengthFt: 40, widthFt: 10, spacingIn: 12,
       overlapIn: 12, barLengthFt: 20, wastePct: 0,
     });
-    expect(result.totalLf).toBeCloseTo(872);
+    expect(result.totalLf).toBeCloseTo(861);
   });
 
-  it("uses floor for non-even dimensions (25×16 @ 18in)", () => {
+  it("41×10 → 2 splices lengthwise", () => {
+    // spliceLength = ceil(41/20)-1 = 2 × 1ft = 2ft
+    // barsLengthwise = floor(10*12/12)+1 = 11
+    // barsWidthwise  = floor(41*12/12)+1 = 42
+    // lfLengthwise = 11 × (41 + 2) = 473
+    // lfWidthwise  = 42 × 10 = 420
+    // total = 893
+    const result = calcRebarSlabGrid({
+      lengthFt: 41, widthFt: 10, spacingIn: 12,
+      overlapIn: 12, barLengthFt: 20, wastePct: 0,
+    });
+    expect(result.totalLf).toBeCloseTo(893);
+  });
+
+  it("25×16 @ 18in non-even", () => {
     // barsLengthwise = floor(16*12/18)+1 = 11
     // barsWidthwise  = floor(25*12/18)+1 = 17
-    // spliceLength = floor(25/20) × 1ft = 1ft → 26ft
-    // spliceWidth  = floor(16/20) × 1ft = 0ft → 16ft
+    // spliceLength = ceil(25/20)-1 = 1 × 1ft = 1ft → 26ft
+    // spliceWidth  = ceil(16/20)-1 = 0 → 16ft
     // lfLengthwise = 11 × 26 = 286
     // lfWidthwise  = 17 × 16 = 272
     // total = 558
