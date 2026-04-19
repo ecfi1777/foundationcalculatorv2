@@ -102,6 +102,9 @@ function dbAreaToCalcArea(dbArea: any, segments: any[], sections: any[], rebarCo
     wastePct: Number(dbArea.waste_pct) || 0,
     footingMode: inputs.footingMode as FootingMode | undefined,
     dimensions: inputs.dimensions ?? {},
+    stoneEnabled: typeof inputs.stoneEnabled === "boolean" ? inputs.stoneEnabled : (dbArea.stone_enabled ?? false),
+    stoneDepthIn: typeof inputs.stoneDepthIn === "number" ? inputs.stoneDepthIn : 4,
+    stoneTypeId: typeof inputs.stoneTypeId === "string" ? inputs.stoneTypeId : "57stone",
     segments: segments
       .filter((s: any) => s.area_id === dbArea.id)
       .sort((a: any, b: any) => a.sort_order - b.sort_order)
@@ -342,8 +345,14 @@ export function ProjectProvider({ children, clearCalculatorOnSignOut = true }: {
           sort_order: area.sortOrder,
           waste_pct: area.wastePct,
           rebar_enabled: anyEnabled,
-          stone_enabled: area.sections.some(s => s.includeStone),
-          inputs: { footingMode: area.footingMode, dimensions: area.dimensions },
+          stone_enabled: area.stoneEnabled ?? false,
+          inputs: {
+            footingMode: area.footingMode,
+            dimensions: area.dimensions,
+            stoneEnabled: area.stoneEnabled ?? false,
+            stoneDepthIn: area.stoneDepthIn ?? 4,
+            stoneTypeId: area.stoneTypeId ?? "57stone",
+          },
           inputs_version: 1,
         };
 
