@@ -30,10 +30,14 @@ describe("utils", () => {
     expect(applyWaste(100, 5)).toBeCloseTo(105);
   });
 
-  it("calcSpliceOverlap", () => {
-    // 50 ft run with 20 ft bars → 3 bars → 2 splices × 12in overlap = 2 ft
+  it("calcSpliceOverlap (FLOOR per spec)", () => {
+    // 50 ft / 20 ft = floor(2.5) = 2 splices × 12in = 2 ft
     expect(calcSpliceOverlap(50, 20, 12)).toBeCloseTo(2);
-    // 15 ft run → 1 bar → 0 splices
+    // exact multiple: 20 ft → floor(20/20) = 1 splice → 1 ft
+    expect(calcSpliceOverlap(20, 20, 12)).toBeCloseTo(1);
+    // exact multiple: 40 ft → 2 splices → 2 ft
+    expect(calcSpliceOverlap(40, 20, 12)).toBeCloseTo(2);
+    // 15 ft → floor(0.75) = 0 splices
     expect(calcSpliceOverlap(15, 20, 12)).toBe(0);
     // 0 ft → 0
     expect(calcSpliceOverlap(0, 20, 12)).toBe(0);
