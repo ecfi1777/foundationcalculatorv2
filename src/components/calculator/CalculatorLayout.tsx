@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 import { stashDraft } from "@/lib/workspaceHandoff";
-import { setAuthIntent, consumeAuthIntent } from "@/lib/authIntent";
+import { setAuthIntent } from "@/lib/authIntent";
 import { Pencil } from "lucide-react";
 import type { CalculatorType } from "@/types/calculator";
 import { useNavigate } from "react-router-dom";
@@ -174,6 +174,16 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
     createNewProject();
   }, [user, state, subscriptionTier, editableProjectCount, isDirty, hasSubstantiveData, createNewProject, setPendingAction]);
 
+  // ── Sign In handler (dropdown entry point) ──
+  // Routes anon-user dropdown Sign In through the same handoff SaveBanner uses:
+  // stash draft to sessionStorage + set auth intent. On return to /app after
+  // login, WorkspaceShell consumes the handoff and the user's work is intact.
+  const handleSignIn = useCallback(() => {
+    stashDraft(state);
+    setAuthIntent({ redirectTo: "/app" });
+    navigate("/auth");
+  }, [state, navigate]);
+
   // ── First save confirm ──
   const handleNameConfirm = useCallback((name: string) => {
     setShowNameModal(false);
@@ -292,6 +302,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
     isExporting,
     canExport,
     onSignOut: handleSignOut,
+    onSignIn: handleSignIn,
     mode,
     onOpenWorkspace: handleOpenWorkspace,
     onExitWorkspace,
