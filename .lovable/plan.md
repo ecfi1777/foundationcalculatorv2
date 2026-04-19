@@ -1,36 +1,59 @@
 
 
-# Wire header Sign In through auth handoff + remove dead import
+# Auto-save handoff work as "Untitled Project" on first authenticated mount
 
 ## Two file edits
 
-**1. `src/components/calculator/AppHeader.tsx`**
-- Add optional `onSignIn?: () => void` to `AppHeaderProps` (after `onSignOut`).
-- Destructure `onSignIn` in the function signature.
-- Update the Sign In `DropdownMenuItem` (line ~247): call `onSignIn()` if provided, else fall back to existing `navigate("/auth")`.
+**1. `src/pages/AppCalculator.tsx` — `WorkspaceShell`**
+- Add `hasRequiredData` to the type-only import (convert to value import).
+- Pull `state` from `useCalculatorState`; pull `currentProject`, `saveProject` from `useProject`.
+- Add two refs: `hasAutoSavedHandoff` (one-shot guard) and `hydratedFromHandoff` (set synchronously inside the `if (handoff)` branch of the mount effect).
+- Add a second effect, deps `[user, state.areas, currentProject, saveProject]`, that fires `saveProject("Untitled Project")` once when: authenticated, hydrated from handoff, no current project, ≥1 area passes `hasRequiredData`. Refs prevent re-fire across re-renders.
 
-**2. `src/components/calculator/CalculatorLayout.tsx`**
-- Remove dead `consumeAuthIntent` from the import on line 3 (keep `setAuthIntent`).
-- Add `handleSignIn` callback alongside `handleNewProject`: `stashDraft(state)` + `setAuthIntent({ redirectTo: "/app" })` + `navigate("/auth")`. No `pendingAction` (Sign In ≠ save/newProject).
-- Pass `onSignIn: handleSignIn` in the `headerProps` object.
+**2. `src/pages/Auth.tsx` — post-login effect**
+- Drop the `migrateAnonData` branch entirely. Default `intent.redirectTo ?? "/app"` (was `"/"`).
+- Trim imports: drop `migrateAnonData` (keep `attachReferralIfNeeded`), drop `hasAnonData` (keep `captureRefCode`).
 
-`navigate` and `stashDraft` are already imported/in-scope in `CalculatorLayout` — no new imports needed beyond trimming `consumeAuthIntent`.
+## Why this is safe
+
+- `saveProject` is the established first-save path used everywhere else (`SaveBanner`, header Save, `AccountCreationModal`). It correctly handles the Prompt 3 valid-draft filter, rebar configs, stone flags, and sets `currentProject`. Auto-save reuses it as-is — no new persistence code path.
+- The two-effect split (synchronous LOAD dispatch in mount effect; auto-save in dep-tracked effect) correctly waits for React state to reflect the LOAD before saveProject's closure reads it.
+- `hydratedFromHandoff` ref ensures auto-save only fires for handoff mounts — a logged-in user opening `/app` directly with no handoff never triggers it, even if they have areas in state from a previous session.
+- `currentProject` short-circuit means the auto-save will not stomp an existing project (e.g., user with handoff mounts /app while already having a project loaded — `saveProject` would update, but `currentProject` guard skips entirely).
+- `migrateAnonData.ts` stays untouched (archaeology). Its only call site was Auth.tsx; now unreachable but preserved.
+
+## Behavioral contract
+
+| Entry point | Auto-save | Project name | Active tab |
+|---|---|---|---|
+| Anon + work → header Sign In → login | Yes | Untitled Project | Matches handoff |
+| Anon + work → header Save → signup | Yes | Untitled Project | Matches handoff |
+| Anon + work → SaveBanner Sign Up | Yes | Untitled Project | Matches handoff |
+| Anon + no work → Sign In | No | — | — |
+| Anon + only invalid draft → Sign In | No | — (handoff visible only) | Matches handoff |
+| Logged-in direct `/auth` login (no intent) | No | — | Lands on `/app` empty |
+| Logged-in user clicks header Save (post-auto-save) | No (already has project) | — | — |
 
 ## Out of scope (do NOT touch)
-- `src/lib/authIntent.ts`, `src/lib/workspaceHandoff.ts`
-- `src/pages/Auth.tsx` (its `if (!intent && hasAnonData())` gate naturally skips migration once intent is set)
-- `src/pages/AppCalculator.tsx` / `WorkspaceShell` (already consumes handoff)
-- `src/lib/migrateAnonData.ts` (separate tracked concern; traffic drops near-zero)
-- `SaveBanner.tsx`, `AccountCreationModal.tsx` (handoff template, untouched)
-- Reducer, `DraftActionButtons`, `useProject`
-- `onSignIn` stays optional with `navigate("/auth")` fallback so `AppHeader` is reusable outside `CalculatorLayout`
+- `src/lib/migrateAnonData.ts` (kept as archaeology)
+- `src/lib/localStorage.ts` `hasAnonData` (still exported; other callers may exist)
+- `src/hooks/useProject.tsx` (`saveProject`, `currentProject` restore effect)
+- `src/hooks/useCalculatorState.tsx`
+- `CalculatorLayout`, `SaveBanner`, `AccountCreationModal`
+- `AppCalculator` outer component, `VALID_TABS`, provider composition
+- All other `Auth.tsx` effects, state, handlers, UI
 
-## Verification (per prompt's 7-item list)
-1. Anon + work → header Sign In → signup → returns to `/app` with footing/segments intact, no "My Project" ghost.
-2. Anon + no work → Sign In → lands on `/app` empty, no migration, no ghost project.
-3. Direct `/auth` URL with anon localStorage → legacy `migrateAnonData` still fires (untouched fallback).
-4. SaveBanner Sign Up + header Save modal still work end-to-end.
-5. Logged-in dropdown shows only Sign Out (Sign In hidden).
-6. No TS errors, `consumeAuthIntent` import gone from `CalculatorLayout.tsx`.
-7. Prompt 7 draft behavior intact (build, Save Area, pencil-edit, add segment, Save).
+## Verification (per prompt's 12-item checklist)
+1. Anon Slabs work + Sign In dropdown → Untitled Project in DB with project/area/section rows; correct active tab.
+2. Anon Footings + header Save modal → same auto-save outcome.
+3. Anon SaveBanner Sign Up → same.
+4. Anon no-work Sign In → no project created.
+5. Anon invalid-draft (Cylinders diameter only) → no project; handoff visible; manual Save works after filling fields.
+6. Direct `/auth` login (no intent) → lands on `/app`, not `/`.
+7. Logged-in normal Save flow → name modal still appears for first project.
+8. Auto-save then add second area + header Save → no name modal, second area upserts into same project.
+9. Pencil-rename Untitled Project → DB updates.
+10. Abandoned `tfc_calculator_state` (no handoff, no intent) → no auto-save, no migration, lands `/app`.
+11. Prompts 5/6/7 regressions clean (button visibility, snapshot revert, no auto-commit, edit-mode preserved).
+12. No new TS errors; removed imports clean.
 
