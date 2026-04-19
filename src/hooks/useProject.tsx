@@ -6,7 +6,7 @@ import type {
   CalcArea, CalcSection, Segment, RebarConfig, RebarConfigsMap,
   RebarElementType, CalculatorType, FootingMode, DbCalculatorType,
 } from "@/types/calculator";
-import { makeDefaultRebar, deriveRebarEnabled, CALC_TYPE_TO_DB, DB_TO_CALC_TYPE } from "@/types/calculator";
+import { makeDefaultRebar, deriveRebarEnabled, CALC_TYPE_TO_DB, DB_TO_CALC_TYPE, getMissingFields } from "@/types/calculator";
 import { toast } from "sonner";
 
 // ── Types ─────────────────────────────────────────────
@@ -332,8 +332,13 @@ export function ProjectProvider({ children, clearCalculatorOnSignOut = true }: {
           .eq("id", projectId);
       }
 
-      // Upsert areas — only save committed (non-draft) areas
-      const committedAreas = state.areas.filter((a) => !a.isDraft);
+      // Upsert areas — include committed areas AND valid drafts.
+      // Valid drafts (getMissingFields empty) represent work the user sees in the
+      // Quantities panel and expects to be saved by header Save. Invalid drafts
+      // (missing required fields) are excluded to avoid writing incomplete data.
+      const committedAreas = state.areas.filter(
+        (a) => !a.isDraft || getMissingFields(a).length === 0
+      );
       for (const area of committedAreas) {
         const anyEnabled = deriveRebarEnabled(area.rebarConfigs);
 
