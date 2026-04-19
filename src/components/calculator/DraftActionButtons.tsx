@@ -2,22 +2,28 @@ import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { Button } from "@/components/ui/button";
 import { ConfirmDialog } from "@/components/project/ConfirmDialog";
 
-import { Save, Trash2 } from "lucide-react";
+import { Save, Trash2, X } from "lucide-react";
 import { toast } from "sonner";
 import { useState } from "react";
 
-/** Duplicate Save / Discard buttons rendered below the calculator form for mobile usability. */
+/** Save / Cancel / Delete buttons rendered below the calculator form.
+ *  Visibility:
+ *  - New area (no preEditSnapshot):         Save Area + Cancel Edit
+ *  - Editing existing (has preEditSnapshot): Save Area + Cancel Edit + Delete Area
+ */
 export function DraftActionButtons() {
   const { activeArea, saveArea, dispatch, flushBeforeSave, flushPendingSegment } = useCalculatorState();
   const [confirmOpen, setConfirmOpen] = useState(false);
 
   if (!activeArea?.isDraft) return null;
 
+  const isEditingExisting = !!activeArea.preEditSnapshot;
+
   const handleSave = () => {
     flushBeforeSave();
     const segmentFlushed = flushPendingSegment();
     if (segmentFlushed) {
-      // ADD_SEGMENT auto-committed the area in the reducer (Prompt 1).
+      // ADD_SEGMENT auto-committed the area in the reducer.
       // Calling saveArea here would read stale state and fail — skip it.
       toast.success("Area saved");
       dispatch({ type: "SET_ACTIVE_AREA", id: null });
@@ -30,6 +36,11 @@ export function DraftActionButtons() {
       toast.success("Area saved");
       dispatch({ type: "SET_ACTIVE_AREA", id: null });
     }
+  };
+
+  const handleCancel = () => {
+    flushBeforeSave();
+    dispatch({ type: "CANCEL_EDIT", id: activeArea.id });
   };
 
   const handleDelete = () => {
@@ -45,12 +56,22 @@ export function DraftActionButtons() {
         </Button>
         <Button
           variant="outline"
-          className="flex-1 gap-1 h-9 text-sm text-destructive border-destructive/30 hover:bg-destructive/10"
-          onClick={handleDelete}
+          className="flex-1 gap-1 h-9 text-sm"
+          onClick={handleCancel}
         >
-          <Trash2 className="h-4 w-4" />
-          Delete Area
+          <X className="h-4 w-4" />
+          Cancel Edit
         </Button>
+        {isEditingExisting && (
+          <Button
+            variant="outline"
+            className="flex-1 gap-1 h-9 text-sm text-destructive border-destructive/30 hover:bg-destructive/10"
+            onClick={handleDelete}
+          >
+            <Trash2 className="h-4 w-4" />
+            Delete Area
+          </Button>
+        )}
       </div>
 
       <ConfirmDialog
