@@ -137,6 +137,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
   // ── Save handler ──
   const handleSave = useCallback(() => {
     if (!user) {
+      stashDraft(state);
       setAuthIntent({ redirectTo: "/app", action: "save" });
       setPendingAction({ type: "save" });
       setShowAccountModal(true);
