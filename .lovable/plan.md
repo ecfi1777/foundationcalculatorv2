@@ -1,35 +1,45 @@
 
 
-# Auto-commit drafts in section/dimension calculators
+# Revert reducer auto-commits; move logic to save boundary
 
-## Three edits in `src/hooks/useCalculatorState.tsx`
+## Two edits
 
-Mirror the existing `ADD_SEGMENT` auto-commit pattern (lines 107–118) so slabs, pier pads, cylinders, and steps flip `isDraft: false` the moment they become valid via `getMissingFields(updated).length === 0`.
+**1. `src/hooks/useCalculatorState.tsx`** — Revert Prompt 2's three auto-commit branches back to their pre-Prompt-2 form:
+- `UPDATE_AREA` (lines 91–106) → drop the `getMissingFields` auto-commit, keep `hasUserModifiedDimensions` flag.
+- `ADD_SECTION` (lines 156–168) → simple section append, no commit logic.
+- `UPDATE_SECTION` (lines 169–186) → simple section patch, no commit logic.
 
-1. **`UPDATE_AREA`** (lines 91–101) — covers cylinders & steps (dimension-driven).
-2. **`ADD_SECTION`** (lines 151–156) — covers slabs & pier pads when the first valid section is added.
-3. **`UPDATE_SECTION`** (lines 157–169) — covers slabs & pier pads when editing an existing section to validity.
+This restores Save Area / Delete Area button visibility throughout streaming input on slabs, pier pads, cylinders, and steps.
 
-All three use the exact replacement code provided in the prompt.
+**2. `src/hooks/useProject.tsx`** — Move the auto-commit to the save boundary:
+- Add `getMissingFields` to the existing `@/types/calculator` import.
+- Replace the `state.areas.filter((a) => !a.isDraft)` filter at line 336 with `(a) => !a.isDraft || getMissingFields(a).length === 0` so valid drafts persist on header Save without flipping `isDraft` in client state.
+
+Exact replacement code is in the user's prompt and will be applied verbatim.
 
 ## Out of scope (do NOT touch)
-- `ADD_SEGMENT` (reference pattern), `SAVE_AREA`, `DELETE_SEGMENT` in the same reducer
-- `getMissingFields` in `src/types/calculator.ts`
-- `saveProject` `isDraft` filter in `src/hooks/useProject.tsx:336`
-- `migrateAnonData.ts`, dead `consumeAuthIntent` import in `CalculatorLayout.tsx:3`
-- All UI components (`QuantitiesPanel`, `CalculatorLayout`, `AreaSelector`, `CalculatorTabBar`, `DraftActionButtons`) — their current `isDraft` reads work correctly with the new behavior
+- `ADD_SEGMENT` auto-commit (correct for discrete-click flows: footings/walls/grade beams/curbs)
+- `SAVE_AREA` (explicit-commit path used by `DraftActionButtons`)
+- `getMissingFields` definition in `src/types/calculator.ts`
+- All UI components (`DraftActionButtons`, `QuantitiesPanel`, `CalculatorLayout`) — current `isDraft` reads will work correctly post-revert
+- `migrateAnonData.ts` line 105 filter (separate tracked concern)
+- Prompt 1 work (`Auth.tsx`, `AppCalculator.tsx`, `authIntent.ts`, `workspaceHandoff.ts`)
+- Dead `consumeAuthIntent` import in `CalculatorLayout.tsx:3` (separate cleanup)
 
-## Tests
-Will check `src/lib/calculations/__tests__/` and any reducer tests before editing. If a test encoded the bug as expectation (e.g., asserts `isDraft: true` after a valid `UPDATE_AREA`), I'll flag it in the implementation summary and update it to expect the corrected behavior — not silently rewrite.
+## Behavioral contract after this prompt
+- `ADD_SEGMENT` (discrete click) → auto-commits on first valid segment.
+- `UPDATE_AREA` / `ADD_SECTION` / `UPDATE_SECTION` (streaming input) → NEVER auto-commits.
+- `saveProject` → persists committed areas + valid drafts; skips invalid drafts.
+- `DraftActionButtons` → visible while `activeArea.isDraft === true`.
 
 ## Verification (per prompt)
-1. Slab anon-save → auth → return → persists (primary bug).
-2. Pier pad — same.
-3. Cylinder — same.
-4. Steps — same.
-5. Footing regression — unchanged.
-6. Partial cylinder (diameter only) stays draft, not saved.
-7. Slab section flipped to validity via `UPDATE_SECTION` saves.
-8. Logged-in user adds slab to existing project — upserts cleanly.
-9. No test churn unless a test encoded the bug; flagged if so.
+1. Slab with length+width → Save Area / Delete Area buttons remain visible; area still draft.
+2. Same on pier pad, cylinder, steps.
+3. Click Save Area on valid slab → commits, toast, active area clears.
+4. Anon header Save on valid slab draft → signup → returns with slab persisted in DB.
+5. Same with explicit Save Area before header Save.
+6. Anon header Save on invalid cylinder (diameter only) → no area persisted.
+7. Footing regression unchanged (`ADD_SEGMENT` still auto-commits).
+8. Logged-in user adds slab + header Save → upserts cleanly.
+9. No test churn expected (no reducer tests in suite).
 
