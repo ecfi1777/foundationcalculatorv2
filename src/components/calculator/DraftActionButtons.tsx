@@ -60,7 +60,7 @@ export function DraftActionButtons() {
           onClick={handleCancel}
         >
           <X className="h-4 w-4" />
-          Cancel Edit
+          {isEditingExisting ? "Cancel Edit" : "Cancel"}
         </Button>
         {isEditingExisting && (
           <Button
