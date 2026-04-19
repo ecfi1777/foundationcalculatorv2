@@ -1,66 +1,60 @@
 
 
-# Fix inconsistent calculator width on SEO pages
+# Make export read-only for per-section stone
 
-## Current state
+## Problem
 
-`/concrete-calculator` wraps its calculator in:
-```html
-<div className="mx-auto max-w-5xl px-4 mb-16">
-  <div className="min-h-[70vh]">
-    <CalculatorProvider>...</CalculatorProvider>
-  </div>
-</div>
+`buildExportData.ts` currently imports `calcStoneBase` and recomputes stone tons per section inside the export layer (lines 10, 74–93). The spec requires the export to be read-only and consume already-computed values.
+
+## Constraint discovered
+
+The in-memory `CalcSection` type (`src/types/calculator.ts`) does **not** carry a `stoneTons` field. Only the DB row `sections.stone_tons` (written by the `recalculate-project` edge function) holds a stored value, and the export does not read from the DB — it runs off `CalcState`.
+
+So "already computed" at the export layer means **computed once by the canonical `computeArea` path** (same source the Quantities Panel uses), not recomputed inside the export.
+
+## Fix
+
+### 1. Move per-section stone computation into `computeArea` (canonical path)
+
+In `src/lib/computeArea.ts`, the slab branch already loops sections and calls `calcStoneBase` to build the area total. Capture each section's tonnage in that same loop and expose it on the result.
+
+- Add a `sectionStoneTons: Map<string, number>` (keyed by `section.id`) to `AreaResult`.
+- Populate it inside the existing slab stone loop. Only populate entries where `area.stoneEnabled === true`, `section.includeStone === true`, and `secSqft > 0`.
+- The area total `stoneTons` continues to be the sum, unchanged — UI parity preserved.
+
+### 2. Add the field to `AreaResult`
+
+In `src/types/calculator.ts`, extend `AreaResult` with:
+```ts
+sectionStoneTons?: Map<string, number>;
 ```
 
-The other 4 pages use only `<section className="pb-8">` with no max-width — causing full-width stretching on large screens.
+### 3. Make `buildExportData.ts` strictly read-only
 
-## Plan
+- Remove `import { calcStoneBase } from "@/lib/calculations/stoneBase";`
+- Remove the per-section `calcStoneBase` call (lines 84–93).
+- Replace with a lookup: `result.sectionStoneTons?.get(sec.id) ?? null`.
+- Gating stays the same: include stone fields only when `area.stoneEnabled && sec.includeStone`.
+- Volume per section still uses `calcSlabSection` — that is volume math, not stone, and is unchanged by this task.
 
-### 1. Create `SeoCalculatorContainer`
+### 4. No changes to
 
-**New file**: `src/components/calculator/SeoCalculatorContainer.tsx`
+- `calcStoneBase` itself
+- Area total / project total stone aggregation
+- DB schema, `recalculate-project`, or hydration
+- CSV/PDF formatting
 
-Exact same classes as `/concrete-calculator`:
-```tsx
-const SeoCalculatorContainer = ({ children }: { children: React.ReactNode }) => (
-  <div className="mx-auto max-w-5xl px-4 mb-16">
-    <div className="min-h-[70vh]">
-      {children}
-    </div>
-  </div>
-);
-```
+## Files changed
 
-### 2. Apply to 4 SEO pages
+1. `src/types/calculator.ts` — add `sectionStoneTons?: Map<string, number>` to `AreaResult`.
+2. `src/lib/computeArea.ts` — populate `sectionStoneTons` in the existing slab stone loop.
+3. `src/lib/export/buildExportData.ts` — drop `calcStoneBase` import + call; read from `result.sectionStoneTons`.
 
-Replace the bare `<section className="pb-8">` wrapper around each `<CalculatorProvider>` block with `<SeoCalculatorContainer>`:
+## Verification
 
-- `src/pages/ConcreteFootingCalculator.tsx`
-- `src/pages/ConcreteSlabCalculator.tsx`
-- `src/pages/ConcreteWallCalculator.tsx`
-- `src/pages/RebarCalculator.tsx`
-
-Each becomes:
-```tsx
-<SeoCalculatorContainer>
-  <CalculatorProvider ...>
-    <ProjectProvider ...>
-      <CalculatorLayout ... />
-    </ProjectProvider>
-  </CalculatorProvider>
-</SeoCalculatorContainer>
-```
-
-### 3. Do NOT touch
-
-- `ConcreteCalculator.tsx` (already correct)
-- Calculator logic, SEO content, headers, mobile layout
-
-### Files changed
-1. **New**: `src/components/calculator/SeoCalculatorContainer.tsx`
-2. `src/pages/ConcreteFootingCalculator.tsx`
-3. `src/pages/ConcreteSlabCalculator.tsx`
-4. `src/pages/ConcreteWallCalculator.tsx`
-5. `src/pages/RebarCalculator.tsx`
+- Slab with 2 sections, both stone-enabled, different waste pcts → each row's `stoneTons` matches Quantities Panel; sum equals area total.
+- Section with `includeStone = false` → exported `stoneEnabled: false`, `stoneTons: null`.
+- Area with `stoneEnabled = false` → no section reports stone.
+- Export layer contains zero calls to `calcStoneBase` (grep confirms).
+- Project totals unchanged from current behavior.
 
