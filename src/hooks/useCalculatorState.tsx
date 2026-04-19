@@ -141,19 +141,11 @@ function reducer(state: CalcState, action: Action): CalcState {
         areas: state.areas.map((a) => (a.id === action.id ? { ...a, name: action.name } : a)),
       };
     case "ADD_SEGMENT": {
-      const areas = state.areas.map((a) => {
-        if (a.id !== action.areaId) return a;
-        const updated = { ...a, segments: [...a.segments, action.segment] };
-        // Auto-commit draft if adding this segment makes the area valid,
-        // BUT only for first-time creation (no preEditSnapshot). During an
-        // edit session (snapshot present) the user controls commit via the
-        // Save Area button — auto-committing here would strand them by
-        // unmounting DraftActionButtons mid-edit and leaving a stale snapshot.
-        if (a.isDraft && !a.preEditSnapshot && getMissingFields(updated).length === 0) {
-          return { ...updated, isDraft: false };
-        }
-        return updated;
-      });
+      const areas = state.areas.map((a) =>
+        a.id === action.areaId
+          ? { ...a, segments: [...a.segments, action.segment] }
+          : a
+      );
       return { ...state, areas };
     }
     case "UPDATE_SEGMENT": {
