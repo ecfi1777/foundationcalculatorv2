@@ -1,45 +1,47 @@
 
 
-# Revert reducer auto-commits; move logic to save boundary
+# Add edit-session snapshots and Cancel Edit flow
 
-## Two edits
+## Four coordinated edits
 
-**1. `src/hooks/useCalculatorState.tsx`** — Revert Prompt 2's three auto-commit branches back to their pre-Prompt-2 form:
-- `UPDATE_AREA` (lines 91–106) → drop the `getMissingFields` auto-commit, keep `hasUserModifiedDimensions` flag.
-- `ADD_SECTION` (lines 156–168) → simple section append, no commit logic.
-- `UPDATE_SECTION` (lines 169–186) → simple section patch, no commit logic.
+**1. `src/types/calculator.ts`** — Add optional `preEditSnapshot?: Omit<CalcArea, "preEditSnapshot">` field to `CalcArea`. Presence of this field signals an edit session of a previously-committed area.
 
-This restores Save Area / Delete Area button visibility throughout streaming input on slabs, pier pads, cylinders, and steps.
+**2. `src/hooks/useCalculatorState.tsx`** — Reducer changes:
+- Add `CANCEL_EDIT` to the action union and `DATA_ACTIONS` set.
+- `EDIT_AREA`: stash a snapshot (omitting its own field) and flip `isDraft: true`. Guard against overwriting an existing snapshot.
+- `SAVE_AREA`: clear `preEditSnapshot` when committing.
+- New `CANCEL_EDIT` case: if snapshot exists, restore it (committed); if not, discard the area entirely (new draft).
+- localStorage persist effect: strip snapshots and commit in-progress edits (`isDraft: false`) so refreshes don't restore stale edit sessions.
 
-**2. `src/hooks/useProject.tsx`** — Move the auto-commit to the save boundary:
-- Add `getMissingFields` to the existing `@/types/calculator` import.
-- Replace the `state.areas.filter((a) => !a.isDraft)` filter at line 336 with `(a) => !a.isDraft || getMissingFields(a).length === 0` so valid drafts persist on header Save without flipping `isDraft` in client state.
+**3. `src/components/calculator/DraftActionButtons.tsx`** — Three-button layout:
+- New area (no snapshot): Save Area + Cancel Edit.
+- Editing committed area (has snapshot): Save Area + Cancel Edit + Delete Area.
+- Cancel calls `flushBeforeSave()` then dispatches `CANCEL_EDIT`.
 
-Exact replacement code is in the user's prompt and will be applied verbatim.
+**4.** All replacement code in the user's prompt is applied verbatim.
 
 ## Out of scope (do NOT touch)
-- `ADD_SEGMENT` auto-commit (correct for discrete-click flows: footings/walls/grade beams/curbs)
-- `SAVE_AREA` (explicit-commit path used by `DraftActionButtons`)
-- `getMissingFields` definition in `src/types/calculator.ts`
-- All UI components (`DraftActionButtons`, `QuantitiesPanel`, `CalculatorLayout`) — current `isDraft` reads will work correctly post-revert
-- `migrateAnonData.ts` line 105 filter (separate tracked concern)
-- Prompt 1 work (`Auth.tsx`, `AppCalculator.tsx`, `authIntent.ts`, `workspaceHandoff.ts`)
-- Dead `consumeAuthIntent` import in `CalculatorLayout.tsx:3` (separate cleanup)
+- `ADD_SEGMENT` auto-commit (footing discrete-click flow unchanged)
+- `UPDATE_AREA` / `ADD_SECTION` / `UPDATE_SECTION` (Prompt 3 state preserved)
+- `DELETE_AREA`, `resolveOutgoingDraft`, `getMissingFields`
+- `saveProject` save-boundary filter from Prompt 3
+- `QuantitiesPanel.tsx` and `CalculatorLayout.tsx:93` edit dispatches
+- `migrateAnonData.ts`, `migrateLoadedState`
+- Dead `consumeAuthIntent` import in `CalculatorLayout.tsx:3`
 
 ## Behavioral contract after this prompt
-- `ADD_SEGMENT` (discrete click) → auto-commits on first valid segment.
-- `UPDATE_AREA` / `ADD_SECTION` / `UPDATE_SECTION` (streaming input) → NEVER auto-commits.
-- `saveProject` → persists committed areas + valid drafts; skips invalid drafts.
-- `DraftActionButtons` → visible while `activeArea.isDraft === true`.
+- New area → Save Area + Cancel Edit (no Delete).
+- Editing committed area (pencil click) → Save Area + Cancel Edit + Delete Area; `isDraft: true` for live preview; snapshot held.
+- Cancel Edit on new draft → area discarded.
+- Cancel Edit on edit session → restored from snapshot, committed.
+- Save Area → snapshot cleared, area committed.
+- Refresh mid-edit → in-progress edits persist as committed; snapshot dropped.
 
-## Verification (per prompt)
-1. Slab with length+width → Save Area / Delete Area buttons remain visible; area still draft.
-2. Same on pier pad, cylinder, steps.
-3. Click Save Area on valid slab → commits, toast, active area clears.
-4. Anon header Save on valid slab draft → signup → returns with slab persisted in DB.
-5. Same with explicit Save Area before header Save.
-6. Anon header Save on invalid cylinder (diameter only) → no area persisted.
-7. Footing regression unchanged (`ADD_SEGMENT` still auto-commits).
-8. Logged-in user adds slab + header Save → upserts cleanly.
-9. No test churn expected (no reducer tests in suite).
+## Verification (per prompt's 13-item list)
+1–7: Slab new vs edit-existing flows for all three buttons, including Cancel revert and Save re-commit.
+8–9: Footing pre-segment new-area flow + post-segment auto-commit regression + pencil re-edit.
+10: Anon header Save on valid-draft slab (with snapshot) → still persists via Prompt 3's filter.
+11: Refresh mid-edit → reloads as committed with edits applied, no snapshot.
+12: Tab-switch during edit session preserves snapshot via `resolveOutgoingDraft`.
+13: No test churn expected.
 
