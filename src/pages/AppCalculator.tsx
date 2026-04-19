@@ -3,10 +3,11 @@ import { useNavigate, useSearchParams } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import { captureRefCode } from "@/lib/localStorage";
 import { CalculatorProvider, useCalculatorState } from "@/hooks/useCalculatorState";
-import { ProjectProvider } from "@/hooks/useProject";
+import { ProjectProvider, useProject } from "@/hooks/useProject";
 import { CalculatorLayout } from "@/components/calculator/CalculatorLayout";
 import { SEO } from "@/components/SEO";
 import { consumeDraft, stashExitTarget, getExitTarget } from "@/lib/workspaceHandoff";
+import { consumeAuthIntent } from "@/lib/authIntent";
 import type { CalcState } from "@/hooks/useCalculatorState";
 import type { CalculatorType } from "@/types/calculator";
 
