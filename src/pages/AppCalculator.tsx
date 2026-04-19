@@ -23,7 +23,9 @@ const VALID_TABS: CalculatorType[] = [
 function WorkspaceShell() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
+  const { user } = useAuth();
   const { dispatch } = useCalculatorState();
+  const { setPendingAction } = useProject();
   const hasHydrated = useRef(false);
 
   const fromParam = searchParams.get("from");
@@ -36,22 +38,34 @@ function WorkspaceShell() {
     }
   }, [fromParam]);
 
-  // On mount: consume handoff draft if available, else apply tab param
+  // On mount: consume handoff draft (if any), then consume auth intent (if any)
+  // to resume the pending action after an auth round-trip. ProjectProvider
+  // unmounts across /auth so pendingAction in React state is lost — the auth
+  // intent in sessionStorage is what survives and rehydrates the resume.
   useEffect(() => {
     if (hasHydrated.current) return;
     hasHydrated.current = true;
 
     const handoff = consumeDraft<CalcState>();
     if (handoff) {
-      // Handoff draft wins — hydrate workspace with SEO page state
+      // Handoff draft wins — hydrate workspace with pre-auth calculator state
       dispatch({ type: "LOAD", state: handoff });
-      // Also set the tab if provided (in case handoff state had a different activeTab)
       if (tabParam && VALID_TABS.includes(tabParam) && handoff.activeTab !== tabParam) {
         dispatch({ type: "SET_TAB", tab: tabParam });
       }
     } else if (tabParam && VALID_TABS.includes(tabParam)) {
       // No handoff — just switch to the requested tab without wiping existing state
       dispatch({ type: "SET_TAB", tab: tabParam });
+    }
+
+    // Resume the pending action if the user is signed in and an intent was set
+    // before /auth. Only consume for authenticated mounts — leaving it in place
+    // for anon mounts preserves the intent if the user re-enters auth.
+    if (user) {
+      const intent = consumeAuthIntent();
+      if (intent?.action) {
+        setPendingAction({ type: intent.action });
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
