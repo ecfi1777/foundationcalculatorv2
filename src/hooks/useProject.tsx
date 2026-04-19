@@ -384,7 +384,7 @@ export function ProjectProvider({ children, clearCalculatorOnSignOut = true }: {
           await supabase.from("segments").delete().in("id", toDeleteSegs.map((s: any) => s.id));
         }
 
-        // Upsert sections
+        // Upsert sections — mirror area-level stone settings (stone is area-level in UI)
         if (area.sections.length > 0) {
           const sectionRows = area.sections.map((s) => ({
             id: s.id,
@@ -397,9 +397,9 @@ export function ProjectProvider({ children, clearCalculatorOnSignOut = true }: {
             width_in: s.widthIn,
             width_fraction: s.widthFraction ?? "0",
             thickness_in: s.thicknessIn,
-            include_stone: s.includeStone,
-            stone_depth_in: s.stoneDepthIn || null,
-            stone_type_id: s.stoneTypeId || null,
+            include_stone: area.stoneEnabled ?? false,
+            stone_depth_in: (area.stoneEnabled ? area.stoneDepthIn : null) ?? null,
+            stone_type_id: (area.stoneEnabled ? area.stoneTypeId : null) ?? null,
             sort_order: s.sortOrder,
           }));
           const { error: secErr } = await supabase.from("sections").upsert(sectionRows);
