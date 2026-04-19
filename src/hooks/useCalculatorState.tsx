@@ -141,19 +141,11 @@ function reducer(state: CalcState, action: Action): CalcState {
         areas: state.areas.map((a) => (a.id === action.id ? { ...a, name: action.name } : a)),
       };
     case "ADD_SEGMENT": {
-      const areas = state.areas.map((a) => {
-        if (a.id !== action.areaId) return a;
-        const updated = { ...a, segments: [...a.segments, action.segment] };
-        // Auto-commit draft if adding this segment makes the area valid,
-        // BUT only for first-time creation (no preEditSnapshot). During an
-        // edit session (snapshot present) the user controls commit via the
-        // Save Area button — auto-committing here would strand them by
-        // unmounting DraftActionButtons mid-edit and leaving a stale snapshot.
-        if (a.isDraft && !a.preEditSnapshot && getMissingFields(updated).length === 0) {
-          return { ...updated, isDraft: false };
-        }
-        return updated;
-      });
+      const areas = state.areas.map((a) =>
+        a.id === action.areaId
+          ? { ...a, segments: [...a.segments, action.segment] }
+          : a
+      );
       return { ...state, areas };
     }
     case "UPDATE_SEGMENT": {
@@ -505,7 +497,11 @@ export function CalculatorProvider({ children, initialTab, hydrateFromStorage = 
 
   const saveArea = useCallback(
     (id: string): { valid: boolean; missingFields: string[] } => {
-      const area = state.areas.find((a) => a.id === id);
+      // Use stateRef to read the latest state, not closure state. Callers like
+      // DraftActionButtons.handleSave dispatch ADD_SEGMENT (via flushPendingSegment)
+      // immediately before calling saveArea — closure state would still reflect
+      // pre-dispatch state and fail validation.
+      const area = stateRef.current.areas.find((a) => a.id === id);
       if (!area || !area.isDraft) return { valid: true, missingFields: [] };
       const missingFields = getMissingFields(area);
       if (missingFields.length === 0) {
@@ -514,7 +510,7 @@ export function CalculatorProvider({ children, initialTab, hydrateFromStorage = 
       }
       return { valid: false, missingFields };
     },
-    [state.areas, dispatch]
+    [dispatch]
   );
 
   const activeArea = state.activeAreaId
