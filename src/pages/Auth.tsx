@@ -4,7 +4,7 @@ import { supabase } from "@/lib/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { attachReferralIfNeeded } from "@/lib/migrateAnonData";
-import { captureRefCode } from "@/lib/localStorage";
+import { hasAnonData, captureRefCode } from "@/lib/localStorage";
 import { peekAuthIntent, clearAuthIntent } from "@/lib/authIntent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
