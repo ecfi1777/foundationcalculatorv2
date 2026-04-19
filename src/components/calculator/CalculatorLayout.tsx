@@ -271,6 +271,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
     onSave: handleSave,
     onOpenProjects: () => {
       if (!user) {
+        stashDraft(state);
         setAuthIntent({ redirectTo: "/app", action: "save" });
         setPendingAction({ type: "save" });
         setShowAccountModal(true);
