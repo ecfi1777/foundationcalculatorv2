@@ -2,6 +2,8 @@ import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { setAuthIntent, clearAuthIntent } from "@/lib/authIntent";
+import { stashDraft } from "@/lib/workspaceHandoff";
+import { useCalculatorState } from "@/hooks/useCalculatorState";
 
 interface Props {
   open: boolean;
@@ -10,6 +12,7 @@ interface Props {
 
 export function AccountCreationModal({ open, onClose }: Props) {
   const navigate = useNavigate();
+  const { state } = useCalculatorState();
 
   const handleDismiss = () => {
     clearAuthIntent();
@@ -17,6 +20,7 @@ export function AccountCreationModal({ open, onClose }: Props) {
   };
 
   const handleCreate = () => {
+    stashDraft(state);
     setAuthIntent({ redirectTo: "/app", action: "save" });
     navigate("/auth");
   };
