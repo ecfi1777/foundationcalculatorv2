@@ -231,7 +231,9 @@ export function calcSpliceOverlap(
   overlapIn: number
 ): number {
   if (totalLengthFt <= 0 || barLengthFt <= 0) return 0;
-  const splices = Math.floor(totalLengthFt / barLengthFt);
+  // Corrects spec inconsistency: only add splices when more than one bar is
+  // required. splices = max(ceil(L / barLen) - 1, 0).
+  const splices = Math.max(Math.ceil(totalLengthFt / barLengthFt) - 1, 0);
   return splices * inchesToFeet(overlapIn);
 }
 
@@ -377,7 +379,8 @@ export function calcRebarHorizontal(input: RebarHorizontalInput): RebarHorizonta
   if (input.linearFt <= 0 || input.numRows <= 0 || input.barLengthFt <= 0) {
     return { totalLf: 0, totalWithWasteLf: 0 };
   }
-  const numSplices = Math.floor(input.linearFt / input.barLengthFt);
+  // Splices only when 2+ bars required (corrects prior FLOOR-based spec).
+  const numSplices = Math.max(Math.ceil(input.linearFt / input.barLengthFt) - 1, 0);
   const overlapLf = numSplices * inchesToFeet(input.overlapIn) * input.numRows;
   const totalLf = (input.linearFt * input.numRows) + overlapLf;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);

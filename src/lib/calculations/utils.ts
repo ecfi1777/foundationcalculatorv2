@@ -65,8 +65,15 @@ export function applyWaste(value: number, wastePct: number): number {
 
 /**
  * Calculate total splice overlap length for a rebar run.
- * Per spec: splices = FLOOR(totalLengthFt / barLengthFt)
- * Each splice adds `overlapIn` inches of extra rebar.
+ *
+ * NOTE: This corrects an earlier spec inconsistency. The previous FLOOR(L/bar)
+ * formula over-counted splices on exact multiples (e.g. 20 ft → 1 splice) and
+ * also added overlap when only a single bar was actually required. Real bar
+ * counting only introduces splices when 2+ bars are needed:
+ *   splices = max(ceil(totalLengthFt / barLengthFt) - 1, 0)
+ *
+ * Examples: 15→0, 20→0, 21→1, 40→1, 41→2.
+ *
  * @param totalLengthFt - Total run length in feet
  * @param barLengthFt - Standard bar length in feet
  * @param overlapIn - Overlap per splice in inches
@@ -78,6 +85,6 @@ export function calcSpliceOverlap(
   overlapIn: number
 ): number {
   if (totalLengthFt <= 0 || barLengthFt <= 0) return 0;
-  const splices = Math.floor(totalLengthFt / barLengthFt);
+  const splices = Math.max(Math.ceil(totalLengthFt / barLengthFt) - 1, 0);
   return splices * inchesToFeet(overlapIn);
 }
