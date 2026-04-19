@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, useCallback, type React
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase/client";
 import type { User, Session } from "@supabase/supabase-js";
+import { clearAuthIntent } from "@/lib/authIntent";
 
 interface AuthContextType {
   user: User | null;
@@ -49,6 +50,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, [navigate]);
 
   const signOut = useCallback(async () => {
+    clearAuthIntent();
     await supabase.auth.signOut();
   }, []);
 
