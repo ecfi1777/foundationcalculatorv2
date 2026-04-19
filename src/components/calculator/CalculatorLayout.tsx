@@ -137,6 +137,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
   // ── Save handler ──
   const handleSave = useCallback(() => {
     if (!user) {
+      setAuthIntent({ redirectTo: "/app", action: "save" });
       setPendingAction({ type: "save" });
       setShowAccountModal(true);
       return;
@@ -155,6 +156,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
   // ── New Project handler ──
   const handleNewProject = useCallback(() => {
     if (!user) {
+      setAuthIntent({ redirectTo: "/app", action: "newProject" });
       setPendingAction({ type: "newProject" });
       setShowAccountModal(true);
       return;
@@ -168,7 +170,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
       return;
     }
     createNewProject();
-  }, [user, subscriptionTier, editableProjectCount, isDirty, createNewProject, setPendingAction]);
+  }, [user, subscriptionTier, editableProjectCount, isDirty, hasSubstantiveData, createNewProject, setPendingAction]);
 
   // ── First save confirm ──
   const handleNameConfirm = useCallback((name: string) => {
@@ -267,6 +269,7 @@ export function CalculatorLayout({ mode, onOpenWorkspace, onExitWorkspace }: Cal
     onSave: handleSave,
     onOpenProjects: () => {
       if (!user) {
+        setAuthIntent({ redirectTo: "/app", action: "save" });
         setPendingAction({ type: "save" });
         setShowAccountModal(true);
         return;
