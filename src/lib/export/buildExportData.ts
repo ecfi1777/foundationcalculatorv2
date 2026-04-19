@@ -7,7 +7,7 @@ import type { ProjectExportData, AreaExportData, ExportCalculatorType } from "@/
 import { CALC_TYPE_TO_DB } from "@/types/calculator";
 import { computeArea } from "@/lib/computeArea";
 import { calcSlabSection } from "@/lib/calculations/slab";
-import { calcStoneBase } from "@/lib/calculations/stoneBase";
+
 import { formatSegment } from "@/lib/segmentParser";
 import { LINEAR_TYPES } from "./exportUtils";
 
@@ -57,9 +57,8 @@ export function buildExportData(
       }));
 
     // Sections with stone type name resolution — use calcSlabSection for volume.
-    // Stone is computed PER SECTION using the same logic as computeArea (area-level
-    // depth/density applied to per-section sqft + per-section waste). The area total
-    // (result.stoneTons) equals the sum of per-section values, matching the UI.
+    // Stone is READ-ONLY here: per-section tonnage is computed once in computeArea
+    // and exposed via result.sectionStoneTons. No recalculation in the export layer.
     const fracMap: Record<string, number> = { "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 };
     const areaStoneActive =
       area.type === "slab" && area.stoneEnabled && (area.stoneDepthIn ?? 0) > 0;
@@ -80,17 +79,11 @@ export function buildExportData(
           wastePct: sec.wastePct ?? 0,
         });
 
-        // Per-section stone — only when area + section both enable it AND sqft > 0.
-        let secStoneTons: number | null = null;
-        if (areaStoneActive && sec.includeStone && slabResult.sqft > 0) {
-          const sr = calcStoneBase({
-            sqft: slabResult.sqft,
-            depthIn: areaStoneDepthIn,
-            densityTonsPerCy: 1.4,
-            wastePct: sec.wastePct ?? 0,
-          });
-          secStoneTons = sr.tonsWithWaste;
-        }
+        // Per-section stone — read from canonical computeArea result. No recompute.
+        const stoneIncluded = areaStoneActive && sec.includeStone;
+        const secStoneTons = stoneIncluded
+          ? result.sectionStoneTons?.get(sec.id) ?? null
+          : null;
 
         return {
           name: sec.name,
@@ -101,10 +94,10 @@ export function buildExportData(
           thicknessIn: sec.thicknessIn,
           sqft: slabResult.sqft,
           volumeCY: slabResult.volumeWithWasteCy,
-          stoneEnabled: areaStoneActive && sec.includeStone,
+          stoneEnabled: stoneIncluded,
           stoneTons: secStoneTons,
-          stoneDepthIn: areaStoneActive && sec.includeStone ? areaStoneDepthIn : null,
-          stoneTypeName: areaStoneActive && sec.includeStone ? areaStoneTypeName : null,
+          stoneDepthIn: stoneIncluded ? areaStoneDepthIn : null,
+          stoneTypeName: stoneIncluded ? areaStoneTypeName : null,
         };
       });
 
