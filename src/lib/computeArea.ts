@@ -109,6 +109,7 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
   let stoneTons: number | null = null;
   let stoneDepthIn: number | null = null;
   let stoneTypeName: string | null = null;
+  let sectionStoneTons: Map<string, number> | undefined;
 
   switch (area.type) {
     case "footing": {
@@ -196,21 +197,24 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
         totalVolumeCy = r.totalVolumeCy;
         totalWithWasteCy = r.totalWithWasteCy;
 
-        // Stone base — area-level config applied to all sections
+        // Stone base — area-level config applied to all sections.
+        // Per-section tons captured here (canonical source for export read-only lookup).
         if (area.stoneEnabled && (area.stoneDepthIn ?? 0) > 0) {
           let totalStone = 0;
+          sectionStoneTons = new Map<string, number>();
           for (const sec of area.sections) {
             const fracMap: Record<string, number> = { "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 };
             const secLenFt = sec.lengthFt + (sec.lengthIn + (fracMap[sec.lengthFraction] ?? 0)) / 12;
             const secWidFt = sec.widthFt + (sec.widthIn + (fracMap[sec.widthFraction] ?? 0)) / 12;
             const secSqft = secLenFt * secWidFt;
-            if (secSqft > 0) {
+            if (sec.includeStone && secSqft > 0) {
               const sr = calcStoneBase({
                 sqft: secSqft,
                 depthIn: area.stoneDepthIn ?? 4,
                 densityTonsPerCy: 1.4,
                 wastePct: sec.wastePct ?? 0,
               });
+              sectionStoneTons.set(sec.id, sr.tonsWithWaste);
               totalStone += sr.tonsWithWaste;
             }
           }

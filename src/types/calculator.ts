@@ -317,6 +317,8 @@ export interface AreaResult {
   stoneTons: number | null;
   stoneDepthIn: number | null;
   stoneTypeName: string | null;
+  /** Per-section stone tons (slab only), keyed by section.id. Computed once in computeArea. */
+  sectionStoneTons?: Map<string, number>;
   // Steps
   volumeEachCy?: number;
 }
