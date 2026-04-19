@@ -1,6 +1,7 @@
 import { useNavigate } from "react-router-dom";
 import { Dialog, DialogContent, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { setAuthIntent, clearAuthIntent } from "@/lib/authIntent";
 
 interface Props {
   open: boolean;
@@ -10,16 +11,26 @@ interface Props {
 export function AccountCreationModal({ open, onClose }: Props) {
   const navigate = useNavigate();
 
+  const handleDismiss = () => {
+    clearAuthIntent();
+    onClose();
+  };
+
+  const handleCreate = () => {
+    setAuthIntent({ redirectTo: "/app", action: "save" });
+    navigate("/auth");
+  };
+
   return (
-    <Dialog open={open} onOpenChange={(o) => !o && onClose()}>
+    <Dialog open={open} onOpenChange={(o) => !o && handleDismiss()}>
       <DialogContent className="bg-card border-border max-w-md">
         <DialogTitle>Create an Account</DialogTitle>
         <DialogDescription className="text-muted-foreground">
           Sign up for a free account to save your projects and access them from any device.
         </DialogDescription>
         <DialogFooter className="flex-col gap-2 sm:flex-row">
-          <Button variant="ghost" onClick={onClose}>Maybe later</Button>
-          <Button onClick={() => navigate("/auth")}>Create Free Account</Button>
+          <Button variant="ghost" onClick={handleDismiss}>Maybe later</Button>
+          <Button onClick={handleCreate}>Create Free Account</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

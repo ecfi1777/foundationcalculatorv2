@@ -1,10 +1,11 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/lib/supabase/client";
 import { lovable } from "@/integrations/lovable/index";
 import { useAuth } from "@/hooks/useAuth";
 import { migrateAnonData, attachReferralIfNeeded } from "@/lib/migrateAnonData";
 import { hasAnonData, captureRefCode } from "@/lib/localStorage";
+import { peekAuthIntent, clearAuthIntent } from "@/lib/authIntent";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -65,19 +66,32 @@ export default function Auth() {
   const [submitting, setSubmitting] = useState(false);
   const [forgotMode, setForgotMode] = useState(false);
   const [forgotEmail, setForgotEmail] = useState("");
+  const successfulAuthRef = useRef(false);
 
   useEffect(() => {
     captureRefCode();
   }, []);
 
+  // Clear intent only on abandoned auth (unmount without successful login).
+  useEffect(() => {
+    return () => {
+      if (!successfulAuthRef.current) {
+        clearAuthIntent();
+      }
+    };
+  }, []);
+
   useEffect(() => {
     if (!loading && user) {
+      successfulAuthRef.current = true;
       const postLogin = async () => {
         await attachReferralIfNeeded(user.id);
         if (hasAnonData()) {
           await migrateAnonData(user.id);
         }
-        navigate("/");
+        // Peek (do not consume) — CalculatorLayout consumes the intent on mount.
+        const dest = peekAuthIntent()?.redirectTo ?? "/";
+        navigate(dest, { replace: true });
       };
       postLogin();
     }
@@ -102,7 +116,7 @@ export default function Auth() {
     const { error } = await supabase.auth.signUp({
       email: signupEmail,
       password: signupPassword,
-      options: { emailRedirectTo: window.location.origin },
+      options: { emailRedirectTo: `${window.location.origin}/auth` },
     });
     setSubmitting(false);
     if (error) {
@@ -129,7 +143,7 @@ export default function Auth() {
 
   const handleGoogleLogin = async () => {
     const { error } = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+      redirect_uri: `${window.location.origin}/auth`,
     });
     if (error) toast.error(String(error));
   };
