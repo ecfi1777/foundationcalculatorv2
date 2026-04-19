@@ -154,22 +154,34 @@ function reducer(state: CalcState, action: Action): CalcState {
       };
     }
     case "ADD_SECTION": {
-      const areas = state.areas.map((a) =>
-        a.id === action.areaId ? { ...a, sections: [...a.sections, action.section] } : a
-      );
+      const areas = state.areas.map((a) => {
+        if (a.id !== action.areaId) return a;
+        const updated = { ...a, sections: [...a.sections, action.section] };
+        // Auto-commit draft if adding this section makes the area valid.
+        // Mirrors the ADD_SEGMENT pattern at lines 107–118.
+        if (a.isDraft && getMissingFields(updated).length === 0) {
+          return { ...updated, isDraft: false };
+        }
+        return updated;
+      });
       return { ...state, areas };
     }
     case "UPDATE_SECTION": {
-      const areas = state.areas.map((a) =>
-        a.id === action.areaId
-          ? {
-              ...a,
-              sections: a.sections.map((s) =>
-                s.id === action.sectionId ? { ...s, ...action.patch } : s
-              ),
-            }
-          : a
-      );
+      const areas = state.areas.map((a) => {
+        if (a.id !== action.areaId) return a;
+        const updated = {
+          ...a,
+          sections: a.sections.map((s) =>
+            s.id === action.sectionId ? { ...s, ...action.patch } : s
+          ),
+        };
+        // Auto-commit draft if this update makes the area valid.
+        // Mirrors the ADD_SEGMENT pattern at lines 107–118.
+        if (a.isDraft && getMissingFields(updated).length === 0) {
+          return { ...updated, isDraft: false };
+        }
+        return updated;
+      });
       return { ...state, areas };
     }
     case "DELETE_SECTION":
