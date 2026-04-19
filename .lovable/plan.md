@@ -1,30 +1,35 @@
 
 
-# Consolidate anon-save onto auth-handoff path
+# Auto-commit drafts in section/dimension calculators
 
-## Two surgical edits
+## Three edits in `src/hooks/useCalculatorState.tsx`
 
-**1. `src/pages/Auth.tsx` (lines 84–98)** — Gate `migrateAnonData` behind `!peekAuthIntent()`. When intent is present, the canonical draft is in sessionStorage and `/app` will hydrate it. Skipping migration prevents the ghost "My Project" that consumes the free-tier slot and forces the resumed save into the paywall.
+Mirror the existing `ADD_SEGMENT` auto-commit pattern (lines 107–118) so slabs, pier pads, cylinders, and steps flip `isDraft: false` the moment they become valid via `getMissingFields(updated).length === 0`.
 
-**2. `src/pages/AppCalculator.tsx` (`WorkspaceShell`, lines 22–69)** — After `consumeDraft` hydrates calculator state, call `consumeAuthIntent()` for authenticated mounts and translate `intent.action` into `setPendingAction({ type: intent.action })`. This re-arms the resume path that `ProjectProvider` lost when it unmounted across `/auth`. Adds imports for `consumeAuthIntent` and `useProject`.
+1. **`UPDATE_AREA`** (lines 91–101) — covers cylinders & steps (dimension-driven).
+2. **`ADD_SECTION`** (lines 151–156) — covers slabs & pier pads when the first valid section is added.
+3. **`UPDATE_SECTION`** (lines 157–169) — covers slabs & pier pads when editing an existing section to validity.
 
-Exact replacement code is in the user's prompt and will be applied verbatim.
+All three use the exact replacement code provided in the prompt.
 
 ## Out of scope (do NOT touch)
-- `src/lib/migrateAnonData.ts`
-- `src/components/calculator/CalculatorLayout.tsx` (including the dead `consumeAuthIntent` import on line 3)
-- `src/hooks/useProject.tsx` (including the `isDraft` filter at line 336)
-- `src/lib/authIntent.ts`, `src/lib/workspaceHandoff.ts`
-- `SaveBanner.tsx`, `AccountCreationModal.tsx` (already correctly stash + set intent)
+- `ADD_SEGMENT` (reference pattern), `SAVE_AREA`, `DELETE_SEGMENT` in the same reducer
+- `getMissingFields` in `src/types/calculator.ts`
+- `saveProject` `isDraft` filter in `src/hooks/useProject.tsx:336`
+- `migrateAnonData.ts`, dead `consumeAuthIntent` import in `CalculatorLayout.tsx:3`
+- All UI components (`QuantitiesPanel`, `CalculatorLayout`, `AreaSelector`, `CalculatorTabBar`, `DraftActionButtons`) — their current `isDraft` reads work correctly with the new behavior
 
-## Verification
-1. Anon → add footing segment → Save → sign up → `/app` shows area + Quantities; exactly one project in DB after name modal; no ghost.
-2. Same as (1) with login to existing account.
-3. Direct `/auth` visit + populated `tfc_calculator_state` + no intent → legacy `migrateAnonData` still runs.
-4. Direct `/auth` login, no anon data → no migration, lands on `/`.
-5. Abandoned auth (back button) → existing `clearAuthIntent` cleanup still fires.
-6. `consumeAuthIntent` called exactly once on resume, after handoff LOAD; sessionStorage key cleared.
-7. Resumed save reaches the project name modal, NOT the paywall.
+## Tests
+Will check `src/lib/calculations/__tests__/` and any reducer tests before editing. If a test encoded the bug as expectation (e.g., asserts `isDraft: true` after a valid `UPDATE_AREA`), I'll flag it in the implementation summary and update it to expect the corrected behavior — not silently rewrite.
 
-Known limitation (separate prompt): slabs/pier pads/cylinders/steps stay `isDraft: true` and `saveProject` line 336 still drops them. Footing flow works because `ADD_SEGMENT` auto-commits.
+## Verification (per prompt)
+1. Slab anon-save → auth → return → persists (primary bug).
+2. Pier pad — same.
+3. Cylinder — same.
+4. Steps — same.
+5. Footing regression — unchanged.
+6. Partial cylinder (diameter only) stays draft, not saved.
+7. Slab section flipped to validity via `UPDATE_SECTION` saves.
+8. Logged-in user adds slab to existing project — upserts cleanly.
+9. No test churn unless a test encoded the bug; flagged if so.
 
