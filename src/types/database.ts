@@ -131,6 +131,7 @@ export interface RebarConfig {
   h_num_rows: number;
   h_overlap_in: number;
   h_waste_pct: number;
+  h_inset_in: number;
   h_total_lf: number;
   v_enabled: boolean;
   v_bar_size: string;
@@ -139,13 +140,25 @@ export interface RebarConfig {
   v_bar_height_in: number;
   v_overlap_in: number;
   v_waste_pct: number;
+  v_inset_in: number;
   v_total_lf: number;
   grid_enabled: boolean;
   grid_bar_size: string;
   grid_spacing_in: number;
   grid_overlap_in: number;
   grid_waste_pct: number;
+  grid_inset_in: number;
   grid_total_lf: number;
+  lbar_enabled: boolean;
+  lbar_bar_size: string | null;
+  lbar_spacing_in: number | null;
+  lbar_vertical_ft: number | null;
+  lbar_vertical_in: number | null;
+  lbar_bend_length_in: number;
+  lbar_overlap_in: number | null;
+  lbar_inset_in: number | null;
+  lbar_waste_pct: number;
+  lbar_total_lf: number;
   created_at: string;
   updated_at: string;
 }
@@ -155,6 +168,7 @@ export interface UserSettings {
   user_id: string;
   active_org_id: string;
   rebar_overlap_in: number;
+  rebar_inset_in: number;
   visible_calculators: string[] | null;
   units: "imperial" | "metric";
   language: "en" | "es";
