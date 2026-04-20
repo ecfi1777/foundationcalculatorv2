@@ -17,7 +17,7 @@ export async function generateCSV(data: ProjectExportData): Promise<void> {
 
   for (const area of data.areas) {
     const rebarTotal = area.rebarEnabled
-      ? (area.rebarHorizLF ?? 0) + (area.rebarVertLF ?? 0) + (area.rebarGridLF ?? 0)
+      ? (area.rebarHorizLF ?? 0) + (area.rebarVertLF ?? 0) + (area.rebarLBarLF ?? 0) + (area.rebarGridLF ?? 0)
       : null;
 
     rows.push([

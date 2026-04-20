@@ -515,6 +515,7 @@ export function ProjectProvider({ children, clearCalculatorOnSignOut = true }: {
                   hTotalLf: t.h_total_lf ?? 0,
                   vTotalLf: t.v_total_lf ?? 0,
                   gridTotalLf: t.grid_total_lf ?? 0,
+                  lbarTotalLf: t.lbar_total_lf ?? 0,
                 };
               }
             }

@@ -75,12 +75,15 @@ function buildAreaHTML(area: AreaExportData): string {
   html += `<div style="border-top:1px solid #ccc;margin:8px 0 4px;"></div>`;
   html += `<div style="font-size:13px;font-weight:600;">Area Total: <span style="font-family:monospace;">${fmtConcrete(area.totalVolumeCY)} yd³</span></div>`;
 
-  // Rebar lines
+  // Rebar lines (order matches QuantitiesPanel: Horiz, Vert, L-Bar, Grid)
   if (area.rebarHorizLF != null && area.rebarHorizLF > 0) {
     html += `<div style="font-size:12px;">Rebar (Horiz ${area.rebarHorizBarSize}): <span style="font-family:monospace;">${fmtRebar(area.rebarHorizLF)} LF</span></div>`;
   }
   if (area.rebarVertLF != null && area.rebarVertLF > 0) {
     html += `<div style="font-size:12px;">Rebar (Vert ${area.rebarVertBarSize}): <span style="font-family:monospace;">${fmtRebar(area.rebarVertLF)} LF</span></div>`;
+  }
+  if (area.rebarLBarLF != null && area.rebarLBarLF > 0) {
+    html += `<div style="font-size:12px;">Rebar (L-Bar ${area.rebarLBarBarSize} @ ${area.rebarLBarSpacingIn}"): <span style="font-family:monospace;">${fmtRebar(area.rebarLBarLF)} LF</span></div>`;
   }
   if (area.rebarGridLF != null && area.rebarGridLF > 0) {
     html += `<div style="font-size:12px;">Rebar Grid (${area.rebarGridBarSize} @ ${area.rebarGridSpacingIn}"): <span style="font-family:monospace;">${fmtRebar(area.rebarGridLF)} LF</span></div>`;
