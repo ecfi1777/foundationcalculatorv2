@@ -443,21 +443,6 @@ export default function Settings() {
                       ))}
                   </div>
 
-                  {/* Invite */}
-                  <span className="text-sm font-medium">Invite Team Member</span>
-                  <div className="flex gap-2">
-                    <Input
-                      type="email"
-                      placeholder="Email address"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                    />
-                    <Button size="sm" onClick={handleSendInvite} disabled={inviteLoading || !inviteEmail}>
-                      {inviteLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                      Send Invite
-                    </Button>
-                  </div>
-
                   {/* Pending invites */}
                   {invites.length > 0 && (
                     <>
