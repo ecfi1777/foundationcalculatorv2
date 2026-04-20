@@ -1,33 +1,49 @@
 
 
-# Replace rebar test suite with v2.3 worked examples
+# Phase 5.1 — Rebar schema migration + server canonical wiring (v2.3)
 
-## Single-file edit: `src/lib/calculations/__tests__/rebar.test.ts`
+## Scope: 4 changes, no UI
 
-Wholesale replace the file. The current tests are pinned to v2.2.1 formulas AND import from the stale local `../rebar` module — both wrong now that prompts 5-1/5-2 landed.
+### 1. New Supabase migration
+Create migration in `supabase/migrations/` adding:
+- `user_settings.rebar_inset_in DECIMAL NOT NULL DEFAULT 3`
+- `rebar_configs.h_inset_in / v_inset_in / grid_inset_in` — all `DECIMAL NOT NULL DEFAULT 3`
+- Full L-Bar column group on `rebar_configs` (10 cols): `lbar_enabled` (NOT NULL DEFAULT FALSE), `lbar_bend_length_in` (NOT NULL DEFAULT 12), `lbar_waste_pct` and `lbar_total_lf` (NOT NULL DEFAULT 0), the rest nullable per spec §12.1
+- Drop + re-add `rebar_configs_element_type_check` to include `'pier_pad'`
 
-The new file:
-- Imports from `@/lib/calculations` (the barrel → `shared/calculations/index.ts`, the live production path).
-- Imports all five symbols: `calcPieceCount`, `calcRebarHorizontal`, `calcRebarVertical`, `calcRebarSlabGrid`, `calcRebarLBar`.
-- Encodes v2.3 Master Spec worked examples verbatim across §8 / §8.9 / §8.10 / §8.11 / §8.12, including:
-  - `calcPieceCount` Scenario B primitive (overlap inside the run)
-  - Horizontal: 15/20/20.5/40/60 ft runs with 3″ inset, multi-row, waste, default-inset, inset=0, oversize-inset, invalid input
-  - Vertical: full-bar charge per position; tall walls (22 ft) splice via Scenario B; default `barLengthFt`, waste, invalid input
-  - Slab Grid: 16×10 @ 18″ → 378 LF / 18 pcs; 50×30 @ 12″ both-axis splice → 3800 LF / 190 pcs; default inset, inset=0, oversize-inset, invalid
-  - L-Bar (NEW): Example 1 (4 ft + 12″ bend → 567 LF / 27 pcs); Example 2 (20 ft + 12″ hook → 1260 LF / 60 pcs); default inset, bend=0 degenerate, oversize-inset, invalid
+Zero rows in `rebar_configs` today, so no backfill concern.
 
-## Out of scope (do NOT touch)
-- All production source under `src/`, `shared/`, `supabase/functions/`
-- Stale local duplicates: `src/lib/calculations/rebar.ts`, `utils.ts`, `types.ts` (separate cleanup prompt)
-- Other test files (`utils.test.ts` etc. — `utils.test.ts` still pins the local stale `calcSpliceOverlap` and must continue to pass unchanged)
-- `vitest.config.ts`, `tsconfig*.json`, `package.json`
+### 2. `src/types/database.ts`
+- Add `h_inset_in`, `v_inset_in`, `grid_inset_in` (number) to `RebarConfig` after each respective `*_waste_pct`
+- Add full L-Bar block to `RebarConfig` before `created_at` (nullables typed `| null` per spec)
+- Add `rebar_inset_in: number` to `UserSettings` after `rebar_overlap_in`
+
+### 3. `src/types/calculator.ts`
+- Extend `RebarElementType` union with `"pier_pad"`
+
+### 4. `supabase/functions/recalculate-project/index.ts`
+- Pass `insetIn: Number(rc.h_inset_in)` to `calcRebarHorizontal` (clean line — corrected per user's self-correction; no bogus duplicate `wastePct`)
+- Pass `insetIn: Number(rc.grid_inset_in)` to `calcRebarSlabGrid`
+- Do NOT touch `calcRebarVertical` call (v2.3 §8.10: vertical ignores inset; column stored for forward compat)
+- Do NOT add an L-Bar compute branch (Phase 7)
+
+Direct `Number(rc.*_inset_in)` — no `|| 3` fallback — because columns are NOT NULL DEFAULT 3 and an explicit `0` is a valid user choice that must be preserved.
+
+## Out of scope (deferred to Phase 7+)
+- All calculator form UI, settings UI, Quantities panel, exports, How-It-Works page
+- `shared/calculations/index.ts` and `supabase/functions/_shared/calculations.ts` (already v2.3 from Phase 5)
+- All test files (rebar.test.ts already at 35/35)
+- L-Bar wiring in recalculate-project
+- Vertical inset wiring
 
 ## Verification
-1. Only `rebar.test.ts` modified.
-2. `grep` shows `from "@/lib/calculations"` (not `../rebar`).
-3. All 5 symbols imported.
-4. `vitest run src/lib/calculations/__tests__/rebar.test.ts` → all green.
-5. Full `vitest run` still passes.
-6. `tsc --noEmit` clean.
-7. Key worked-example numbers present verbatim (Horizontal 40 ft → 60 LF / 3 pcs; Slab 16×10 → 378 LF / 18 pcs; L-Bar Ex1 → 567 LF / 27 pcs; L-Bar Ex2 → 1260 LF / 60 pcs).
+1. New migration file present with all 4 statement blocks.
+2. `information_schema.columns` query confirms `h/v/grid_inset_in` NOT NULL DEFAULT 3 + all 10 `lbar_*` cols.
+3. `user_settings.rebar_inset_in` NOT NULL DEFAULT 3.
+4. `pg_get_constraintdef` for `rebar_configs_element_type_check` includes `'pier_pad'`.
+5. `RebarConfig` and `UserSettings` types updated exactly as specified.
+6. `RebarElementType` includes `'pier_pad'`.
+7. recalculate-project passes `insetIn` to H + grid only; no L-Bar branch added; vertical untouched.
+8. `npm test` still 35/35.
+9. Existing projects load cleanly.
 
