@@ -329,12 +329,19 @@ export interface RebarResult {
   elementType: RebarElementType;
   horizLf: number | null;
   horizBarSize: BarSize | null;
+  horizPiecesTotal: number | null;
   vertLf: number | null;
   vertBarSize: BarSize | null;
   vertLabel: string; // "Dowels" for footing, "Vertical" for wall
+  vertPiecesTotal: number | null;
   gridLf: number | null;
   gridBarSize: BarSize | null;
   gridSpacingIn: number | null;
+  gridPiecesTotal: number | null;
+  lbarLf: number | null;
+  lbarBarSize: BarSize | null;
+  lbarSpacingIn: number | null;
+  lbarPiecesTotal: number | null;
 }
 
 export interface AreaResult {
