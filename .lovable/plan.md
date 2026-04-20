@@ -1,36 +1,33 @@
 
 
-# Port v2.3 rebar engine to edge function shared calc
+# Replace rebar test suite with v2.3 worked examples
 
-## Single-file edit: `supabase/functions/_shared/calculations.ts`
+## Single-file edit: `src/lib/calculations/__tests__/rebar.test.ts`
 
-**CHANGE A** — Replace the four rebar type-declaration blocks (`RebarHorizontalInput/Result`, `RebarVerticalInput/Result`, `RebarSlabGridInput/Result`) with v2.3 versions:
-- Add optional `insetIn?` to Horizontal & Grid inputs (default 3″)
-- Make `barLengthFt?` optional in Vertical input (default 20′)
-- Add `piecesTotal` to all three results
-- Add `splicesPerRow` to Horizontal result
-- Add new `RebarLBarInput` and `RebarLBarResult` interfaces
+Wholesale replace the file. The current tests are pinned to v2.2.1 formulas AND import from the stale local `../rebar` module — both wrong now that prompts 5-1/5-2 landed.
 
-**CHANGE B** — Replace the rebar implementations block:
-- Add new `calcPieceCount` primitive (Scenario B — overlap inside steel run)
-- Rewrite `calcRebarHorizontal`, `calcRebarVertical`, `calcRebarSlabGrid` per v2.3 with inset subtraction (`linearFt − 2 × insetFt`) and piece-count math
-- Add new `calcRebarLBar` per §8.12
-
-This brings the edge-function copy to byte-for-byte parity with the already-updated `shared/calculations/index.ts`, so the upcoming Phase 5.1 recalculate-project migration writes v2.3 values rather than re-baking v2.2.1 numbers.
+The new file:
+- Imports from `@/lib/calculations` (the barrel → `shared/calculations/index.ts`, the live production path).
+- Imports all five symbols: `calcPieceCount`, `calcRebarHorizontal`, `calcRebarVertical`, `calcRebarSlabGrid`, `calcRebarLBar`.
+- Encodes v2.3 Master Spec worked examples verbatim across §8 / §8.9 / §8.10 / §8.11 / §8.12, including:
+  - `calcPieceCount` Scenario B primitive (overlap inside the run)
+  - Horizontal: 15/20/20.5/40/60 ft runs with 3″ inset, multi-row, waste, default-inset, inset=0, oversize-inset, invalid input
+  - Vertical: full-bar charge per position; tall walls (22 ft) splice via Scenario B; default `barLengthFt`, waste, invalid input
+  - Slab Grid: 16×10 @ 18″ → 378 LF / 18 pcs; 50×30 @ 12″ both-axis splice → 3800 LF / 190 pcs; default inset, inset=0, oversize-inset, invalid
+  - L-Bar (NEW): Example 1 (4 ft + 12″ bend → 567 LF / 27 pcs); Example 2 (20 ft + 12″ hook → 1260 LF / 60 pcs); default inset, bend=0 degenerate, oversize-inset, invalid
 
 ## Out of scope (do NOT touch)
-- `shared/calculations/index.ts` (already at v2.3 — parity reference)
-- All of `src/lib/calculations/**`
-- `supabase/functions/recalculate-project/**` (picks up new logic automatically via import; no L-Bar wiring this phase)
-- Any other edge function
-- All non-rebar formulas (`calcFooting`, `calcWall`, `calcGradeBeam`, `calcCurbGutter`, `calcSlabSection`, `calcSlabArea`, `calcPierPad`, `calcCylinder`, `calcSteps`, `calcStoneBase`)
-- `calcSpliceOverlap` (left defined, now unused)
-- `toTotalInches`, `inchesToFeet`, `cubicFtToCy`, `applyWaste`
+- All production source under `src/`, `shared/`, `supabase/functions/`
+- Stale local duplicates: `src/lib/calculations/rebar.ts`, `utils.ts`, `types.ts` (separate cleanup prompt)
+- Other test files (`utils.test.ts` etc. — `utils.test.ts` still pins the local stale `calcSpliceOverlap` and must continue to pass unchanged)
+- `vitest.config.ts`, `tsconfig*.json`, `package.json`
 
 ## Verification
-1. Only `supabase/functions/_shared/calculations.ts` modified.
-2. `grep` for `^export function calcRebar\|^export function calcPieceCount` returns 5 lines.
-3. `calcSpliceOverlap` still exported (1 line).
-4. All v2.3 type fields present (`insetIn?`, `piecesTotal`, `splicesPerRow`, optional `barLengthFt?`, full `RebarLBar*`).
-5. Rebar section diffs clean against `shared/calculations/index.ts`.
+1. Only `rebar.test.ts` modified.
+2. `grep` shows `from "@/lib/calculations"` (not `../rebar`).
+3. All 5 symbols imported.
+4. `vitest run src/lib/calculations/__tests__/rebar.test.ts` → all green.
+5. Full `vitest run` still passes.
+6. `tsc --noEmit` clean.
+7. Key worked-example numbers present verbatim (Horizontal 40 ft → 60 LF / 3 pcs; Slab 16×10 → 378 LF / 18 pcs; L-Bar Ex1 → 567 LF / 27 pcs; L-Bar Ex2 → 1260 LF / 60 pcs).
 
