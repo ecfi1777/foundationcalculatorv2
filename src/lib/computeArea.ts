@@ -10,7 +10,7 @@ import { getElementTypes, makeDefaultRebar } from "@/types/calculator";
 import {
   calcFooting, calcWall, calcGradeBeam, calcCurbGutter,
   calcSlabArea, calcPierPad, calcCylinder, calcSteps,
-  calcRebarHorizontal, calcRebarVertical, calcRebarSlabGrid,
+  calcRebarHorizontal, calcRebarVertical, calcRebarSlabGrid, calcRebarLBar,
   calcStoneBase,
 } from "@/lib/calculations";
 
@@ -25,72 +25,104 @@ export function computeRebarForElement(
     elementType,
     horizLf: null,
     horizBarSize: null,
+    horizPiecesTotal: null,
     vertLf: null,
     vertBarSize: null,
     vertLabel: isFootingElement ? "Dowels" : "Vertical",
+    vertPiecesTotal: null,
     gridLf: null,
     gridBarSize: null,
     gridSpacingIn: null,
+    gridPiecesTotal: null,
+    lbarLf: null,
+    lbarBarSize: null,
+    lbarSpacingIn: null,
+    lbarPiecesTotal: null,
   };
 
   if (elementType === "slab") {
     if (config.gridEnabled && area.sections.length > 0) {
-      if (config.gridTotalLf && config.gridTotalLf > 0) {
-        result.gridLf = config.gridTotalLf;
-      } else {
-        let totalGridLf = 0;
-        for (const sec of area.sections) {
-          const lenFt = sec.lengthFt + sec.lengthIn / 12;
-          const widFt = sec.widthFt + sec.widthIn / 12;
-          if (lenFt > 0 && widFt > 0) {
-            const gr = calcRebarSlabGrid({
-              lengthFt: lenFt,
-              widthFt: widFt,
-              spacingIn: config.gridSpacingIn || 12,
-              overlapIn: config.gridOverlapIn || 12,
-              barLengthFt: 20,
-              wastePct: config.gridWastePct || 0,
-            });
-            totalGridLf += gr.totalWithWasteLf;
-          }
+      // Always compute client-side so piecesTotal is available.
+      // Prefer server canonical LF when populated; fall back to client-computed.
+      let totalGridLf = 0;
+      let totalGridPieces = 0;
+      for (const sec of area.sections) {
+        const lenFt = sec.lengthFt + sec.lengthIn / 12;
+        const widFt = sec.widthFt + sec.widthIn / 12;
+        if (lenFt > 0 && widFt > 0) {
+          const gr = calcRebarSlabGrid({
+            lengthFt: lenFt,
+            widthFt: widFt,
+            spacingIn: config.gridSpacingIn || 12,
+            overlapIn: config.gridOverlapIn || 12,
+            barLengthFt: 20,
+            insetIn: config.gridInsetIn,
+            wastePct: config.gridWastePct || 0,
+          });
+          totalGridLf += gr.totalWithWasteLf;
+          totalGridPieces += gr.piecesTotal;
         }
-        result.gridLf = totalGridLf;
       }
+      result.gridLf = (config.gridTotalLf && config.gridTotalLf > 0)
+        ? config.gridTotalLf
+        : totalGridLf;
+      result.gridPiecesTotal = totalGridPieces;
       result.gridBarSize = config.gridBarSize;
       result.gridSpacingIn = config.gridSpacingIn;
     }
   } else {
     if (totalLinearFt > 0) {
       if (config.hEnabled) {
-        if (config.hTotalLf && config.hTotalLf > 0) {
-          result.horizLf = config.hTotalLf;
-        } else {
-          const hr = calcRebarHorizontal({
-            linearFt: totalLinearFt,
-            numRows: config.hNumRows || 1,
-            overlapIn: config.hOverlapIn || 12,
-            barLengthFt: 20,
-            wastePct: config.hWastePct || 0,
-          });
-          result.horizLf = hr.totalWithWasteLf;
-        }
+        const hr = calcRebarHorizontal({
+          linearFt: totalLinearFt,
+          numRows: config.hNumRows || 1,
+          overlapIn: config.hOverlapIn || 12,
+          barLengthFt: 20,
+          insetIn: config.hInsetIn,
+          wastePct: config.hWastePct || 0,
+        });
+        result.horizLf = (config.hTotalLf && config.hTotalLf > 0)
+          ? config.hTotalLf
+          : hr.totalWithWasteLf;
+        result.horizPiecesTotal = hr.piecesTotal;
         result.horizBarSize = config.hBarSize;
       }
       if (config.vEnabled) {
-        if (config.vTotalLf && config.vTotalLf > 0) {
-          result.vertLf = config.vTotalLf;
-        } else {
-          const vr = calcRebarVertical({
-            linearFt: totalLinearFt,
-            barHeightFt: config.vBarHeightFt || 0,
-            barHeightIn: config.vBarHeightIn || 0,
-            spacingIn: config.vSpacingIn || 12,
-            overlapIn: config.vOverlapIn || 12,
-            wastePct: config.vWastePct || 0,
-          });
-          result.vertLf = vr.totalWithWasteLf;
-        }
+        const vr = calcRebarVertical({
+          linearFt: totalLinearFt,
+          barHeightFt: config.vBarHeightFt || 0,
+          barHeightIn: config.vBarHeightIn || 0,
+          spacingIn: config.vSpacingIn || 12,
+          overlapIn: config.vOverlapIn || 12,
+          wastePct: config.vWastePct || 0,
+        });
+        result.vertLf = (config.vTotalLf && config.vTotalLf > 0)
+          ? config.vTotalLf
+          : vr.totalWithWasteLf;
+        result.vertPiecesTotal = vr.piecesTotal;
         result.vertBarSize = config.vBarSize;
+      }
+      // L-Bar: availability per spec §8.12 is footings/walls/grade_beam/pier_pad.
+      // Pre-7c, no pier pad UI can enable lbarEnabled; pier pads have totalLinearFt=0
+      // so this branch stays inert until 7c wires the pier pad linearFt source.
+      if (config.lbarEnabled) {
+        const lb = calcRebarLBar({
+          linearFt: totalLinearFt,
+          spacingIn: config.lbarSpacingIn || 12,
+          verticalFt: config.lbarVerticalFt || 0,
+          verticalIn: config.lbarVerticalIn || 0,
+          bendLengthIn: config.lbarBendLengthIn || 12,
+          barLengthFt: 20,
+          overlapIn: config.lbarOverlapIn || 12,
+          insetIn: config.lbarInsetIn,
+          wastePct: config.lbarWastePct || 0,
+        });
+        result.lbarLf = (config.lbarTotalLf && config.lbarTotalLf > 0)
+          ? config.lbarTotalLf
+          : lb.totalWithWasteLf;
+        result.lbarPiecesTotal = lb.piecesTotal;
+        result.lbarBarSize = config.lbarBarSize;
+        result.lbarSpacingIn = config.lbarSpacingIn;
       }
     }
   }
@@ -285,7 +317,7 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
   const rebarResults: RebarResult[] = [];
   for (const et of visibleElementTypes) {
     const config = area.rebarConfigs[et];
-    if (config && (config.hEnabled || config.vEnabled || config.gridEnabled)) {
+    if (config && (config.hEnabled || config.vEnabled || config.gridEnabled || config.lbarEnabled)) {
       rebarResults.push(computeRebarForElement(area, et, totalLinearFt));
     }
   }

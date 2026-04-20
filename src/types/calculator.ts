@@ -113,6 +113,7 @@ export interface RebarConfig {
   hBarSize: BarSize;
   hNumRows: number;
   hOverlapIn: number;
+  hInsetIn: number;       // v2.3 NEW
   hWastePct: number;
   hTotalLf?: number;
   // Vertical
@@ -122,6 +123,7 @@ export interface RebarConfig {
   vBarHeightFt: number;
   vBarHeightIn: number;
   vOverlapIn: number;
+  vInsetIn: number;       // v2.3 NEW — persisted for forward compat, no UI input (spec §8.10)
   vWastePct: number;
   vTotalLf?: number;
   // Slab grid
@@ -129,8 +131,20 @@ export interface RebarConfig {
   gridBarSize: BarSize;
   gridSpacingIn: number;
   gridOverlapIn: number;
+  gridInsetIn: number;    // v2.3 NEW
   gridWastePct: number;
   gridTotalLf?: number;
+  // L-Bar (v2.3 NEW — availability per spec §8.12 is footings/walls/grade_beam/pier_pad)
+  lbarEnabled: boolean;
+  lbarBarSize: BarSize;
+  lbarSpacingIn: number;
+  lbarVerticalFt: number;
+  lbarVerticalIn: number;
+  lbarBendLengthIn: number;
+  lbarOverlapIn: number;
+  lbarInsetIn: number;
+  lbarWastePct: number;
+  lbarTotalLf?: number;
 }
 
 export function makeDefaultRebar(elementType: RebarElementType): RebarConfig {
@@ -140,6 +154,7 @@ export function makeDefaultRebar(elementType: RebarElementType): RebarConfig {
     hBarSize: "#4",
     hNumRows: 1,
     hOverlapIn: 12,
+    hInsetIn: 3,
     hWastePct: 0,
     vEnabled: false,
     vBarSize: "#4",
@@ -147,12 +162,24 @@ export function makeDefaultRebar(elementType: RebarElementType): RebarConfig {
     vBarHeightFt: 0,
     vBarHeightIn: 0,
     vOverlapIn: 12,
+    vInsetIn: 3,
     vWastePct: 0,
     gridEnabled: false,
     gridBarSize: "#4",
     gridSpacingIn: 12,
     gridOverlapIn: 12,
+    gridInsetIn: 3,
     gridWastePct: 0,
+    // L-Bar defaults per spec §8.12
+    lbarEnabled: false,
+    lbarBarSize: "#4",
+    lbarSpacingIn: 12,
+    lbarVerticalFt: 0,
+    lbarVerticalIn: 0,
+    lbarBendLengthIn: 12,
+    lbarOverlapIn: 12,
+    lbarInsetIn: 3,
+    lbarWastePct: 0,
   };
 }
 
@@ -162,7 +189,7 @@ export type RebarConfigsMap = Partial<Record<RebarElementType, RebarConfig>>;
 /** Derive rebarEnabled from configs map */
 export function deriveRebarEnabled(configs: RebarConfigsMap): boolean {
   return Object.values(configs).some(
-    (rc) => rc && (rc.hEnabled || rc.vEnabled || rc.gridEnabled)
+    (rc) => rc && (rc.hEnabled || rc.vEnabled || rc.gridEnabled || rc.lbarEnabled)
   );
 }
 
@@ -187,7 +214,7 @@ export function getElementTypes(
     case "slab":
       return ["slab"];
     case "pierPad":
-      return ["footing"];
+      return ["pier_pad"];
     default:
       return [];
   }
@@ -200,6 +227,7 @@ export function calcTypeToElementType(calcType: CalculatorType): RebarElementTyp
     case "gradeBeam": return "grade_beam";
     case "curbGutter": return "curb";
     case "slab": return "slab";
+    case "pierPad": return "pier_pad";
     default: return "footing";
   }
 }
@@ -301,12 +329,19 @@ export interface RebarResult {
   elementType: RebarElementType;
   horizLf: number | null;
   horizBarSize: BarSize | null;
+  horizPiecesTotal: number | null;
   vertLf: number | null;
   vertBarSize: BarSize | null;
   vertLabel: string; // "Dowels" for footing, "Vertical" for wall
+  vertPiecesTotal: number | null;
   gridLf: number | null;
   gridBarSize: BarSize | null;
   gridSpacingIn: number | null;
+  gridPiecesTotal: number | null;
+  lbarLf: number | null;
+  lbarBarSize: BarSize | null;
+  lbarSpacingIn: number | null;
+  lbarPiecesTotal: number | null;
 }
 
 export interface AreaResult {

@@ -289,6 +289,32 @@ function migrateLoadedState(raw: any): CalcState {
         a = { ...rest, rebarConfigs };
       }
 
+      // v2.3 defensive merge: localStorage saved before Phase 7 will be missing
+      // the new inset / L-Bar fields. Spread makeDefaultRebar first so any
+      // undefined field is filled in; existing user-set values win via second spread.
+      // Also normalizes legacy pier_pad rebar keyed under 'footing' (pre-7a behavior):
+      // for pierPad areas, move any 'footing' rebar config under the 'pier_pad' key.
+      if (a.rebarConfigs && typeof a.rebarConfigs === "object") {
+        if (a.type === "pierPad" && (a.rebarConfigs as any).footing && !(a.rebarConfigs as any).pier_pad) {
+          const legacy = (a.rebarConfigs as any).footing as RebarConfig;
+          const { footing: _dropped, ...restCfgs } = a.rebarConfigs as any;
+          a.rebarConfigs = {
+            ...restCfgs,
+            pier_pad: { ...legacy, element_type: "pier_pad" },
+          };
+        }
+        const mergedConfigs: RebarConfigsMap = {};
+        for (const [et, cfg] of Object.entries(a.rebarConfigs)) {
+          if (cfg) {
+            mergedConfigs[et as RebarElementType] = {
+              ...makeDefaultRebar(et as RebarElementType),
+              ...(cfg as RebarConfig),
+            };
+          }
+        }
+        a = { ...a, rebarConfigs: mergedConfigs };
+      }
+
       // Discard ALL draft areas on load. Drafts are uncommitted work-in-progress;
       // navigating away from "/" unmounts CalculatorProvider, which is equivalent
       // to discarding any draft. The auto-provision effect creates a fresh draft
