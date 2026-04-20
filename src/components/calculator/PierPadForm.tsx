@@ -2,7 +2,9 @@ import { useCalculatorState } from "@/hooks/useCalculatorState";
 import { NumberField } from "./NumberField";
 import { SectionEntry } from "./SectionEntry";
 import { AreaSelector } from "./AreaSelector";
+import { RebarAddon } from "./RebarAddon";
 import type { CalcSection } from "@/types/calculator";
+import { makeDefaultRebar } from "@/types/calculator";
 import { generateId } from "@/lib/utils";
 
 export function PierPadForm() {
@@ -42,6 +44,10 @@ export function PierPadForm() {
     dispatch({ type: "ADD_SECTION", areaId: area.id, section });
   };
 
+  // v2.3: Pier pad rebar is L-Bar only per spec §8.12. Element_type = "pier_pad".
+  const pierPadRebar = area?.rebarConfigs?.pier_pad ?? makeDefaultRebar("pier_pad");
+  const rebarEnabled = pierPadRebar.lbarEnabled;
+
   return (
     <div className="space-y-4">
       <AreaSelector
@@ -76,6 +82,29 @@ export function PierPadForm() {
             onAdd={addSection}
             onUpdate={(id, patch) => dispatch({ type: "UPDATE_SECTION", areaId: area.id, sectionId: id, patch })}
             onDelete={(id) => dispatch({ type: "DELETE_SECTION", areaId: area.id, sectionId: id })}
+          />
+
+          <RebarAddon
+            enabled={rebarEnabled}
+            config={pierPadRebar}
+            onToggle={(v) =>
+              dispatch({
+                type: "UPDATE_REBAR",
+                areaId: area.id,
+                elementType: "pier_pad",
+                rebar: { lbarEnabled: v },
+              })
+            }
+            onChange={(patch) =>
+              dispatch({
+                type: "UPDATE_REBAR",
+                areaId: area.id,
+                elementType: "pier_pad",
+                rebar: patch,
+              })
+            }
+            mode="lbar_only"
+            sectionLabel="Add Rebar"
           />
         </>
       )}

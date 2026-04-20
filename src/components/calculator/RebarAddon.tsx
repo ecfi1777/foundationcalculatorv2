@@ -11,7 +11,7 @@ interface RebarAddonProps {
   config: RebarConfig;
   onToggle: (v: boolean) => void;
   onChange: (patch: Partial<RebarConfig>) => void;
-  mode: "linear" | "slab";
+  mode: "linear" | "slab" | "lbar_only";
   /** Label for the section, e.g. "Footing Rebar" or "Wall Rebar" */
   sectionLabel?: string;
   /** Label for vertical rebar, "Dowels" for footings, "Vertical" for walls */
@@ -151,6 +151,25 @@ export function RebarAddon({
               )}
             </div>
           )}
+        </div>
+      )}
+
+      {enabled && mode === "lbar_only" && (
+        <div className="grid grid-cols-2 gap-3 pt-1">
+          <BarSizeSelect value={config.lbarBarSize} onChange={(v) => onChange({ lbarBarSize: v })} />
+          <NumberField label="Spacing" suffix="in" value={config.lbarSpacingIn} onChange={(v) => onChange({ lbarSpacingIn: v })} min={1} />
+          <NumberField
+            label="Vertical"
+            suffix="ft"
+            value={config.lbarVerticalFt}
+            onChange={(v) => onChange({ lbarVerticalFt: v })}
+            infoIcon={<FieldInfoIcon content={HOLD_DOWN_INFO_CONTENT} title="Vertical Leg Note" />}
+          />
+          <NumberField label="Vertical" suffix="in" value={config.lbarVerticalIn} onChange={(v) => onChange({ lbarVerticalIn: v })} />
+          <NumberField label="Bend Length" suffix="in" value={config.lbarBendLengthIn} onChange={(v) => onChange({ lbarBendLengthIn: v })} />
+          <NumberField label="Overlap" suffix="in" value={config.lbarOverlapIn} onChange={(v) => onChange({ lbarOverlapIn: v })} />
+          <NumberField label="Inset" suffix="in" value={config.lbarInsetIn} onChange={(v) => onChange({ lbarInsetIn: v })} />
+          <NumberField label="Waste" suffix="%" value={config.lbarWastePct} onChange={(v) => onChange({ lbarWastePct: v })} />
         </div>
       )}
 
