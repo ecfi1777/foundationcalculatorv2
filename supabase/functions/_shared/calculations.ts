@@ -144,12 +144,19 @@ export interface RebarHorizontalInput {
   numRows: number;
   overlapIn: number;
   barLengthFt: number;
+  /** v2.3: inset from each end of the run, in inches. Optional — defaults to 3 when undefined.
+   *  Subtracted 2× from linearFt to produce the steel run used in splice math. */
+  insetIn?: number;
   wastePct: number;
 }
 
 export interface RebarHorizontalResult {
   totalLf: number;
   totalWithWasteLf: number;
+  /** v2.3: total sticks across all rows = n × numRows. */
+  piecesTotal: number;
+  /** v2.3: splices in a single row = n − 1, clamped at 0. */
+  splicesPerRow: number;
 }
 
 export interface RebarVerticalInput {
@@ -158,6 +165,8 @@ export interface RebarVerticalInput {
   barHeightIn: number;
   spacingIn: number;
   overlapIn: number;
+  /** v2.3: standard bar length in feet. Optional — defaults to 20 when undefined. */
+  barLengthFt?: number;
   wastePct: number;
 }
 
@@ -165,6 +174,8 @@ export interface RebarVerticalResult {
   numBars: number;
   totalLf: number;
   totalWithWasteLf: number;
+  /** v2.3: total sticks across all vertical positions = numBars × pieces-per-position. */
+  piecesTotal: number;
 }
 
 export interface RebarSlabGridInput {
@@ -173,6 +184,9 @@ export interface RebarSlabGridInput {
   spacingIn: number;
   overlapIn: number;
   barLengthFt: number;
+  /** v2.3: inset from each edge, in inches. Optional — defaults to 3 when undefined.
+   *  Applied to BOTH axes (reduces usable placement span AND steel run per bar). */
+  insetIn?: number;
   wastePct: number;
 }
 
@@ -181,6 +195,42 @@ export interface RebarSlabGridResult {
   barsWidthwise: number;
   totalLf: number;
   totalWithWasteLf: number;
+  /** v2.3: total sticks = (barsLengthwise × n_lw) + (barsWidthwise × n_ww). */
+  piecesTotal: number;
+}
+
+export interface RebarLBarInput {
+  /** Linear feet of the run (segment sum for footings/walls/grade beams, equivalent dim for pier pads). */
+  linearFt: number;
+  /** On-center spacing along the run, in inches. */
+  spacingIn: number;
+  /** Vertical leg length — whole feet. */
+  verticalFt: number;
+  /** Vertical leg length — remaining inches. */
+  verticalIn: number;
+  /** 90° bend/hook length in inches. UI pre-fills 12″, editable per-area. */
+  bendLengthIn: number;
+  /** Standard bar length in feet (typically 20). */
+  barLengthFt: number;
+  /** Splice overlap in inches. */
+  overlapIn: number;
+  /** Inset along the run, in inches. Optional — defaults to 3. */
+  insetIn?: number;
+  /** Waste percentage (0–100). */
+  wastePct: number;
+}
+
+export interface RebarLBarResult {
+  /** Number of L-bar positions along the run (post-inset, floor+1). */
+  numLBars: number;
+  /** Pieces per individual L-bar (1 normally; 2+ if vertical leg + bend exceeds a standard bar). */
+  piecesPerLBar: number;
+  /** Linear feet ordered per individual L-bar = piecesPerLBar × barLengthFt. */
+  lfPerLBar: number;
+  totalLf: number;
+  totalWithWasteLf: number;
+  /** Total sticks = numLBars × piecesPerLBar. */
+  piecesTotal: number;
 }
 
 export interface StoneBaseInput {
@@ -371,53 +421,139 @@ export function calcSteps(input: StepsInput): StepsResult {
   return { volumeCy, volumeWithWasteCy };
 }
 
-// ── Rebar Calculators ─────────────────────────────────
+// ── Rebar Calculators (v2.3) ──────────────────────────
+
+/**
+ * Scenario B piece count — overlap is INSIDE the steel run, not additive.
+ * Two 20 ft bars with 12″ overlap cover 39 ft, not 41 ft.
+ *
+ * @returns 0 for invalid input, 1 when the run fits in one bar, else
+ *          ceil((steelRunFt − overlapFt) / (barLengthFt − overlapFt)).
+ */
+export function calcPieceCount(
+  steelRunFt: number,
+  barLengthFt: number,
+  overlapFt: number
+): number {
+  if (steelRunFt <= 0 || barLengthFt <= 0) return 0;
+  if (steelRunFt <= barLengthFt) return 1;
+  const denom = barLengthFt - overlapFt;
+  if (denom <= 0) return 1;
+  return Math.ceil((steelRunFt - overlapFt) / denom);
+}
 
 export function calcRebarHorizontal(input: RebarHorizontalInput): RebarHorizontalResult {
-  if (input.linearFt <= 0 || input.numRows <= 0 || input.barLengthFt <= 0) {
-    return { totalLf: 0, totalWithWasteLf: 0 };
-  }
-  // Splices only when 2+ bars required (corrects prior FLOOR-based spec).
-  const numSplices = Math.max(Math.ceil(input.linearFt / input.barLengthFt) - 1, 0);
-  const overlapLf = numSplices * inchesToFeet(input.overlapIn) * input.numRows;
-  const totalLf = (input.linearFt * input.numRows) + overlapLf;
+  const ZERO: RebarHorizontalResult = { totalLf: 0, totalWithWasteLf: 0, piecesTotal: 0, splicesPerRow: 0 };
+  if (input.linearFt <= 0 || input.numRows <= 0 || input.barLengthFt <= 0) return { ...ZERO };
+
+  const insetFt = inchesToFeet(input.insetIn ?? 3);
+  const overlapFt = inchesToFeet(input.overlapIn);
+  const steelRunFt = input.linearFt - 2 * insetFt;
+  if (steelRunFt <= 0) return { ...ZERO };
+
+  const n = calcPieceCount(steelRunFt, input.barLengthFt, overlapFt);
+  const lfPerRow = n * input.barLengthFt;
+  const totalLf = lfPerRow * input.numRows;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
-  return { totalLf, totalWithWasteLf };
+
+  return {
+    totalLf,
+    totalWithWasteLf,
+    piecesTotal: n * input.numRows,
+    splicesPerRow: Math.max(n - 1, 0),
+  };
 }
 
 export function calcRebarVertical(input: RebarVerticalInput): RebarVerticalResult {
-  if (input.linearFt <= 0 || input.spacingIn <= 0) {
-    return { numBars: 0, totalLf: 0, totalWithWasteLf: 0 };
-  }
-  const numBars = Math.floor(input.linearFt * 12 / input.spacingIn) + 1;
+  const ZERO: RebarVerticalResult = { numBars: 0, totalLf: 0, totalWithWasteLf: 0, piecesTotal: 0 };
+  if (input.linearFt <= 0 || input.spacingIn <= 0) return { ...ZERO };
+
+  const barLengthFt = input.barLengthFt ?? 20;
+  if (barLengthFt <= 0) return { ...ZERO };
+
   const barHeightFt = input.barHeightFt + inchesToFeet(input.barHeightIn);
-  if (barHeightFt <= 0) return { numBars: 0, totalLf: 0, totalWithWasteLf: 0 };
-  const totalLf = numBars * barHeightFt;
+  if (barHeightFt <= 0) return { ...ZERO };
+
+  const overlapFt = inchesToFeet(input.overlapIn);
+  const numBars = Math.floor((input.linearFt * 12) / input.spacingIn) + 1;
+  const nPer = calcPieceCount(barHeightFt, barLengthFt, overlapFt);
+  const lfPerPosition = nPer * barLengthFt;
+  const totalLf = numBars * lfPerPosition;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
-  return { numBars, totalLf, totalWithWasteLf };
+
+  return {
+    numBars,
+    totalLf,
+    totalWithWasteLf,
+    piecesTotal: numBars * nPer,
+  };
 }
 
 export function calcRebarSlabGrid(input: RebarSlabGridInput): RebarSlabGridResult {
+  const ZERO: RebarSlabGridResult = {
+    barsLengthwise: 0, barsWidthwise: 0,
+    totalLf: 0, totalWithWasteLf: 0, piecesTotal: 0,
+  };
   if (input.lengthFt <= 0 || input.widthFt <= 0 || input.spacingIn <= 0 || input.barLengthFt <= 0) {
-    return { barsLengthwise: 0, barsWidthwise: 0, totalLf: 0, totalWithWasteLf: 0 };
+    return { ...ZERO };
   }
 
-  const lengthIn = input.lengthFt * 12;
-  const widthIn = input.widthFt * 12;
+  const insetFt = inchesToFeet(input.insetIn ?? 3);
+  const overlapFt = inchesToFeet(input.overlapIn);
+  const spacingFt = input.spacingIn / 12;
 
-  const barsLengthwise = Math.floor(widthIn / input.spacingIn) + 1;
-  const barsWidthwise = Math.floor(lengthIn / input.spacingIn) + 1;
+  const lSteelLength = input.lengthFt - 2 * insetFt;
+  const wSteelWidth = input.widthFt - 2 * insetFt;
+  if (lSteelLength <= 0 || wSteelWidth <= 0) return { ...ZERO };
 
-  const spliceLength = calcSpliceOverlap(input.lengthFt, input.barLengthFt, input.overlapIn);
-  const lfLengthwise = barsLengthwise * (input.lengthFt + spliceLength);
+  const barsLengthwise = Math.floor(wSteelWidth / spacingFt) + 1;
+  const barsWidthwise  = Math.floor(lSteelLength / spacingFt) + 1;
 
-  const spliceWidth = calcSpliceOverlap(input.widthFt, input.barLengthFt, input.overlapIn);
-  const lfWidthwise = barsWidthwise * (input.widthFt + spliceWidth);
+  const nLw = calcPieceCount(lSteelLength, input.barLengthFt, overlapFt);
+  const nWw = calcPieceCount(wSteelWidth,  input.barLengthFt, overlapFt);
+
+  const lfLengthwise = barsLengthwise * nLw * input.barLengthFt;
+  const lfWidthwise  = barsWidthwise  * nWw * input.barLengthFt;
 
   const totalLf = lfLengthwise + lfWidthwise;
   const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
+  const piecesTotal = (barsLengthwise * nLw) + (barsWidthwise * nWw);
 
-  return { barsLengthwise, barsWidthwise, totalLf, totalWithWasteLf };
+  return { barsLengthwise, barsWidthwise, totalLf, totalWithWasteLf, piecesTotal };
+}
+
+export function calcRebarLBar(input: RebarLBarInput): RebarLBarResult {
+  const ZERO: RebarLBarResult = {
+    numLBars: 0, piecesPerLBar: 0, lfPerLBar: 0,
+    totalLf: 0, totalWithWasteLf: 0, piecesTotal: 0,
+  };
+  if (input.linearFt <= 0 || input.spacingIn <= 0 || input.barLengthFt <= 0) return { ...ZERO };
+
+  const insetFt = inchesToFeet(input.insetIn ?? 3);
+  const overlapFt = inchesToFeet(input.overlapIn);
+  const bendFt = inchesToFeet(input.bendLengthIn);
+  const verticalFt = input.verticalFt + inchesToFeet(input.verticalIn);
+
+  const totalSteelPerLBar = verticalFt + bendFt;
+  if (totalSteelPerLBar <= 0) return { ...ZERO };
+
+  const lPlacement = input.linearFt - 2 * insetFt;
+  if (lPlacement <= 0) return { ...ZERO };
+
+  const numLBars = Math.floor((lPlacement * 12) / input.spacingIn) + 1;
+  const piecesPerLBar = calcPieceCount(totalSteelPerLBar, input.barLengthFt, overlapFt);
+  const lfPerLBar = piecesPerLBar * input.barLengthFt;
+  const totalLf = numLBars * lfPerLBar;
+  const totalWithWasteLf = applyWaste(totalLf, input.wastePct);
+
+  return {
+    numLBars,
+    piecesPerLBar,
+    lfPerLBar,
+    totalLf,
+    totalWithWasteLf,
+    piecesTotal: numLBars * piecesPerLBar,
+  };
 }
 
 // ── Stone Base ────────────────────────────────────────
