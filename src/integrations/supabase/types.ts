@@ -498,22 +498,35 @@ export type Database = {
           element_type: string
           grid_bar_size: string
           grid_enabled: boolean
+          grid_inset_in: number
           grid_overlap_in: number
           grid_spacing_in: number
           grid_total_lf: number
           grid_waste_pct: number
           h_bar_size: string
           h_enabled: boolean
+          h_inset_in: number
           h_num_rows: number
           h_overlap_in: number
           h_total_lf: number
           h_waste_pct: number
           id: string
+          lbar_bar_size: string | null
+          lbar_bend_length_in: number
+          lbar_enabled: boolean
+          lbar_inset_in: number | null
+          lbar_overlap_in: number | null
+          lbar_spacing_in: number | null
+          lbar_total_lf: number
+          lbar_vertical_ft: number | null
+          lbar_vertical_in: number | null
+          lbar_waste_pct: number
           updated_at: string
           v_bar_height_ft: number
           v_bar_height_in: number
           v_bar_size: string
           v_enabled: boolean
+          v_inset_in: number
           v_overlap_in: number
           v_spacing_in: number
           v_total_lf: number
@@ -525,22 +538,35 @@ export type Database = {
           element_type?: string
           grid_bar_size?: string
           grid_enabled?: boolean
+          grid_inset_in?: number
           grid_overlap_in?: number
           grid_spacing_in?: number
           grid_total_lf?: number
           grid_waste_pct?: number
           h_bar_size?: string
           h_enabled?: boolean
+          h_inset_in?: number
           h_num_rows?: number
           h_overlap_in?: number
           h_total_lf?: number
           h_waste_pct?: number
           id?: string
+          lbar_bar_size?: string | null
+          lbar_bend_length_in?: number
+          lbar_enabled?: boolean
+          lbar_inset_in?: number | null
+          lbar_overlap_in?: number | null
+          lbar_spacing_in?: number | null
+          lbar_total_lf?: number
+          lbar_vertical_ft?: number | null
+          lbar_vertical_in?: number | null
+          lbar_waste_pct?: number
           updated_at?: string
           v_bar_height_ft?: number
           v_bar_height_in?: number
           v_bar_size?: string
           v_enabled?: boolean
+          v_inset_in?: number
           v_overlap_in?: number
           v_spacing_in?: number
           v_total_lf?: number
@@ -552,22 +578,35 @@ export type Database = {
           element_type?: string
           grid_bar_size?: string
           grid_enabled?: boolean
+          grid_inset_in?: number
           grid_overlap_in?: number
           grid_spacing_in?: number
           grid_total_lf?: number
           grid_waste_pct?: number
           h_bar_size?: string
           h_enabled?: boolean
+          h_inset_in?: number
           h_num_rows?: number
           h_overlap_in?: number
           h_total_lf?: number
           h_waste_pct?: number
           id?: string
+          lbar_bar_size?: string | null
+          lbar_bend_length_in?: number
+          lbar_enabled?: boolean
+          lbar_inset_in?: number | null
+          lbar_overlap_in?: number | null
+          lbar_spacing_in?: number | null
+          lbar_total_lf?: number
+          lbar_vertical_ft?: number | null
+          lbar_vertical_in?: number | null
+          lbar_waste_pct?: number
           updated_at?: string
           v_bar_height_ft?: number
           v_bar_height_in?: number
           v_bar_size?: string
           v_enabled?: boolean
+          v_inset_in?: number
           v_overlap_in?: number
           v_spacing_in?: number
           v_total_lf?: number
@@ -857,6 +896,7 @@ export type Database = {
           created_at: string
           id: string
           language: string
+          rebar_inset_in: number
           rebar_overlap_in: number
           units: string
           updated_at: string
@@ -868,6 +908,7 @@ export type Database = {
           created_at?: string
           id?: string
           language?: string
+          rebar_inset_in?: number
           rebar_overlap_in?: number
           units?: string
           updated_at?: string
@@ -879,6 +920,7 @@ export type Database = {
           created_at?: string
           id?: string
           language?: string
+          rebar_inset_in?: number
           rebar_overlap_in?: number
           units?: string
           updated_at?: string
