@@ -81,7 +81,7 @@ export function CurbGutterForm() {
   };
 
   const rebarConfig = area?.rebarConfigs?.curb ?? makeDefaultRebar("curb");
-  const rebarEnabled = rebarConfig.hEnabled || rebarConfig.vEnabled || rebarConfig.gridEnabled;
+  const rebarEnabled = rebarConfig.hEnabled || rebarConfig.vEnabled || rebarConfig.gridEnabled || rebarConfig.lbarEnabled;
 
   return (
     <div className="space-y-4">
