@@ -47,6 +47,10 @@ export interface AreaExportData {
   rebarVertLF: number | null;
   rebarVertBarSize: string | null;
 
+  rebarLBarLF: number | null;
+  rebarLBarBarSize: string | null;
+  rebarLBarSpacingIn: number | null;
+
   rebarGridLF: number | null;
   rebarGridBarSize: string | null;
   rebarGridSpacingIn: number | null;

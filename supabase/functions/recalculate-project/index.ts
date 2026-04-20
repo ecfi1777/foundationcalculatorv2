@@ -14,6 +14,7 @@ import {
   calcRebarHorizontal,
   calcRebarVertical,
   calcRebarSlabGrid,
+  calcRebarLBar,
 } from "../_shared/calculations.ts";
 
 const corsHeaders = {
@@ -226,6 +227,7 @@ Deno.serve(async (req) => {
         let h_total_lf = 0;
         let v_total_lf = 0;
         let grid_total_lf = 0;
+        let lbar_total_lf = 0;
 
         if (et === "slab") {
           // Grid rebar for slab
@@ -273,6 +275,40 @@ Deno.serve(async (req) => {
             });
             v_total_lf = vr.totalWithWasteLf;
           }
+
+          // L-Bar — availability per spec §8.12: footings, walls, grade_beam, pier_pad.
+          // Source of linearFt varies:
+          //   - footings / walls / grade_beam: segment-sum totalLinearFt
+          //   - pier_pad: Σ perimeter × quantity across sections (mirrors computeArea.ts)
+          if (rc.lbar_enabled) {
+            let lbarLinearFt = totalLinearFt;
+            if (et === "pier_pad" && area.calculator_type === "pier_pad") {
+              const qty = Number(dims.quantity) || 1;
+              let totalPerim = 0;
+              for (const sec of areaSections) {
+                const lenFt = Number(sec.length_ft) + Number(sec.length_in) / 12;
+                const widFt = Number(sec.width_ft) + Number(sec.width_in) / 12;
+                if (lenFt > 0 && widFt > 0) {
+                  totalPerim += 2 * (lenFt + widFt);
+                }
+              }
+              lbarLinearFt = totalPerim * qty;
+            }
+            if (lbarLinearFt > 0) {
+              const lb = calcRebarLBar({
+                linearFt: lbarLinearFt,
+                spacingIn: Number(rc.lbar_spacing_in) || 12,
+                verticalFt: Number(rc.lbar_vertical_ft) || 0,
+                verticalIn: Number(rc.lbar_vertical_in) || 0,
+                bendLengthIn: Number(rc.lbar_bend_length_in) || 12,
+                barLengthFt: 20,
+                overlapIn: Number(rc.lbar_overlap_in) || 12,
+                insetIn: Number(rc.lbar_inset_in),
+                wastePct: Number(rc.lbar_waste_pct) || 0,
+              });
+              lbar_total_lf = lb.totalWithWasteLf;
+            }
+          }
         }
 
         // Update rebar_configs row
@@ -282,11 +318,12 @@ Deno.serve(async (req) => {
             h_total_lf: h_total_lf,
             v_total_lf: v_total_lf,
             grid_total_lf: grid_total_lf,
+            lbar_total_lf: lbar_total_lf,
           })
           .eq("area_id", area.id)
           .eq("element_type", et);
 
-        rebarOutput[et] = { h_total_lf, v_total_lf, grid_total_lf };
+        rebarOutput[et] = { h_total_lf, v_total_lf, grid_total_lf, lbar_total_lf };
       }
 
       updatedAreas.push({

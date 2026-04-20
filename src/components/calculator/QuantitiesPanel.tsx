@@ -74,7 +74,7 @@ export function QuantitiesPanel({ onEditArea }: QuantitiesPanelProps) {
       concreteCy += r.totalWithWasteCy;
       stoneTons += r.stoneTons ?? 0;
       for (const rr of r.rebarResults) {
-        rebarLf += (rr.horizLf ?? 0) + (rr.vertLf ?? 0) + (rr.gridLf ?? 0);
+        rebarLf += (rr.horizLf ?? 0) + (rr.vertLf ?? 0) + (rr.gridLf ?? 0) + (rr.lbarLf ?? 0);
       }
     }
     return { concreteCy, stoneTons, rebarLf };
@@ -185,6 +185,9 @@ export function QuantitiesPanel({ onEditArea }: QuantitiesPanelProps) {
                           </span>
                           <span className="font-mono text-foreground">
                             {Math.round(rr.horizLf).toLocaleString()} LF
+                            {rr.horizPiecesTotal !== null && rr.horizPiecesTotal > 0 && (
+                              <span className="text-muted-foreground"> · {rr.horizPiecesTotal} pcs</span>
+                            )}
                           </span>
                         </div>
                       )}
@@ -195,6 +198,22 @@ export function QuantitiesPanel({ onEditArea }: QuantitiesPanelProps) {
                           </span>
                           <span className="font-mono text-foreground">
                             {Math.round(rr.vertLf).toLocaleString()} LF
+                            {rr.vertPiecesTotal !== null && rr.vertPiecesTotal > 0 && (
+                              <span className="text-muted-foreground"> · {rr.vertPiecesTotal} pcs</span>
+                            )}
+                          </span>
+                        </div>
+                      )}
+                      {rr.lbarLf !== null && rr.lbarLf > 0 && (
+                        <div className="flex justify-between text-sm">
+                          <span className="text-muted-foreground">
+                            {prefix}L-Bar ({rr.lbarBarSize} @ {rr.lbarSpacingIn}"):
+                          </span>
+                          <span className="font-mono text-foreground">
+                            {Math.round(rr.lbarLf).toLocaleString()} LF
+                            {rr.lbarPiecesTotal !== null && rr.lbarPiecesTotal > 0 && (
+                              <span className="text-muted-foreground"> · {rr.lbarPiecesTotal} pcs</span>
+                            )}
                           </span>
                         </div>
                       )}
@@ -205,6 +224,9 @@ export function QuantitiesPanel({ onEditArea }: QuantitiesPanelProps) {
                           </span>
                           <span className="font-mono text-foreground">
                             {Math.round(rr.gridLf).toLocaleString()} LF
+                            {rr.gridPiecesTotal !== null && rr.gridPiecesTotal > 0 && (
+                              <span className="text-muted-foreground"> · {rr.gridPiecesTotal} pcs</span>
+                            )}
                           </span>
                         </div>
                       )}

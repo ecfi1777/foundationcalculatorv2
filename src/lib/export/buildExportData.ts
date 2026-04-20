@@ -106,6 +106,9 @@ export function buildExportData(
     let rebarHorizBarSize: string | null = null;
     let rebarVertLF: number | null = null;
     let rebarVertBarSize: string | null = null;
+    let rebarLBarLF: number | null = null;
+    let rebarLBarBarSize: string | null = null;
+    let rebarLBarSpacingIn: number | null = null;
     let rebarGridLF: number | null = null;
     let rebarGridBarSize: string | null = null;
     let rebarGridSpacingIn: number | null = null;
@@ -119,6 +122,11 @@ export function buildExportData(
         rebarVertLF = (rebarVertLF ?? 0) + rr.vertLf;
         rebarVertBarSize = rr.vertBarSize;
       }
+      if (rr.lbarLf !== null) {
+        rebarLBarLF = (rebarLBarLF ?? 0) + rr.lbarLf;
+        rebarLBarBarSize = rr.lbarBarSize;
+        rebarLBarSpacingIn = rr.lbarSpacingIn;
+      }
       if (rr.gridLf !== null) {
         rebarGridLF = (rebarGridLF ?? 0) + rr.gridLf;
         rebarGridBarSize = rr.gridBarSize;
@@ -126,7 +134,7 @@ export function buildExportData(
       }
     }
 
-    const areaRebarTotal = (rebarHorizLF ?? 0) + (rebarVertLF ?? 0) + (rebarGridLF ?? 0);
+    const areaRebarTotal = (rebarHorizLF ?? 0) + (rebarVertLF ?? 0) + (rebarLBarLF ?? 0) + (rebarGridLF ?? 0);
     const areaHasRebar = areaRebarTotal > 0;
 
     if (areaHasRebar) {
@@ -164,6 +172,9 @@ export function buildExportData(
       rebarHorizBarSize,
       rebarVertLF: rebarVertLF,
       rebarVertBarSize,
+      rebarLBarLF: rebarLBarLF,
+      rebarLBarBarSize,
+      rebarLBarSpacingIn,
       rebarGridLF: rebarGridLF,
       rebarGridBarSize,
       rebarGridSpacingIn,
