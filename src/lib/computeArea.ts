@@ -71,6 +71,25 @@ export function computeRebarForElement(
       result.gridSpacingIn = config.gridSpacingIn;
     }
   } else {
+    // v2.3 (Phase 7c): L-Bar linearFt source depends on area type.
+    // Footings/walls/gradeBeam/curb use segment-based totalLinearFt.
+    // Pier pads have no segments — spec §8.12 "equivalent dimension" interpreted as
+    // Σ(perimeter × quantity) across sections (L-bars wrap each pad's perimeter).
+    let lbarLinearFt = totalLinearFt;
+    if (area.type === "pierPad" && elementType === "pier_pad") {
+      const qty = area.dimensions.quantity ?? 1;
+      const fracMap: Record<string, number> = { "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 };
+      let totalPerim = 0;
+      for (const sec of area.sections) {
+        const lenFt = sec.lengthFt + (sec.lengthIn + (fracMap[sec.lengthFraction] ?? 0)) / 12;
+        const widFt = sec.widthFt + (sec.widthIn + (fracMap[sec.widthFraction] ?? 0)) / 12;
+        if (lenFt > 0 && widFt > 0) {
+          totalPerim += 2 * (lenFt + widFt);
+        }
+      }
+      lbarLinearFt = totalPerim * qty;
+    }
+
     if (totalLinearFt > 0) {
       if (config.hEnabled) {
         const hr = calcRebarHorizontal({
@@ -102,28 +121,28 @@ export function computeRebarForElement(
         result.vertPiecesTotal = vr.piecesTotal;
         result.vertBarSize = config.vBarSize;
       }
-      // L-Bar: availability per spec §8.12 is footings/walls/grade_beam/pier_pad.
-      // Pre-7c, no pier pad UI can enable lbarEnabled; pier pads have totalLinearFt=0
-      // so this branch stays inert until 7c wires the pier pad linearFt source.
-      if (config.lbarEnabled) {
-        const lb = calcRebarLBar({
-          linearFt: totalLinearFt,
-          spacingIn: config.lbarSpacingIn || 12,
-          verticalFt: config.lbarVerticalFt || 0,
-          verticalIn: config.lbarVerticalIn || 0,
-          bendLengthIn: config.lbarBendLengthIn || 12,
-          barLengthFt: 20,
-          overlapIn: config.lbarOverlapIn || 12,
-          insetIn: config.lbarInsetIn,
-          wastePct: config.lbarWastePct || 0,
-        });
-        result.lbarLf = (config.lbarTotalLf && config.lbarTotalLf > 0)
-          ? config.lbarTotalLf
-          : lb.totalWithWasteLf;
-        result.lbarPiecesTotal = lb.piecesTotal;
-        result.lbarBarSize = config.lbarBarSize;
-        result.lbarSpacingIn = config.lbarSpacingIn;
-      }
+    }
+
+    // L-Bar has its own gate: uses area-specific lbarLinearFt (perimeter-based for
+    // pier pads; equal to totalLinearFt otherwise).
+    if (config.lbarEnabled && lbarLinearFt > 0) {
+      const lb = calcRebarLBar({
+        linearFt: lbarLinearFt,
+        spacingIn: config.lbarSpacingIn || 12,
+        verticalFt: config.lbarVerticalFt || 0,
+        verticalIn: config.lbarVerticalIn || 0,
+        bendLengthIn: config.lbarBendLengthIn || 12,
+        barLengthFt: 20,
+        overlapIn: config.lbarOverlapIn || 12,
+        insetIn: config.lbarInsetIn,
+        wastePct: config.lbarWastePct || 0,
+      });
+      result.lbarLf = (config.lbarTotalLf && config.lbarTotalLf > 0)
+        ? config.lbarTotalLf
+        : lb.totalWithWasteLf;
+      result.lbarPiecesTotal = lb.piecesTotal;
+      result.lbarBarSize = config.lbarBarSize;
+      result.lbarSpacingIn = config.lbarSpacingIn;
     }
   }
 
