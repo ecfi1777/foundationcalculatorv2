@@ -241,6 +241,7 @@ Deno.serve(async (req) => {
                   spacingIn: Number(rc.grid_spacing_in) || 12,
                   overlapIn: Number(rc.grid_overlap_in) || 12,
                   barLengthFt: 20,
+                  insetIn: Number(rc.grid_inset_in),
                   wastePct: Number(rc.grid_waste_pct) || 0,
                 });
                 totalGridLf += gr.totalWithWasteLf;
@@ -256,6 +257,7 @@ Deno.serve(async (req) => {
               numRows: Number(rc.h_num_rows) || 1,
               overlapIn: Number(rc.h_overlap_in) || 12,
               barLengthFt: 20,
+              insetIn: Number(rc.h_inset_in),
               wastePct: Number(rc.h_waste_pct) || 0,
             });
             h_total_lf = hr.totalWithWasteLf;

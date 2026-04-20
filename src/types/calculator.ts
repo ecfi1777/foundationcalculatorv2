@@ -14,7 +14,7 @@ export type CalculatorType =
 
 export type FootingMode = "footingsOnly" | "footingsWalls" | "wallsOnly";
 
-export type RebarElementType = "footing" | "wall" | "grade_beam" | "curb" | "slab";
+export type RebarElementType = "footing" | "wall" | "grade_beam" | "curb" | "slab" | "pier_pad";
 
 export const CALCULATOR_LABELS: Record<CalculatorType, string> = {
   footing: "Footings",
