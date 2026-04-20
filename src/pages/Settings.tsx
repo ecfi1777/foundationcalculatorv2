@@ -203,22 +203,12 @@ export default function Settings() {
   };
 
   const handleSendInvite = async () => {
-    if (!session || !org || !inviteEmail) return;
-    setInviteLoading(true);
-    try {
-      await callEdgeFunction(
-        "add-seat",
-        { orgId: org.id, email: inviteEmail },
-        session
-      );
-      toast.success(`Invite sent to ${inviteEmail}`);
-      setInviteEmail("");
-      fetchData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setInviteLoading(false);
-    }
+    // Team invites are hidden from the UI until the team-invite feature is
+    // launched in a future version. The invite-sending UI in Settings has been
+    // removed, so this handler is not wired to anything. Restoring the feature
+    // later will require (a) re-adding the invite UI block and (b) verifying
+    // Resend is properly configured in Supabase edge function secrets —
+    // add-seat's Resend call at the end of its flow sends the actual email.
   };
 
   const handleSuspendMember = async (memberId: string) => {
