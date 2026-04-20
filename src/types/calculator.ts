@@ -189,7 +189,7 @@ export type RebarConfigsMap = Partial<Record<RebarElementType, RebarConfig>>;
 /** Derive rebarEnabled from configs map */
 export function deriveRebarEnabled(configs: RebarConfigsMap): boolean {
   return Object.values(configs).some(
-    (rc) => rc && (rc.hEnabled || rc.vEnabled || rc.gridEnabled)
+    (rc) => rc && (rc.hEnabled || rc.vEnabled || rc.gridEnabled || rc.lbarEnabled)
   );
 }
 
@@ -214,7 +214,7 @@ export function getElementTypes(
     case "slab":
       return ["slab"];
     case "pierPad":
-      return ["footing"];
+      return ["pier_pad"];
     default:
       return [];
   }
@@ -227,6 +227,7 @@ export function calcTypeToElementType(calcType: CalculatorType): RebarElementTyp
     case "gradeBeam": return "grade_beam";
     case "curbGutter": return "curb";
     case "slab": return "slab";
+    case "pierPad": return "pier_pad";
     default: return "footing";
   }
 }
