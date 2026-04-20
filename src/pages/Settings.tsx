@@ -44,10 +44,6 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  // Invite
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteLoading, setInviteLoading] = useState(false);
-
   // Org name
   const [orgName, setOrgName] = useState("");
   const [orgNameLoading, setOrgNameLoading] = useState(false);
@@ -207,22 +203,12 @@ export default function Settings() {
   };
 
   const handleSendInvite = async () => {
-    if (!session || !org || !inviteEmail) return;
-    setInviteLoading(true);
-    try {
-      await callEdgeFunction(
-        "add-seat",
-        { orgId: org.id, email: inviteEmail },
-        session
-      );
-      toast.success(`Invite sent to ${inviteEmail}`);
-      setInviteEmail("");
-      fetchData();
-    } catch (e: any) {
-      toast.error(e.message);
-    } finally {
-      setInviteLoading(false);
-    }
+    // Team invites are hidden from the UI until the team-invite feature is
+    // launched in a future version. The invite-sending UI in Settings has been
+    // removed, so this handler is not wired to anything. Restoring the feature
+    // later will require (a) re-adding the invite UI block and (b) verifying
+    // Resend is properly configured in Supabase edge function secrets —
+    // add-seat's Resend call at the end of its flow sends the actual email.
   };
 
   const handleSuspendMember = async (memberId: string) => {
@@ -455,21 +441,6 @@ export default function Settings() {
                           )}
                         </div>
                       ))}
-                  </div>
-
-                  {/* Invite */}
-                  <span className="text-sm font-medium">Invite Team Member</span>
-                  <div className="flex gap-2">
-                    <Input
-                      type="email"
-                      placeholder="Email address"
-                      value={inviteEmail}
-                      onChange={(e) => setInviteEmail(e.target.value)}
-                    />
-                    <Button size="sm" onClick={handleSendInvite} disabled={inviteLoading || !inviteEmail}>
-                      {inviteLoading && <Loader2 className="h-4 w-4 animate-spin mr-2" />}
-                      Send Invite
-                    </Button>
                   </div>
 
                   {/* Pending invites */}
