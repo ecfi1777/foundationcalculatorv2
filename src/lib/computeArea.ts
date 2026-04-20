@@ -317,7 +317,7 @@ export function computeArea(area: CalcArea, stoneTypeNames?: Map<string, string>
   const rebarResults: RebarResult[] = [];
   for (const et of visibleElementTypes) {
     const config = area.rebarConfigs[et];
-    if (config && (config.hEnabled || config.vEnabled || config.gridEnabled)) {
+    if (config && (config.hEnabled || config.vEnabled || config.gridEnabled || config.lbarEnabled)) {
       rebarResults.push(computeRebarForElement(area, et, totalLinearFt));
     }
   }
