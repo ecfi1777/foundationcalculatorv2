@@ -44,10 +44,6 @@ export default function Settings() {
   const [confirmPassword, setConfirmPassword] = useState("");
   const [passwordLoading, setPasswordLoading] = useState(false);
 
-  // Invite
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteLoading, setInviteLoading] = useState(false);
-
   // Org name
   const [orgName, setOrgName] = useState("");
   const [orgNameLoading, setOrgNameLoading] = useState(false);
