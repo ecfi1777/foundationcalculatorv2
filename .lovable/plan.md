@@ -1,61 +1,51 @@
 
 
-# Phase 7a — Foundational v2.3 rebar types + persistence + client compute
+# Phase 7b — RebarAddon UI: Inset inputs + info icons + L-Bar section
 
-Single interlocked commit. Zero UI/visual change. Lays the type + persistence + client-compute foundation for 7b/7c/7d.
+UI-only commit. Adds Inset inputs, an ⓘ hold-down warning, and a new L-Bar sub-section. Builds on 7a's types + persistence; no schema/server/Quantities/export changes.
 
-## Files (4)
+## Files (6)
 
-### 1. `src/types/calculator.ts`
-- `RebarConfig`: add `hInsetIn`, `vInsetIn`, `gridInsetIn` (all `number`) + 10 L-Bar fields (`lbarEnabled`, `lbarBarSize`, `lbarSpacingIn`, `lbarVerticalFt`, `lbarVerticalIn`, `lbarBendLengthIn`, `lbarOverlapIn`, `lbarInsetIn`, `lbarWastePct`, `lbarTotalLf?`). Optional `?` only on `lbarTotalLf` (mirrors `hTotalLf` pattern).
-- `makeDefaultRebar`: add inset defaults (3″) + L-Bar defaults per spec §8.12 (`lbarEnabled=false`, `lbarBendLengthIn=12`, `lbarInsetIn=3`, etc.).
-- `deriveRebarEnabled`: include `lbarEnabled` in the OR.
-- `getElementTypes`: `pierPad` → `["pier_pad"]` (was `["footing"]`).
-- `calcTypeToElementType`: add explicit `pierPad → "pier_pad"` case; default stays `"footing"`.
-- `RebarResult`: add `horizPiecesTotal`, `vertPiecesTotal`, `gridPiecesTotal` + L-Bar block (`lbarLf`, `lbarBarSize`, `lbarSpacingIn`, `lbarPiecesTotal`).
+### 1. `src/components/calculator/FieldInfoIcon.tsx` — NEW
+Generic field-level info icon. Tooltip on desktop, Dialog on mobile (uses `useIsMobile`). Separate from existing `InfoIcon.tsx` (Phase 13 calc-diagram scaffold — leave alone).
 
-### 2. `src/lib/computeArea.ts`
-- Import `calcRebarLBar` from `@/lib/calculations`.
-- Rewrite `computeRebarForElement`:
-  - Initialize all new `RebarResult` fields to `null`.
-  - Always compute client-side so `piecesTotal` is populated; use server canonical `*TotalLf` only as display shortcut when > 0.
-  - Pass `insetIn: config.hInsetIn` to `calcRebarHorizontal`.
-  - Pass `insetIn: config.gridInsetIn` to `calcRebarSlabGrid`.
-  - Vertical: no `insetIn` (spec §8.10).
-  - New L-Bar branch (gated by `config.lbarEnabled`); inert pre-7c since `totalLinearFt=0` for pier pads.
-- `computeArea` rebar gate: include `config.lbarEnabled` in OR.
+### 2. `src/components/calculator/NumberField.tsx`
+Add optional `infoIcon?: ReactNode` prop, rendered inline next to the label. No call-site changes required.
 
-### 3. `src/hooks/useProject.tsx`
-- `mapDbRebarToConfig`: read `h_inset_in/v_inset_in/grid_inset_in` (fallback `?? 3`) + all 10 `lbar_*` cols (fallbacks via `??` to default values).
-- Upsert payload: write all 13 new columns. Keep `*_total_lf: 0` zero-out lines (load-bearing — signals server canonical not yet computed).
-- Do NOT touch the post-save reconciliation block (lines 481–502); spread preserves `lbarTotalLf` naturally.
+### 3. `src/components/calculator/RebarAddon.tsx`
+- Import `FieldInfoIcon`.
+- Add `showLBar?: boolean` prop (default `false`).
+- Define shared §8.10/§8.12 hold-down warning string.
+- **Horizontal**: insert `Inset (in)` field between Overlap and Waste → bound to `hInsetIn`.
+- **Vertical**: attach `<FieldInfoIcon>` to `Bar Height (ft)` label. NO Inset field (Finding 8b).
+- **L-Bar (NEW)**: gated by `showLBar` + `mode==="linear"`. Sub-checkbox + 8 fields in order: Bar Size, Spacing, Vertical (ft) with ⓘ, Vertical (in), Bend Length, Overlap, Inset, Waste.
+- **Slab grid**: insert `Inset (in)` between Overlap and Waste → bound to `gridInsetIn`.
+- Keep `BarSizeSelect` helper byte-identical.
+- Outer toggle dispatch shape unchanged (pre-existing behavior).
 
-### 4. `src/hooks/useCalculatorState.tsx`
-- Inside `migrateLoadedState`, after the rebar→rebarConfigs legacy unwrap and before the draft-discard block:
-  - **Pier-pad legacy normalization**: for `type==="pierPad"` areas, move any `rebarConfigs.footing` entry to `rebarConfigs.pier_pad` with `element_type: "pier_pad"`.
-  - **Defensive merge**: spread `makeDefaultRebar(et)` then existing config, so pre-Phase-7 localStorage gets new fields backfilled without overwriting user data (prevents `NumberField value={undefined}` crash).
-- Imports already present (`makeDefaultRebar`, `RebarConfigsMap`, `RebarElementType`).
+### 4. `src/components/calculator/FootingForm.tsx`
+- Update `footingRebarEnabled` and `wallRebarEnabled` to OR `lbarEnabled`.
+- Add `showLBar` to both `RebarAddon` calls (footing + wall).
 
-## Out of scope (deferred)
-- All UI components, settings, QuantitiesPanel, exports — Prompts 7b/7c/7d.
-- `shared/calculations/index.ts`, `_shared/calculations.ts` — already v2.3.
-- `recalculate-project/index.ts` — L-Bar server branch lands in 7d.
-- `src/types/database.ts` — already Phase 5.1-correct.
-- All test files (35/35 stay green).
-- Existing zero-out lines `h_total_lf: 0` / `v_total_lf: 0` / `grid_total_lf: 0` / new `lbar_total_lf: 0` in upsert.
-- Reconciliation block H/V/grid-only writes.
-- All non-pierPad cases in `getElementTypes` and `calcTypeToElementType`.
+### 5. `src/components/calculator/LinearForm.tsx`
+- Update `rebarEnabled` to OR `lbarEnabled`.
+- Add `showLBar` to `RebarAddon` call (covers Wall standalone + Grade Beam).
+
+### 6. `src/components/calculator/CurbGutterForm.tsx`
+- Update `rebarEnabled` to OR `lbarEnabled` (defensive only — no `showLBar` per spec §8.12).
+
+## Out of scope
+- `InfoIcon.tsx`, `SlabForm.tsx`, `PierPadForm.tsx` (7c), `recalculate-project` (7d), QuantitiesPanel/exports (7d), Settings (Phase 10), HowItWorks (Phase 13), schema/types (done in 7a), tests (35/35 stay green).
+- V section gets no Inset field (persists as default 3 from 7a).
+- Outer "Add Rebar" toggle quirk (unchanged).
 
 ## Verification
-1. `npm run build` clean (zero TS errors).
-2. `npm test` → 35/35.
-3. `RebarConfig` has all 13 new fields; `?` only on `lbarTotalLf`.
-4. `makeDefaultRebar(...)` returns inset=3 across H/V/grid/L-Bar; `lbarBendLengthIn=12`; `lbarEnabled=false`.
-5. `getElementTypes("pierPad") === ["pier_pad"]`.
-6. `calcTypeToElementType("pierPad") === "pier_pad"`; other cases unchanged.
-7. Open existing footing+rebar project → Quantities LF unchanged.
-8. New footing+H-rebar save → DB row shows `h_inset_in=3, v_inset_in=3, grid_inset_in=3, lbar_enabled=false, lbar_bend_length_in=12, lbar_inset_in=3`.
-9. Reload same project → identical Quantities, no console errors.
-10. Pre-7a localStorage hydrates without crash; LF matches pre-commit value (defensive merge works).
-11. New pier-pad area saves/reloads cleanly; `rebarConfigs` empty `{}`; no rogue writes.
+1. Build clean, 35/35 tests pass, no console errors.
+2. Footing H rebar shows: Bar Size, Rows, Overlap, Inset (=3), Waste. Persists across reload.
+3. Vertical "Bar Height (ft)" has ⓘ → tooltip/dialog with v2.3 hold-down text. V section has exactly 6 fields, no Inset.
+4. L-Bar visible on Footing/Wall/Grade Beam: 8 fields with `Bend Length=12`, `Inset=3` defaults; ⓘ on Vertical (ft).
+5. L-Bar absent on Curb, Slab, Pier Pad.
+6. Slab grid shows Inset field (=3).
+7. DB round-trip: `h_inset_in=5, lbar_enabled=true, lbar_vertical_ft=4, lbar_bend_length_in=12, lbar_inset_in=2`.
+8. Mobile (≤768px): 2-col grid intact, ⓘ opens Dialog.
 
