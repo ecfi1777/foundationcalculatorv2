@@ -25,6 +25,8 @@ export {
   calcRebarHorizontal,
   calcRebarVertical,
   calcRebarSlabGrid,
+  calcRebarLBar,
+  calcPieceCount,
 
   // Stone
   calcStoneBase,
@@ -43,5 +45,6 @@ export type {
   RebarHorizontalInput, RebarHorizontalResult,
   RebarVerticalInput, RebarVerticalResult,
   RebarSlabGridInput, RebarSlabGridResult,
+  RebarLBarInput, RebarLBarResult,
   StoneBaseInput, StoneBaseResult,
 } from "../../../shared/calculations/index";
