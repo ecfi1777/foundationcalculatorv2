@@ -85,7 +85,7 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
 
   const elementType: RebarElementType = calcTypeToElementType(calcType);
   const rebarConfig = area?.rebarConfigs?.[elementType] ?? makeDefaultRebar(elementType);
-  const rebarEnabled = rebarConfig.hEnabled || rebarConfig.vEnabled || rebarConfig.gridEnabled;
+  const rebarEnabled = rebarConfig.hEnabled || rebarConfig.vEnabled || rebarConfig.gridEnabled || rebarConfig.lbarEnabled;
 
   return (
     <div className="space-y-4">
@@ -146,6 +146,7 @@ export function LinearForm({ calcType }: { calcType: "wall" | "gradeBeam" }) {
             onChange={(patch) => dispatch({ type: "UPDATE_REBAR", areaId: area.id, elementType, rebar: patch })}
             mode="linear"
             verticalLabel="Vertical Rebar"
+            showLBar
           />
         </>
       )}

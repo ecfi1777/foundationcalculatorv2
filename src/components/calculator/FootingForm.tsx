@@ -92,8 +92,8 @@ export function FootingForm() {
   const footingRebar = area?.rebarConfigs?.footing ?? makeDefaultRebar("footing");
   const wallRebar = area?.rebarConfigs?.wall ?? makeDefaultRebar("wall");
 
-  const footingRebarEnabled = footingRebar.hEnabled || footingRebar.vEnabled || footingRebar.gridEnabled;
-  const wallRebarEnabled = wallRebar.hEnabled || wallRebar.vEnabled || wallRebar.gridEnabled;
+  const footingRebarEnabled = footingRebar.hEnabled || footingRebar.vEnabled || footingRebar.gridEnabled || footingRebar.lbarEnabled;
+  const wallRebarEnabled = wallRebar.hEnabled || wallRebar.vEnabled || wallRebar.gridEnabled || wallRebar.lbarEnabled;
 
   return (
     <div className="space-y-4">
@@ -207,6 +207,7 @@ export function FootingForm() {
               mode="linear"
               sectionLabel={mode === "footingsWalls" ? "Footing Rebar" : "Add Rebar"}
               verticalLabel="Dowels"
+              showLBar
             />
           )}
 
@@ -227,6 +228,7 @@ export function FootingForm() {
               mode="linear"
               sectionLabel={mode === "footingsWalls" ? "Wall Rebar" : "Add Rebar"}
               verticalLabel="Vertical Rebar"
+              showLBar
             />
           )}
         </>
