@@ -1,51 +1,59 @@
 
 
-# Phase 7c — Pier Pad L-Bar rebar scaffold
+# Phase 7d — Server canonical L-Bar + Quantities display + Export
 
-Adds L-Bar-only rebar add-on to Pier Pad areas. No other area type touched. Client-side compute only (server canonical + QuantitiesPanel/exports are 7d).
+Final Phase 7 commit. Wires L-Bar through server recalc, Quantities UI, and exports. No UI input changes, no schema changes.
 
-## Files (3)
+## Files (7)
 
-### 1. `src/components/calculator/RebarAddon.tsx`
-- Widen `mode` prop type: `"linear" | "slab" | "lbar_only"`.
-- Insert new `mode === "lbar_only"` render branch between the `linear` and `slab` branches.
-- Renders the 8 L-Bar fields directly (no nested L-Bar checkbox — outer "Add Rebar" IS the L-Bar toggle, mirroring how `slab` treats the outer toggle as the grid toggle).
-- Field order: Bar Size, Spacing, Vertical (ft) with ⓘ (HOLD_DOWN_INFO_CONTENT), Vertical (in), Bend Length, Overlap, Inset, Waste.
-- `showLBar` prop ignored in this mode.
+### 1. `supabase/functions/recalculate-project/index.ts`
+- Add `calcRebarLBar` to the `_shared/calculations.ts` import.
+- Extend per-rebar-config compute loop with `lbar_total_lf`:
+  - Non-slab branch: if `rc.lbar_enabled`, compute `lbarLinearFt` = `totalLinearFt` by default; for pier pads (`et === "pier_pad" && area.calculator_type === "pier_pad"`), use `Σ(2×(len+wid)) × quantity` across sections (mirrors `computeArea.ts`).
+  - Call `calcRebarLBar({ linearFt, spacing/vert/bend/overlap/inset/waste from rc, barLengthFt: 20 })` when `lbarLinearFt > 0`.
+  - `.update()` payload gains `lbar_total_lf`; `rebarOutput[et]` gains `lbar_total_lf`.
+- Slab branch: unchanged (no L-Bar on slab per spec §8.12).
 
-### 2. `src/components/calculator/PierPadForm.tsx`
-- Import `RebarAddon` and `makeDefaultRebar`.
-- Derive `pierPadRebar = area?.rebarConfigs?.pier_pad ?? makeDefaultRebar("pier_pad")` and `rebarEnabled = pierPadRebar.lbarEnabled`.
-- Render `<RebarAddon mode="lbar_only" sectionLabel="Add Rebar" …>` below `<SectionEntry>`:
-  - `onToggle(v)` → dispatch `UPDATE_REBAR` with `elementType: "pier_pad"`, `rebar: { lbarEnabled: v }`.
-  - `onChange(patch)` → dispatch `UPDATE_REBAR` with `elementType: "pier_pad"`, `rebar: patch`.
+### 2. `src/hooks/useProject.tsx` — reconciliation
+- Extend the post-save `rebarPatch` merge loop so `lbarTotalLf: t.lbar_total_lf ?? 0` flows back to local state alongside existing H/V/grid reconciliation.
 
-### 3. `src/lib/computeArea.ts` — `computeRebarForElement` non-slab branch
-- Define `lbarLinearFt`:
-  - Default: `totalLinearFt` (footings/walls/gradeBeam/curb — no behavior change).
-  - Pier pads (`area.type === "pierPad" && elementType === "pier_pad"`): `Σ (2 × (lengthFt + widthFt)) × quantity` across sections. Fraction map `{ "0": 0, "1/4": 0.25, "1/2": 0.5, "3/4": 0.75 }` used to resolve inches+fraction into feet (matches existing fraction persistence convention).
-- Restructure gate: keep H/V compute inside `if (totalLinearFt > 0)`; pull L-Bar compute out into its own gate `if (config.lbarEnabled && lbarLinearFt > 0)` using `lbarLinearFt` (so pier pads, which have `totalLinearFt = 0`, can still compute).
-- L-Bar branch body unchanged otherwise (same `calcRebarLBar` call with `linearFt: lbarLinearFt`, same result assignments).
+### 3. `src/components/calculator/QuantitiesPanel.tsx`
+- **Project totals aggregator**: include `rr.lbarLf ?? 0` in the `rebarLf` sum.
+- **Per-area rebar rendering**: insert L-Bar row between Vertical and Grid (spec §9 ordering: Horiz → Vert → L-Bar → Grid). Label `{prefix}L-Bar ({barSize} @ {spacing}")`.
+- Append ` · {N} pcs` inline to each existing LF value (Horiz/Vert/Grid) and the new L-Bar row when `*PiecesTotal > 0`. Single inline span, no separate row.
 
-## Spec interpretation — pier pad L-Bar linearFt
-Spec §8.12 says "equivalent dimension for pier pads" without defining it. Interpreted as **Σ perimeter × quantity**: L-bars wrap each pad's perimeter as dowels; total placement distance = perimeter of each section × area-level quantity, summed across sections. This interpretation lives only in `computeArea.ts` step 3.
+### 4. `src/types/export.ts`
+- Add three fields to `AreaExportData` between vert and grid blocks: `rebarLBarLF: number | null`, `rebarLBarBarSize: string | null`, `rebarLBarSpacingIn: number | null`.
 
-## Out of scope (deferred)
-- `recalculate-project` L-Bar server branch → 7d.
-- QuantitiesPanel L-Bar line + piecesTotal display → 7d.
-- PDF/CSV export of L-Bar → 7d.
-- All other area forms (Footing/Wall/GradeBeam/Curb/Slab/Cylinder/Steps) — no changes.
-- `RebarAddon` `linear` and `slab` branches, `FieldInfoIcon`, `NumberField`, `BarSizeSelect` — untouched.
-- `useProject.tsx`, `useCalculatorState.tsx`, `types/calculator.ts` — already 7a-complete.
-- Settings "Default Rebar Inset" → Phase 10. HowItWorks rewrite → Phase 13.
-- Tests stay 35/35 green.
+### 5. `src/lib/export/buildExportData.ts`
+- Declare `rebarLBarLF / rebarLBarBarSize / rebarLBarSpacingIn` aggregators.
+- In the `rebarResults` fold, accumulate `rr.lbarLf` and capture bar size + spacing.
+- Include L-Bar in `areaRebarTotal` sum.
+- Add the three L-Bar fields to the `areas.push({...})` payload between vert and grid entries.
+
+### 6. `src/lib/export/pdfExport.ts`
+- Insert L-Bar `<div>` between the Vert and Grid lines:
+  `Rebar (L-Bar {barSize} @ {spacing}"): {fmtRebar(LF)} LF`.
+
+### 7. `src/lib/export/csvExport.ts`
+- Extend per-area `rebarTotal` inline sum to include `(area.rebarLBarLF ?? 0)`.
+
+## Invariants (unchanged)
+- `shared/calculations/index.ts`, `_shared/calculations.ts`, `types/calculator.ts`, `types/database.ts`, `computeArea.ts`, all UI forms + RebarAddon/FieldInfoIcon/NumberField, `useCalculatorState.tsx`, `useProject.tsx` (mapDbRebarToConfig + upsert), all tests — untouched. Test count stays 67.
+- Rebar ordering everywhere: Horiz → Vert → L-Bar → Grid.
+- piecesTotal format: ` · {N} pcs` inline suffix.
+- Slab, Curb unaffected (no L-Bar branch reachable for them).
 
 ## Verification
-1. Build clean; 35/35 tests pass.
-2. Pier Pad area shows new "Add Rebar" card below Section list; toggling reveals exactly 8 L-Bar fields in spec order.
-3. Defaults: `#4 / 12 / 0ft 0in / 12 / 12 / 3 / 0`; ⓘ on Vertical (ft) shows hold-down warning (desktop tooltip, mobile dialog).
-4. 3×3 section × qty 4, Vertical=4ft → L-Bar LF > 0 in Quantities (perimeter 12 × 4 = 48 ft linearFt source).
-5. DB round-trip: row with `element_type='pier_pad'`, `lbar_enabled=true`, all L-Bar columns persisted; reload restores values.
-6. Footing/Wall/GradeBeam/Curb/Slab/Cylinder/Steps rebar UI unchanged (7b behavior preserved).
-7. Mobile (≤768px): 2-col grid intact, ⓘ → Dialog.
+1. Client + edge function build clean; `npm test` 67/67.
+2. Deploy `recalculate-project`; no deploy errors.
+3. Footing + H+V+L-Bar: Quantities shows 3 rows in order Horiz/Vert/L-Bar, each with ` · N pcs` suffix.
+4. Pier pad L-Bar: client LF pre-save matches; after save, DB `lbar_total_lf > 0` on `element_type='pier_pad'` row; reload preserves LF (reconciliation works).
+5. Wall / Grade Beam with L-Bar: same round-trip works.
+6. Curb + Slab: `lbar_enabled=false`, `lbar_total_lf=0`; grid/H/V unchanged.
+7. PDF export: 4-line ordered rebar block per area including `Rebar (L-Bar #4 @ 12"): ... LF`.
+8. CSV export: per-area rebar total and project-totals row include L-Bar LF (pier-pad-only projects show nonzero rebar column).
+9. Project totals footer sums all four rebar types.
+10. Pre-7d projects load without error; re-save populates `lbar_total_lf`.
+11. Empty pier pad (no dimensioned sections) with `lbar_enabled=true` → `lbar_total_lf=0`, no crash.
 
